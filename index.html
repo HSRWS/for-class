@@ -313,9 +313,7 @@
     background: linear-gradient(90deg, var(--accent), var(--accent2));
   }
 
-  /* ===== 背景层 / 自动隐藏导航栏 ===== */
-  #bgLayer { position: fixed; inset: 0; z-index: -1; background-size: cover; background-position: center; }
-  body.hasbg #bgLayer::after { content: ""; position: absolute; inset: 0; background: rgba(8,10,18,0.4); }
+  /* ===== 自动隐藏导航栏 ===== */
   #topHotzone { display: none; position: fixed; top: 0; left: 0; right: 0; height: 12px; z-index: 5900; }
   body.hidebar #topHotzone { display: block; }
   body.hidebar .topbar { position: fixed; top: 0; left: 0; right: 0; transform: translateY(-100%); transition: transform .25s; }
@@ -327,41 +325,91 @@
   #pageDesk.page:not(.active) { left: -200vw; }
   body.hidebar #pageDesk.page { top: 0; height: 100vh; }
 
-  /* ===== 主界面（桌面） ===== */
-  #pageHome { position: relative; overflow: hidden; }
-  .desk-icons {
-    position: absolute; top: 22px; left: 18px; bottom: 20px;
-    display: flex; flex-direction: column; flex-wrap: wrap; gap: 6px;
-    align-content: flex-start; width: 45%;
+  /* ===== Win11 主界面 ===== */
+  body.homeon .topbar, body.homeon #topHotzone { display: none; }
+  body.homeon #pageHome { height: 100vh; }
+  #pageHome { position: relative; overflow: hidden; font-family: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif; }
+  .wp-layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  /* 桌面图标 */
+  #deskArea { position: absolute; inset: 0 0 52px 0; }
+  .wicon {
+    position: absolute; width: 84px; padding: 8px 2px; border-radius: 8px;
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    cursor: default; user-select: none; border: 1px solid transparent; touch-action: none;
   }
-  .dicon {
-    width: 84px; padding: 10px 4px; border-radius: 10px; cursor: pointer;
-    display: flex; flex-direction: column; align-items: center; gap: 6px;
-    border: 1px solid transparent; background: transparent; color: var(--text);
+  .wicon:hover { background: rgba(255,255,255,.08); }
+  .wicon.sel { background: rgba(79,140,255,.28); border-color: rgba(255,255,255,.22); }
+  .wicon .wi { font-size: 44px; filter: drop-shadow(0 3px 6px rgba(0,0,0,.5)); pointer-events: none; }
+  .wicon .wn { font-size: 12px; text-align: center; text-shadow: 0 1px 3px #000; word-break: break-all; pointer-events: none; }
+  /* 亚克力毛玻璃 */
+  .acrylic {
+    background: rgba(28,28,30,0.7); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; box-shadow: 0 8px 28px rgba(0,0,0,0.4);
   }
-  .dicon:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.18); }
-  .dicon .di { font-size: 30px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4)); }
-  .dicon .dn { font-size: 12px; text-shadow: 0 1px 4px rgba(0,0,0,0.8); white-space: nowrap; }
-  .home-clock { position: absolute; top: 34px; right: 44px; text-align: right; pointer-events: none; }
-  .home-clock .hc-time { font-size: 64px; font-weight: 700; letter-spacing: 2px; line-height: 1.1; text-shadow: 0 4px 24px rgba(0,0,0,0.55); }
-  .home-clock .hc-date { font-size: 16px; opacity: .9; margin-top: 4px; text-shadow: 0 2px 10px rgba(0,0,0,0.6); }
-  .home-widgets {
-    position: absolute; right: 24px; bottom: 20px; left: 24px;
-    display: flex; gap: 14px; justify-content: flex-end; align-items: flex-end;
-    pointer-events: none;
+  /* 任务栏（Win11 居中风格） */
+  #wtaskbar {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 52px; z-index: 900;
+    display: flex; align-items: center; padding: 0 8px;
+    background: rgba(28,28,30,0.7); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+    border-top: 1px solid rgba(255,255,255,0.12); transition: transform .25s;
   }
-  .widget {
-    pointer-events: auto;
-    width: 250px; border-radius: 14px; padding: 14px;
-    background: rgba(16,19,32,0.74); backdrop-filter: blur(14px);
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 14px 40px rgba(0,0,0,0.4);
+  /* 开始按钮 + 应用图标整体居中，右侧只留系统托盘 */
+  #tbCenter { position: absolute; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 4px; max-width: 62vw; }
+  #pageHome.tbhide #wtaskbar { transform: translateY(100%); }
+  #pageHome.tbhide #wtaskbar.peek, #pageHome.tbhide #wtaskbar:hover { transform: none; }
+  #tbHot { display: none; position: absolute; left: 0; right: 0; bottom: 0; height: 10px; z-index: 899; }
+  #pageHome.tbhide #tbHot { display: block; }
+  .tb-start { width: 48px; height: 44px; border: none; background: transparent; color: #fff; font-size: 26px; border-radius: 8px; cursor: pointer; }
+  .tb-start:hover { background: rgba(255,255,255,.1); }
+  #tbIcons { display: flex; gap: 4px; overflow-x: auto; }
+  #tbIcons::-webkit-scrollbar { display: none; }
+  .tb-ic {
+    position: relative; width: 44px; height: 44px; flex-shrink: 0; border: none; background: transparent;
+    border-radius: 8px; font-size: 21px; cursor: pointer; display: flex; align-items: center; justify-content: center;
   }
-  .widget h4 { font-size: 13px; color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
-  .widget h4 .q-refresh { margin-left: auto; border: none; background: none; color: var(--muted); cursor: pointer; font-size: 14px; }
-  .widget h4 .q-refresh:hover { color: #fff; }
-  .quote-text { font-size: 13px; line-height: 1.7; }
-  .quote-from { font-size: 11px; color: var(--muted); text-align: right; margin-top: 8px; }
+  .tb-ic:hover { background: rgba(255,255,255,.1); }
+  .tb-ic.run::after { content: ""; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); width: 14px; height: 3px; border-radius: 3px; background: var(--accent); }
+  .tb-tray { display: flex; align-items: center; gap: 2px; margin-left: auto; }
+  .tray-btn { border: none; background: transparent; color: #e8ecf5; padding: 6px 8px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+  .tray-btn:hover { background: rgba(255,255,255,.1); }
+  #tbClock { text-align: right; font-size: 12px; line-height: 1.35; }
+  /* 弹出面板 */
+  .wpanel { position: absolute; bottom: 60px; z-index: 950; display: none; padding: 14px; }
+  .wpanel.show { display: block; }
+  #volPanel, #netPanel, #calPanel, #notiPanel, #wpPanel { right: 10px; }
+  #calPanel { width: 262px; }
+  #wpPanel { width: 300px; }
+  #wpUrl {
+    flex: 1; min-width: 0; border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.08);
+    color: #fff; border-radius: 8px; padding: 8px 10px; font-size: 12px; outline: none;
+  }
+  .wp-opt { display: flex; gap: 6px; flex-wrap: wrap; }
+  .wp-opt button { border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.06); color: #e8ecf5; border-radius: 8px; padding: 8px 10px; cursor: pointer; font-size: 12px; }
+  .wp-opt button:hover { background: rgba(79,140,255,.25); }
+  /* 开始菜单 */
+  #startMenu { position: absolute; bottom: 60px; z-index: 950; padding: 14px; left: 50%; transform: translateX(-50%); width: min(640px, 94vw); height: min(480px, 72vh); display: none; flex-direction: column; }
+  #startMenu.show { display: flex; }
+  #smSearch { width: 100%; border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.08); color: #fff; border-radius: 8px; padding: 10px 14px; font-size: 14px; outline: none; }
+  #smSearch:focus { border-color: var(--accent); }
+  #smBody { flex: 1; display: flex; gap: 14px; overflow: hidden; margin-top: 12px; }
+  #smApps { flex: 1; overflow-y: auto; }
+  .sm-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; width: 100%; border: none; background: none; color: #e8ecf5; text-align: left; }
+  .sm-item:hover { background: rgba(255,255,255,.1); }
+  #smTiles { width: 264px; display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; align-content: start; overflow-y: auto; }
+  .sm-tile { aspect-ratio: 1; border: none; border-radius: 8px; background: rgba(255,255,255,.08); color: #fff; cursor: pointer; display: flex; flex-direction: column; gap: 6px; align-items: center; justify-content: center; font-size: 12px; box-shadow: 0 4px 12px rgba(0,0,0,.35); }
+  .sm-tile .ti { font-size: 26px; }
+  .sm-tile:hover { background: rgba(79,140,255,.3); }
+  #smPower { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+  #smPower button { border: none; background: rgba(255,255,255,.08); color: #e8ecf5; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 12px; }
+  #smPower button:hover { background: rgba(255,255,255,.18); }
+  /* 右键菜单 */
+  .cmenu { position: fixed; z-index: 6000; min-width: 178px; padding: 6px; display: none; border-radius: 12px; }
+  .cmenu.show { display: block; }
+  .cmenu button { display: flex; width: 100%; border: none; background: none; color: #e8ecf5; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; text-align: left; gap: 8px; }
+  .cmenu button:hover { background: rgba(255,255,255,.1); }
+  .cmenu .sep { height: 1px; background: rgba(255,255,255,.1); margin: 4px 6px; }
+  #sleepOv { position: fixed; inset: 0; background: #000; z-index: 9999; display: none; cursor: pointer; }
+  /* 日历（托盘面板内） */
   .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
   .cal-head b { font-size: 13px; }
   .cal-head button { border: none; background: rgba(255,255,255,0.08); color: var(--muted); border-radius: 6px; width: 24px; height: 24px; cursor: pointer; }
@@ -371,15 +419,59 @@
   .cal-grid .cd { padding: 5px 0; border-radius: 6px; }
   .cal-grid .cd.dim { color: #5a6377; }
   .cal-grid .cd.today { background: linear-gradient(90deg, var(--accent), var(--accent2)); color: #fff; font-weight: 700; }
-  .todo-add { display: flex; gap: 6px; margin-bottom: 8px; }
-  .todo-add input { flex: 1; min-width: 0; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.06); color: var(--text); border-radius: 8px; padding: 7px 10px; font-size: 12px; outline: none; }
-  .todo-add button { border: none; border-radius: 8px; padding: 0 12px; cursor: pointer; color: #fff; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
-  .todo-list { max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
-  .todo-item { display: flex; align-items: center; gap: 8px; font-size: 12px; padding: 5px 6px; border-radius: 6px; background: rgba(255,255,255,.04); }
-  .todo-item.done span { text-decoration: line-through; color: var(--muted); }
-  .todo-item span { flex: 1; word-break: break-all; }
-  .todo-item .del { cursor: pointer; color: var(--muted); border: none; background: none; font-size: 13px; }
-  .todo-item .del:hover { color: #ff5f57; }
+
+  /* ===== 低性能模式：毛玻璃全关、动画几乎禁用（手机友好） ===== */
+  body.lowperf .acrylic, body.lowperf #wtaskbar, body.lowperf .topbar,
+  body.lowperf .app-menu, body.lowperf .taskbar {
+    background: #16192a !important;
+    backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+  }
+  body.lowperf * { transition-duration: .05s !important; animation: none !important; }
+  body.lowperf .card:hover, body.lowperf .gcard:hover { transform: none; box-shadow: none; }
+  body.lowperf .sm-tile { box-shadow: none; }
+  body.lowperf .wgt, body.lowperf .hwin { background: #16192a !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; box-shadow: none !important; }
+
+  /* ===== 桌面小组件（美化担当） ===== */
+  #wgtLayer { position: absolute; inset: 0 0 52px 0; pointer-events: none; z-index: 5; }
+  .wgt {
+    position: absolute; pointer-events: auto; padding: 14px 18px; border-radius: 14px;
+    background: rgba(28,28,30,.55); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+    border: 1px solid rgba(255,255,255,.14); box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    user-select: none; touch-action: none;
+  }
+  .wgt .wg-x { position: absolute; top: 6px; right: 8px; border: none; background: none; color: #8b93a7; cursor: pointer; font-size: 12px; display: none; }
+  .wgt:hover .wg-x { display: block; }
+  #wgClock .t { font-size: 46px; font-weight: 700; letter-spacing: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; background-clip: text; color: transparent; line-height: 1.1; }
+  #wgClock .d { font-size: 13px; color: #c6cede; margin-top: 4px; }
+  #wgWeather { display: flex; gap: 12px; align-items: center; min-width: 175px; }
+  #wgWeather .wi2 { font-size: 40px; }
+  #wgWeather .tp { font-size: 24px; font-weight: 700; }
+  #wgWeather .ct { font-size: 12px; color: #aab3c7; cursor: pointer; }
+  #wgQuote { max-width: 270px; font-size: 13px; line-height: 1.7; color: #dfe5f1; cursor: pointer; }
+  #wgQuote .qf { color: #8b93a7; font-size: 11px; text-align: right; margin-top: 6px; }
+  #wgMusic { display: flex; align-items: center; gap: 10px; min-width: 200px; }
+  #wgMusic .mn { font-size: 13px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #wgMusic button { border: none; background: rgba(255,255,255,.1); color: #fff; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 14px; }
+
+  /* ===== 主界面小窗口（不跳页，像真桌面一样挂着） ===== */
+  .hwin { position: absolute; z-index: 800; width: min(720px, 92vw); height: min(480px, 68vh); display: flex; flex-direction: column; overflow: hidden; border-radius: 10px; }
+  .hwin.max { left: 0 !important; top: 0 !important; width: 100% !important; height: calc(100% - 52px) !important; border-radius: 0; }
+  .hwin .hw-bar { display: flex; align-items: center; gap: 4px; padding: 5px 6px 5px 12px; background: rgba(255,255,255,.06); cursor: move; font-size: 13px; touch-action: none; }
+  .hwin .hw-bar b { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+  .hwin .hw-bar button { border: none; background: none; color: #cfd6e4; width: 32px; height: 26px; border-radius: 6px; cursor: pointer; }
+  .hwin .hw-bar button:hover { background: rgba(255,255,255,.12); }
+  .hwin .hw-bar .hw-close:hover { background: #e81123; color: #fff; }
+  .hwin iframe { flex: 1; border: none; background: #fff; }
+  .hwin .hw-body { flex: 1; overflow: auto; padding: 14px; }
+  .fitem { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+  .fitem:hover { background: rgba(255,255,255,.08); }
+  .fitem .fu { flex: 1; color: #8b93a7; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fitem button { border: none; background: none; color: #8b93a7; cursor: pointer; }
+  /* 坦克联机手机按键 */
+  #tnPad { display: none; gap: 8px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+  #tnPad button { width: 54px; height: 54px; border-radius: 12px; border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.08); color: #fff; font-size: 20px; }
+  @media (pointer: coarse) { #tnPad { display: flex; } }
 
   /* ===== 游戏页 ===== */
   #pageGame { overflow-y: auto; padding: 26px 30px 50px; }
@@ -463,15 +555,10 @@
     .msg { max-width: 86%; }
 
     #pageDesk.page { top: 52px; height: calc(100vh - 52px); }
-    .home-clock { top: 14px; right: 14px; }
-    .home-clock .hc-time { font-size: 38px; }
-    .home-clock .hc-date { font-size: 12px; }
-    .desk-icons { top: 12px; left: 8px; right: 150px; bottom: 42%; flex-direction: row; flex-wrap: wrap; align-content: flex-start; width: auto; }
-    .dicon { width: 62px; padding: 8px 2px; }
-    .dicon .di { font-size: 24px; }
-    .dicon .dn { font-size: 11px; }
-    .home-widgets { left: 10px; right: 10px; bottom: 12px; overflow-x: auto; justify-content: flex-start; }
-    .widget { flex-shrink: 0; width: 230px; }
+    .wicon { width: 64px; }
+    .wicon .wi { font-size: 32px; }
+    #smTiles { display: none; }
+    #tbClock { font-size: 11px; }
     #pageGame { padding: 16px 12px 50px; }
     #pageSet { padding: 16px 10px 60px; }
     .set-row label { min-width: 96px; font-size: 12px; }
@@ -480,8 +567,6 @@
 </head>
 <body>
 
-  <!-- 全局背景层 -->
-  <div id="bgLayer"></div>
   <!-- 自动隐藏导航栏时的顶部感应区 -->
   <div id="topHotzone"></div>
 
@@ -498,39 +583,129 @@
     </div>
   </div>
 
-  <!-- ================= 页面零：主界面（桌面） ================= -->
+  <!-- ================= 页面零：主界面（Win11 桌面） ================= -->
   <div id="pageHome" class="page active">
-    <div class="desk-icons" id="deskIcons"></div>
+    <!-- 动态壁纸层 -->
+    <canvas id="wpCanvas" class="wp-layer"></canvas>
+    <video id="wpVideo" class="wp-layer" muted loop playsinline style="display:none"></video>
+    <img id="wpGif" class="wp-layer" style="display:none" alt="" />
 
-    <div class="home-clock">
-      <div class="hc-time" id="hcTime">--:--</div>
-      <div class="hc-date" id="hcDate"></div>
+    <!-- 桌面（图标 + 右键） -->
+    <div id="deskArea"></div>
+        <!-- 桌面小组件层 -->
+        <div id="wgtLayer"></div>
+
+    <!-- 任务栏自动隐藏时的底部感应区 -->
+    <div id="tbHot"></div>
+
+    <!-- 任务栏（Win11 居中式） -->
+    <div id="wtaskbar" class="acrylic">
+      <div id="tbCenter">
+        <button class="tb-start" title="开始" onclick="toggleStart()">⊞</button>
+        <div id="tbIcons"></div>
+      </div>
+      <div class="tb-tray">
+        <button class="tray-btn" title="壁纸" onclick="togglePanel('wpPanel')">🖼️</button>
+        <button class="tray-btn" title="网络" onclick="togglePanel('netPanel')">📶</button>
+        <button class="tray-btn" title="音量" onclick="togglePanel('volPanel')">🔊</button>
+        <button class="tray-btn" title="通知" onclick="togglePanel('notiPanel')">🔔</button>
+        <button class="tray-btn" title="全屏" onclick="toggleFS()">⛶</button>
+        <button class="tray-btn" title="退出主界面" onclick="goPage('pageNav')">🚪</button>
+        <div id="tbClock" class="tray-btn" title="日历" onclick="togglePanel('calPanel')">--:--</div>
+      </div>
     </div>
 
-    <div class="home-widgets">
-      <div class="widget">
-        <h4>✅ 待办清单</h4>
-        <div class="todo-add">
-          <input id="todoInput" maxlength="40" placeholder="添加待办…" />
-          <button onclick="addTodo()">+</button>
-        </div>
-        <div class="todo-list" id="todoList"></div>
+    <!-- 开始菜单 -->
+    <div id="startMenu" class="acrylic">
+      <input id="smSearch" placeholder="🔍 搜索应用和网站…" oninput="renderStart()" />
+      <div id="smBody">
+        <div id="smApps"></div>
+        <div id="smTiles"></div>
       </div>
-      <div class="widget">
-        <h4>📅 日历</h4>
-        <div class="cal-head">
-          <button onclick="calMove(-1)">‹</button>
-          <b id="calTitle"></b>
-          <button onclick="calMove(1)">›</button>
-        </div>
-        <div class="cal-grid" id="calGrid"></div>
-      </div>
-      <div class="widget">
-        <h4>💬 每日一言 <button class="q-refresh" onclick="nextQuote()" title="换一句">↻</button></h4>
-        <div class="quote-text" id="quoteText"></div>
-        <div class="quote-from" id="quoteFrom"></div>
+      <div id="smPower">
+        <span class="tip" style="margin:0">我的工作台</span>
+        <span>
+          <button onclick="powerAct('sleep')" title="睡眠">🌙</button>
+          <button onclick="powerAct('reboot')" title="重启">🔄</button>
+          <button onclick="powerAct('off')" title="关机">⏻</button>
+        </span>
       </div>
     </div>
+
+    <!-- 托盘弹出面板 -->
+    <div id="volPanel" class="wpanel acrylic">
+      <b>🔊 音量</b>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
+        <input type="range" id="volSlider" min="0" max="100" value="70" style="flex:1" oninput="setVol(this.value)" />
+        <span id="volNum">70</span>
+      </div>
+      <div class="tip" style="margin:8px 0 0">控制背景音乐音量</div>
+    </div>
+    <div id="netPanel" class="wpanel acrylic"><b>📶 网络</b><div id="netInfo" style="margin-top:10px;font-size:13px"></div></div>
+    <div id="calPanel" class="wpanel acrylic">
+      <div class="cal-head">
+        <button onclick="calMove(-1)">‹</button>
+        <b id="calTitle"></b>
+        <button onclick="calMove(1)">›</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+    <div id="notiPanel" class="wpanel acrylic"><b>🔔 通知中心</b><div class="tip" style="margin:10px 0 0">没有新通知</div></div>
+    <div id="wpPanel" class="wpanel acrylic">
+      <b>🖼️ 壁纸</b>
+      <!-- 网络图片壁纸：贴网址即用 -->
+      <div style="display:flex;gap:6px;margin-top:10px">
+        <input id="wpUrl" placeholder="贴图片网址，https://….jpg" />
+        <button class="sbtn" style="padding:8px 12px;flex-shrink:0" onclick="applyWpUrl()">应用</button>
+      </div>
+      <div class="wp-opt" style="margin-top:8px">
+        <button onclick="applyWpUrl('https://bing.img.run/1920x1080.php')">🌄 必应每日壁纸</button>
+        <button onclick="applyWpUrl('https://picsum.photos/1920/1080')">🎲 随机美图</button>
+      </div>
+      <div class="wp-opt" style="margin-top:8px">
+        <button onclick="setWpFx('stars')">✨ 粒子星空</button>
+        <button onclick="setWpFx('waves')">🌊 波浪水纹</button>
+        <button onclick="setWpFx('petals')">🌸 飘落花瓣</button>
+        <button onclick="setWpFx('lines')">🎐 流动线条</button>
+        <button onclick="setWpFx('aurora')">🌌 极光</button>
+        <input type="file" id="wpFile" accept="video/mp4,video/webm,image/gif" style="display:none" onchange="uploadWp(this)" />
+        <button onclick="document.getElementById('wpFile').click()">📤 上传视频 / GIF（&lt;4.5MB）</button>
+        <input type="file" id="wpImgFile" accept="image/*" style="display:none" onchange="uploadWp(this)" />
+        <button onclick="document.getElementById('wpImgFile').click()">🖼️ 上传图片（&lt;4.5MB）</button>
+      </div>
+    </div>
+
+    <!-- 小组件开关面板 -->
+    <div id="wgtPanel" class="wpanel acrylic" style="left:50%;transform:translateX(-50%);width:240px">
+      <b>🧩 桌面小组件</b>
+      <div class="tip" style="margin:6px 0 0">勾选显示，组件可随意拖动摆放</div>
+      <div id="wgtList" style="margin-top:10px;display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+
+    <!-- 桌面右键菜单 -->
+    <div id="deskMenu" class="cmenu acrylic">
+      <button onclick="closeAllPops();startWp()">🔄 刷新</button>
+      <button onclick="newUrlIcon()">🔗 新建网址快捷方式</button>
+      <button onclick="newFolder()">📁 新建文件夹</button>
+      <div class="sep"></div>
+      <button onclick="openWgtPanel()">🧩 小组件</button>
+      <button onclick="sortIcons('n')">🔤 按名称排序</button>
+      <button onclick="sortIcons('i')">🎯 按类型排序</button>
+      <div class="sep"></div>
+      <button onclick="closeAllPops();toggleFS()">⛶ 全屏 / 退出全屏</button>
+      <button onclick="closeAllPops();goPage('pageSet')">🎨 个性化</button>
+      <button onclick="closeAllPops();togglePanel('wpPanel')">🖥️ 显示设置</button>
+    </div>
+    <!-- 图标右键菜单 -->
+    <div id="iconMenu" class="cmenu acrylic">
+      <button onclick="iconAct('open')">📂 打开</button>
+      <button onclick="iconAct('rename')">✏️ 重命名</button>
+      <div class="sep"></div>
+      <button onclick="iconAct('del')">🗑️ 删除</button>
+    </div>
+
+    <!-- 睡眠遮罩 -->
+    <div id="sleepOv" onclick="this.style.display='none'">🌙 睡眠中 · 点击任意处唤醒</div>
   </div>
 
   <!-- ================= 页面一：导航 ================= -->
@@ -646,6 +821,8 @@
       <div class="gcard" onclick="openGame('snake')"><div class="gi">🐍</div><h3>贪吃蛇</h3><p>方向键 / 滑动控制</p></div>
       <div class="gcard" onclick="openGame('memory')"><div class="gi">🎴</div><h3>翻牌配对</h3><p>考验记忆力</p></div>
       <div class="gcard" onclick="openGame('guess')"><div class="gi">🎯</div><h3>猜数字</h3><p>1~100 看谁猜得快</p></div>
+      <div class="gcard" onclick="openGame('tank')"><div class="gi">🪖</div><h3>坦克大战</h3><p>经典版 V1.1.2 · 已内置</p></div>
+      <div class="gcard" onclick="openGame('tanknet')"><div class="gi">📡</div><h3>坦克联机对战</h3><p>广域网 1v1 · 房间号相同即开战</p></div>
     </div>
     <div class="game-stage" id="gameStage" style="display:none;">
       <div class="gs-head">
@@ -662,22 +839,6 @@
     <div class="set-wrap">
 
       <div class="set-sec">
-        <h3>🖼️ 背景壁纸</h3>
-        <div class="tip">支持网络图片地址和本地图片（本地图会保存在浏览器里，刷新不丢）</div>
-        <div class="set-row">
-          <label>网络图片地址</label>
-          <input type="text" id="setBgUrl" placeholder="https://….jpg" />
-          <button class="sbtn" onclick="applyBgUrl()">应用</button>
-        </div>
-        <div class="set-row">
-          <label>本地图片</label>
-          <input type="file" id="setBgFile" accept="image/*" style="display:none" onchange="applyBgFile(this)" />
-          <button class="gbtn" onclick="document.getElementById('setBgFile').click()">选择图片…</button>
-          <button class="gbtn" onclick="clearBg()">恢复默认背景</button>
-        </div>
-      </div>
-
-      <div class="set-sec">
         <h3>🎨 主题色</h3>
         <div class="tip">改变全站按钮、选中标签等强调色</div>
         <div class="set-row">
@@ -688,11 +849,47 @@
       </div>
 
       <div class="set-sec">
+        <h3>🎵 背景音乐</h3>
+        <div class="tip">上传音乐文件或贴音乐网址，在主界面播放，切换页面不影响播放。</div>
+        <div class="set-row">
+          <input type="file" id="musFile" accept="audio/*" style="display:none" onchange="loadMusic(this)" />
+          <button class="gbtn" onclick="document.getElementById('musFile').click()">选择音乐…</button>
+          <span id="musName" class="tip" style="margin:0">无音乐</span>
+        </div>
+        <div class="set-row">
+          <input type="text" id="musUrl" placeholder="贴音乐网址，https://….mp3" />
+          <button class="sbtn" onclick="applyMusUrl()">播放网址</button>
+        </div>
+        <div class="set-row">
+          <label>🎼 在线音乐集</label>
+          <select id="musSet" onchange="pickMus(this.value)"></select>
+        </div>
+        <div class="set-row">
+          <button class="sbtn" id="musToggle" onclick="toggleMusic()">▶ 播放</button>
+          <label style="min-width:auto">音量</label>
+          <input type="range" id="musVol" min="0" max="100" value="70" oninput="setVol(this.value)" />
+          <label style="min-width:auto">循环</label>
+          <span class="switch"><input type="checkbox" id="musLoop" checked onchange="setLoop(this.checked)" /><i></i></span>
+          <span id="musState" class="tip" style="margin:0">已暂停</span>
+        </div>
+      </div>
+
+      <div class="set-sec">
         <h3>🧭 界面与启动</h3>
         <div class="set-row">
           <label>自动隐藏导航栏</label>
           <span class="switch"><input type="checkbox" id="setHideBar" onchange="saveOpt('hidebar', this.checked); applyHidebar()" /><i></i></span>
           <span class="tip" style="margin:0">鼠标移到屏幕顶部时弹出</span>
+        </div>
+        <div class="set-row">
+          <label>自动隐藏任务栏</label>
+          <span class="switch"><input type="checkbox" id="setTbHide" onchange="saveOpt('tbhide', this.checked); applyTbHide()" /><i></i></span>
+          <span class="tip" style="margin:0">主界面底部任务栏自动收起</span>
+        </div>
+        <div class="set-row">
+          <label>低性能模式</label>
+          <span class="switch"><input type="checkbox" id="setLowPerf" onchange="saveOpt('lowperf', this.checked); applyLowPerf()" /><i></i></span>
+          <span class="tip" style="margin:0">关毛玻璃、减粒子、锁 20 帧，手机更流畅</span>
         </div>
         <div class="set-row">
           <label>时钟 24 小时制</label>
@@ -904,6 +1101,10 @@ function goPage(id) {
   document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.page === id));
   document.querySelectorAll(".page").forEach(p => p.classList.toggle("active", p.id === id));
   document.getElementById("topbar").classList.remove("peek");
+  /* 主界面：隐藏顶部导航栏、启动壁纸；其他页：恢复导航栏、暂停壁纸 */
+  document.body.classList.toggle("homeon", id === "pageHome");
+  if (id === "pageHome") { startWp(); renderTb(); }
+  else { stopWp(); closeAllPops(); }
 }
 document.querySelectorAll(".tab").forEach(tab => {
   tab.addEventListener("click", () => goPage(tab.dataset.page));
@@ -998,6 +1199,7 @@ function createWindow(title, url, icon = "🌐", innerHTML = null) {
   setActiveTask(task);
 
   windows[id] = { el: w, taskEl: task, title };
+  renderTb(); // 同步到主界面任务栏
 
   w.querySelector(".close").onclick = e => { e.stopPropagation(); closeWindow(id); };
   w.querySelector(".min").onclick   = e => { e.stopPropagation(); w._minLeft = w.style.left; w.classList.add("minimized"); task.classList.remove("active"); };
@@ -1034,6 +1236,7 @@ function closeWindow(id) {
   windows[id].el.remove();
   windows[id].taskEl.remove();
   delete windows[id];
+  renderTb(); // 同步到主界面任务栏
   if (Object.keys(windows).length === 0) document.getElementById("deskHint").style.display = "block";
 }
 function focusWindow(id) {
@@ -1254,32 +1457,608 @@ function leaveChat() {
   document.getElementById("chatSetup").style.display = "block";
 }
 
-/* ===================== 主界面：桌面图标 ===================== */
-const HOME_ICONS = [
-  { i: "📚", n: "网址导航", act: () => goPage("pageNav") },
-  { i: "🖥️", n: "分屏浮窗", act: () => goPage("pageDesk") },
-  { i: "💬", n: "聊天室",   act: () => goPage("pageChat") },
-  { i: "🎮", n: "游戏厅",   act: () => goPage("pageGame") },
-  { i: "⚙️", n: "设置",     act: () => goPage("pageSet") },
-  { i: "📝", n: "记事本",   act: () => { goPage("pageDesk"); openNotepad(); } },
-  { i: "🧮", n: "计算器",   act: () => { goPage("pageDesk"); openCalc(); } },
-  { i: "🐙", n: "GitHub",   act: () => window.open("https://github.com", "_blank") },
-  { i: "🎬", n: "B站",      act: () => window.open("https://www.bilibili.com", "_blank") },
-  { i: "🔍", n: "百度",     act: () => window.open("https://www.baidu.com", "_blank") },
+/* ===================== 主界面：Win11 桌面 ===================== */
+const $id = s => document.getElementById(s);
+
+/* 图标可执行的动作（act 键存在 localStorage 里，函数不可序列化） */
+const HOME_ACTS = {
+  nav:    () => goPage("pageNav"),
+  desk:   () => goPage("pageDesk"),
+  chat:   () => goPage("pageChat"),
+  game:   () => goPage("pageGame"),
+  set:    () => goPage("pageSet"),
+  note:   () => { goPage("pageDesk"); openNotepad(); },
+  calc:   () => { goPage("pageDesk"); openCalc(); },
+  github: () => openHwin("https://github.com", "🐙 GitHub"),
+};
+const DEF_ICONS = [
+  { i: "💻", n: "此电脑",   act: "desk" },
+  { i: "🌐", n: "网址导航", act: "nav" },
+  { i: "💬", n: "聊天室",   act: "chat" },
+  { i: "🎮", n: "游戏厅",   act: "game" },
+  { i: "🐙", n: "GitHub",   act: "github" },
 ];
-function renderHomeIcons() {
-  const box = document.getElementById("deskIcons");
+let DICONS = null;
+try { DICONS = JSON.parse(localStorage.getItem("winIcons") || "null"); } catch (_) {}
+if (!Array.isArray(DICONS) || !DICONS.length) DICONS = DEF_ICONS.map(x => ({ ...x }));
+DICONS = DICONS.filter(ic => ic.act !== "bin"); // 回收站已移除
+const saveIcons = () => localStorage.setItem("winIcons", JSON.stringify(DICONS));
+
+/* 打开一个桌面图标 */
+function openIcon(ic) {
+  if (ic.url) return openHwin(ic.url, ic.i + " " + ic.n); // 网址快捷方式 → 小窗口，不跳转
+  if (ic.act === "folder") return openFolder(ic);         // 文件夹 → 内容窗口
+  HOME_ACTS[ic.act] && HOME_ACTS[ic.act]();
+}
+
+let menuIconIdx = -1;
+function renderDesk() {
+  const area = $id("deskArea");
+  area.innerHTML = "";
+  DICONS.forEach((ic, idx) => {
+    const el = document.createElement("div");
+    el.className = "wicon";
+    el.innerHTML = `<span class="wi">${ic.i}</span><span class="wn"></span>`;
+    el.querySelector(".wn").textContent = ic.n;
+    el.style.left = (ic.x != null ? ic.x : 14 + Math.floor(idx / 6) * 88) + "px";
+    el.style.top  = (ic.y != null ? ic.y : 14 + (idx % 6) * 94) + "px";
+    el.addEventListener("click", () => {
+      area.querySelectorAll(".wicon").forEach(w => w.classList.remove("sel"));
+      el.classList.add("sel");
+      if (matchMedia("(pointer:coarse)").matches) openIcon(ic); // 手机单击直接打开
+    });
+    el.addEventListener("dblclick", () => openIcon(ic));
+    el.addEventListener("contextmenu", e => {
+      e.preventDefault(); e.stopPropagation();
+      menuIconIdx = idx;
+      showMenu("iconMenu", e.clientX, e.clientY);
+    });
+    iconDrag(el, ic, idx);
+    area.appendChild(el);
+  });
+}
+/* 图标拖拽（鼠标/触摸）+ 长按 1.5 秒呼出右键菜单（手机适配） */
+function iconDrag(el, ic, idx) {
+  let sx, sy, ox, oy, moved = false, pid = null, lpTimer = null;
+  el.addEventListener("pointerdown", e => {
+    if (e.button === 2) return;
+    pid = e.pointerId; sx = e.clientX; sy = e.clientY;
+    ox = el.offsetLeft; oy = el.offsetTop; moved = false;
+    el.setPointerCapture(pid);
+    clearTimeout(lpTimer);
+    lpTimer = setTimeout(() => { // 长按 1.5s = 右键
+      if (moved || pid === null) return;
+      pid = null; el.dataset.lp = "1";
+      menuIconIdx = idx;
+      showMenu("iconMenu", sx, sy);
+    }, 1500);
+  });
+  el.addEventListener("pointermove", e => {
+    if (pid === null) return;
+    const dx = e.clientX - sx, dy = e.clientY - sy;
+    if (!moved && Math.hypot(dx, dy) < 6) return;
+    moved = true;
+    clearTimeout(lpTimer);
+    el.style.left = Math.max(0, ox + dx) + "px";
+    el.style.top  = Math.max(0, oy + dy) + "px";
+  });
+  el.addEventListener("pointerup", () => {
+    clearTimeout(lpTimer);
+    if (pid === null) return;
+    pid = null;
+    if (moved) { ic.x = el.offsetLeft; ic.y = el.offsetTop; saveIcons(); }
+  });
+  el.addEventListener("pointercancel", () => { clearTimeout(lpTimer); pid = null; });
+  // 长按呼出菜单后，吞掉紧接着的 click，避免误打开
+  el.addEventListener("click", e => {
+    if (el.dataset.lp) { delete el.dataset.lp; e.stopImmediatePropagation(); e.preventDefault(); }
+  }, true);
+}
+/* 右键菜单 */
+function showMenu(id, x, y) {
+  closeAllPops();
+  const m = $id(id);
+  m.classList.add("show");
+  m.style.left = Math.min(x, innerWidth - 195) + "px";
+  m.style.top  = Math.min(y, innerHeight - 260) + "px";
+}
+$id("deskArea").addEventListener("contextmenu", e => {
+  e.preventDefault();
+  showMenu("deskMenu", e.clientX, e.clientY);
+});
+/* 桌面空白处长按 1.5 秒呼出菜单（手机适配） */
+(() => {
+  const area = $id("deskArea");
+  let t = null, sx = 0, sy = 0;
+  area.addEventListener("pointerdown", e => {
+    if (e.target !== area) return;
+    sx = e.clientX; sy = e.clientY;
+    clearTimeout(t);
+    t = setTimeout(() => showMenu("deskMenu", sx, sy), 1500);
+  });
+  const cancel = () => clearTimeout(t);
+  area.addEventListener("pointermove", e => { if (Math.hypot(e.clientX - sx, e.clientY - sy) > 8) cancel(); });
+  area.addEventListener("pointerup", cancel);
+  area.addEventListener("pointercancel", cancel);
+})();
+function iconAct(k) {
+  closeAllPops();
+  const ic = DICONS[menuIconIdx];
+  if (!ic) return;
+  if (k === "open") openIcon(ic);
+  if (k === "rename") { const v = prompt("新名称：", ic.n); if (v && v.trim()) { ic.n = v.trim(); saveIcons(); renderDesk(); } }
+  if (k === "del") { DICONS.splice(menuIconIdx, 1); saveIcons(); renderDesk(); }
+}
+function newFolder() {
+  closeAllPops();
+  DICONS.push({ i: "📁", n: "新建文件夹", act: "folder", items: [] });
+  saveIcons(); renderDesk();
+}
+function newUrlIcon() {
+  closeAllPops();
+  const n = prompt("快捷方式名称：", "哔哩哔哩"); if (!n) return;
+  let u = prompt("网址：", "https://www.bilibili.com"); if (!u) return;
+  if (!/^https?:\/\//.test(u)) u = "https://" + u;
+  DICONS.push({ i: "🔗", n: n.trim(), url: u });
+  saveIcons(); renderDesk();
+}
+function sortIcons(by) {
+  closeAllPops();
+  DICONS.sort((a, b) => (by === "n" ? a.n.localeCompare(b.n, "zh") : (a.act || "url").localeCompare(b.act || "url")));
+  DICONS.forEach(ic => { delete ic.x; delete ic.y; });
+  saveIcons(); renderDesk();
+}
+/* 文件夹窗口：存放网址收藏，可增删、点开 */
+function openFolder(ic) {
+  const box = document.createElement("div");
+  const paint = () => {
+    box.innerHTML = "";
+    (ic.items = ic.items || []).forEach((it, i) => {
+      const row = document.createElement("div");
+      row.className = "fitem";
+      row.innerHTML = `<span>🔗</span><b></b><span class="fu"></span><button title="删除">✕</button>`;
+      row.querySelector("b").textContent = it.n;
+      row.querySelector(".fu").textContent = it.u;
+      row.onclick = () => openHwin(it.u, "🔗 " + it.n);
+      row.querySelector("button").onclick = e => { e.stopPropagation(); ic.items.splice(i, 1); saveIcons(); paint(); };
+      box.appendChild(row);
+    });
+    if (!ic.items.length) box.innerHTML = '<div class="tip">空文件夹 · 点下方按钮添加网址收藏</div>';
+    const add = document.createElement("button");
+    add.className = "sbtn"; add.style.marginTop = "10px"; add.textContent = "＋ 添加网址";
+    add.onclick = () => {
+      const n = prompt("名称："); if (!n) return;
+      let u = prompt("网址：", "https://"); if (!u) return;
+      if (!/^https?:\/\//.test(u)) u = "https://" + u;
+      ic.items.push({ n: n.trim(), u }); saveIcons(); paint();
+    };
+    box.appendChild(add);
+  };
+  paint();
+  openHwinEl("📁 " + ic.n, box, true);
+}
+
+/* ---- 主界面小窗口管理器 ---- */
+let hwinZ = 800, hwinN = 0;
+function openHwinEl(title, contentEl, isBody) {
+  const w = document.createElement("div");
+  w.className = "hwin acrylic";
+  w.style.left = Math.max(6, Math.min(60 + (hwinN % 5) * 32, innerWidth - 400)) + "px";
+  w.style.top = 36 + (hwinN % 5) * 28 + "px";
+  w.style.zIndex = ++hwinZ; hwinN++;
+  const bar = document.createElement("div");
+  bar.className = "hw-bar";
+  bar.innerHTML = `<b></b><button title="新标签打开">↗</button><button title="最大化">⛶</button><button class="hw-close" title="关闭">✕</button>`;
+  bar.querySelector("b").textContent = title;
+  const [bOpen, bMax, bClose] = bar.querySelectorAll("button");
+  bMax.onclick = () => w.classList.toggle("max");
+  bClose.onclick = () => w.remove();
+  w.appendChild(bar);
+  if (isBody) {
+    const bd = document.createElement("div");
+    bd.className = "hw-body"; bd.appendChild(contentEl);
+    w.appendChild(bd); bOpen.style.display = "none";
+  } else {
+    w.appendChild(contentEl);
+    bOpen.onclick = () => window.open(contentEl.src, "_blank"); // 部分网站禁止内嵌时的后路
+  }
+  w.addEventListener("pointerdown", () => w.style.zIndex = ++hwinZ);
+  let sx, sy, ox, oy, pid = null; // 标题栏拖动
+  bar.addEventListener("pointerdown", e => {
+    if (e.target.tagName === "BUTTON" || w.classList.contains("max")) return;
+    pid = e.pointerId; sx = e.clientX; sy = e.clientY; ox = w.offsetLeft; oy = w.offsetTop;
+    bar.setPointerCapture(pid);
+  });
+  bar.addEventListener("pointermove", e => {
+    if (pid === null) return;
+    w.style.left = Math.max(0, ox + e.clientX - sx) + "px";
+    w.style.top = Math.max(0, oy + e.clientY - sy) + "px";
+  });
+  bar.addEventListener("pointerup", () => pid = null);
+  $id("pageHome").appendChild(w);
+  return w;
+}
+function openHwin(url, title) {
+  const f = document.createElement("iframe");
+  f.src = url;
+  return openHwinEl(title || url, f);
+}
+function toggleFS() {
+  if (document.fullscreenElement) document.exitFullscreen();
+  else document.documentElement.requestFullscreen().catch(() => alert("当前环境不支持全屏"));
+}
+
+/* ---- 桌面小组件（美化担当，可拖动可开关） ---- */
+let WGTS = { clock: { on: 1 }, weather: { on: 1 }, quote: { on: 1 }, music: { on: 0 } };
+try { const s = JSON.parse(localStorage.getItem("deskWgts") || "null"); if (s) WGTS = Object.assign(WGTS, s); } catch (_) {}
+const saveWgts = () => localStorage.setItem("deskWgts", JSON.stringify(WGTS));
+const WGT_META = { clock: "🕐 大时钟", weather: "🌤️ 天气", quote: "💬 每日一言", music: "🎵 音乐控件" };
+const QUOTES = [
+  ["生活明朗，万物可爱，人间值得，未来可期。", "网络"],
+  ["山有顶峰，湖有彼岸，慢慢来，一切都来得及。", "网络"],
+  ["路虽远行则将至，事虽难做则必成。", "《荀子》"],
+  ["星光不问赶路人，时光不负有心人。", "大冰"],
+  ["日日行不怕千万里，常常做不怕千万事。", "《格言联璧》"],
+  ["心中有丘壑，眉目作山河。", "网络"],
+  ["凡是过往，皆为序章。", "莎士比亚"],
+];
+const WGT_FILL = {
+  clock: d => {
+    d.insertAdjacentHTML("beforeend", '<div class="t">--:--:--</div><div class="d"></div>');
+    wgTick();
+  },
+  weather: d => {
+    d.insertAdjacentHTML("beforeend", '<span class="wi2">⛅</span><div><div class="tp">--°</div><div class="ct" title="点击换城市">📍 加载中…</div></div>');
+    loadWeather();
+  },
+  quote: d => {
+    d.insertAdjacentHTML("beforeend", '<div class="qt"></div><div class="qf"></div>');
+    const set = q => { d.querySelector(".qt").textContent = "「" + q[0] + "」"; d.querySelector(".qf").textContent = "—— " + q[1]; };
+    set(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
+    d.title = "点击换一句";
+    d.addEventListener("click", e => { if (!e.target.closest(".wg-x")) set(QUOTES[Math.floor(Math.random() * QUOTES.length)]); });
+  },
+  music: d => {
+    d.insertAdjacentHTML("beforeend", '<button class="wg-mbtn">▶</button><div class="mn">无音乐</div>');
+    d.querySelector(".wg-mbtn").onclick = toggleMusic;
+    wgTick();
+  },
+};
+function renderWgts() {
+  const L = $id("wgtLayer");
+  L.innerHTML = "";
+  const defPos = { clock: [innerWidth - 310, 28], weather: [innerWidth - 310, 140], quote: [innerWidth - 340, 246], music: [innerWidth - 310, 400] };
+  Object.keys(WGT_META).forEach(k => {
+    if (!WGTS[k] || !WGTS[k].on) return;
+    const d = document.createElement("div");
+    d.className = "wgt";
+    d.id = "wg" + k[0].toUpperCase() + k.slice(1);
+    const p = WGTS[k];
+    d.style.left = Math.max(0, p.x != null ? p.x : defPos[k][0]) + "px";
+    d.style.top  = Math.max(0, p.y != null ? p.y : defPos[k][1]) + "px";
+    d.innerHTML = '<button class="wg-x" title="隐藏">✕</button>';
+    d.querySelector(".wg-x").onclick = () => { WGTS[k].on = 0; saveWgts(); renderWgts(); };
+    L.appendChild(d);
+    wgtDrag(d, WGTS[k]);
+    WGT_FILL[k](d);
+  });
+}
+function wgtDrag(el, st) {
+  let sx, sy, ox, oy, pid = null, moved = false;
+  el.addEventListener("pointerdown", e => {
+    if (e.target.tagName === "BUTTON") return;
+    pid = e.pointerId; sx = e.clientX; sy = e.clientY; ox = el.offsetLeft; oy = el.offsetTop; moved = false;
+    el.setPointerCapture(pid);
+  });
+  el.addEventListener("pointermove", e => {
+    if (pid === null) return;
+    const dx = e.clientX - sx, dy = e.clientY - sy;
+    if (!moved && Math.hypot(dx, dy) < 6) return;
+    moved = true;
+    el.style.left = Math.max(0, ox + dx) + "px";
+    el.style.top  = Math.max(0, oy + dy) + "px";
+  });
+  el.addEventListener("pointerup", () => {
+    if (pid === null) return;
+    pid = null;
+    if (moved) { st.x = el.offsetLeft; st.y = el.offsetTop; saveWgts(); }
+  });
+}
+function wgTick() { // 时钟 + 音乐组件每秒刷新
+  const c = document.getElementById("wgClock");
+  if (c) {
+    const n = new Date(), p = x => String(x).padStart(2, "0");
+    c.querySelector(".t").textContent = p(n.getHours()) + ":" + p(n.getMinutes()) + ":" + p(n.getSeconds());
+    c.querySelector(".d").textContent = n.getFullYear() + " 年 " + (n.getMonth() + 1) + " 月 " + n.getDate() + " 日 · 星期" + "日一二三四五六"[n.getDay()];
+  }
+  const m = document.getElementById("wgMusic");
+  if (m) {
+    m.querySelector(".mn").textContent = OPT.musicName || "无音乐";
+    m.querySelector(".wg-mbtn").textContent = bgAudio.paused ? "▶" : "⏸";
+  }
+}
+setInterval(wgTick, 1000);
+const WCODE = { 0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️", 45: "🌫️", 48: "🌫️", 51: "🌦️", 53: "🌦️", 61: "🌧️", 63: "🌧️", 65: "🌧️", 71: "🌨️", 73: "🌨️", 80: "🌦️", 95: "⛈️" };
+async function loadWeather(city) {
+  const d = document.getElementById("wgWeather"); if (!d) return;
+  city = city || OPT.wgCity || "北京";
+  const ct = d.querySelector(".ct");
+  ct.textContent = "📍 " + city + " · 加载中…";
+  ct.onclick = () => { const c = prompt("城市名（支持中文）：", city); if (c && c.trim()) { saveOpt("wgCity", c.trim()); loadWeather(c.trim()); } };
+  try {
+    const g = await (await fetch("https://geocoding-api.open-meteo.com/v1/search?count=1&language=zh&name=" + encodeURIComponent(city))).json();
+    const loc = g.results && g.results[0]; if (!loc) throw 0;
+    const w = await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.latitude}&longitude=${loc.longitude}&current_weather=true`)).json();
+    const cw = w.current_weather;
+    if (!document.getElementById("wgWeather")) return;
+    d.querySelector(".wi2").textContent = WCODE[cw.weathercode] || "🌡️";
+    d.querySelector(".tp").textContent = Math.round(cw.temperature) + "°C";
+    ct.textContent = "📍 " + city + " · 风 " + Math.round(cw.windspeed) + " km/h";
+  } catch (_) { ct.textContent = "📍 " + city + " · 获取失败，点击重试"; }
+}
+function openWgtPanel() {
+  closeAllPops();
+  const list = $id("wgtList");
+  list.innerHTML = "";
+  Object.keys(WGT_META).forEach(k => {
+    const row = document.createElement("label");
+    row.style.cssText = "display:flex;justify-content:space-between;align-items:center;font-size:13px;cursor:pointer";
+    row.innerHTML = `<span>${WGT_META[k]}</span><input type="checkbox" ${WGTS[k] && WGTS[k].on ? "checked" : ""}>`;
+    row.querySelector("input").onchange = e => { (WGTS[k] = WGTS[k] || {}).on = e.target.checked ? 1 : 0; saveWgts(); renderWgts(); };
+    list.appendChild(row);
+  });
+  $id("wgtPanel").classList.add("show");
+}
+
+/* ---- 弹出面板 / 菜单统一管理：点外部自动关闭 ---- */
+function closeAllPops() {
+  document.querySelectorAll(".wpanel,.cmenu").forEach(p => p.classList.remove("show"));
+  $id("startMenu").classList.remove("show");
+}
+document.addEventListener("click", e => {
+  if (e.target.closest(".wpanel,.cmenu,.tb-start,.tray-btn,#startMenu")) return;
+  closeAllPops();
+});
+function togglePanel(id) {
+  const p = $id(id), was = p.classList.contains("show");
+  closeAllPops();
+  if (was) return;
+  if (id === "netPanel") $id("netInfo").innerHTML = navigator.onLine ? "🟢 已连接到 Internet" : "🔴 未连接网络";
+  if (id === "calPanel") renderCal();
+  p.classList.add("show");
+}
+
+/* ---- 任务栏：固定应用 + 分屏浮窗运行中的窗口 ---- */
+const TB_META = {
+  nav: ["🌐", "网址导航"], desk: ["🖥️", "分屏浮窗"], chat: ["💬", "聊天室"],
+  game: ["🎮", "游戏厅"], set: ["⚙️", "设置"], note: ["📝", "记事本"], calc: ["🧮", "计算器"],
+};
+let tbPinned = ["nav", "desk", "chat", "game"];
+try { const t = JSON.parse(localStorage.getItem("tbPinned") || "null"); if (Array.isArray(t)) tbPinned = t; } catch (_) {}
+function renderTb() {
+  const box = $id("tbIcons");
   box.innerHTML = "";
-  HOME_ICONS.forEach(it => {
+  tbPinned.forEach(k => {
+    const m = TB_META[k]; if (!m) return;
     const b = document.createElement("button");
-    b.className = "dicon";
-    b.innerHTML = `<span class="di">${it.i}</span><span class="dn">${it.n}</span>`;
-    b.onclick = it.act; // 单击即可打开，手机友好
+    b.className = "tb-ic"; b.title = m[1]; b.textContent = m[0];
+    b.onclick = () => runAct(k);
+    b.oncontextmenu = e => {
+      e.preventDefault();
+      if (confirm("从任务栏取消固定「" + m[1] + "」？")) {
+        tbPinned = tbPinned.filter(x => x !== k);
+        localStorage.setItem("tbPinned", JSON.stringify(tbPinned));
+        renderTb();
+      }
+    };
+    box.appendChild(b);
+  });
+  // 分屏浮窗页面正在运行的窗口：点击跳过去并聚焦
+  Object.keys(windows).forEach(id => {
+    const w = windows[id];
+    const b = document.createElement("button");
+    b.className = "tb-ic run";
+    b.title = w.title;
+    b.textContent = (w.taskEl.textContent.trim().split(" ")[0]) || "🌐";
+    b.onclick = () => { goPage("pageDesk"); focusWindow(+id); };
     box.appendChild(b);
   });
 }
+function runAct(k) { closeAllPops(); HOME_ACTS[k] && HOME_ACTS[k](); }
 
-/* ===================== 主界面：时钟 ===================== */
+/* ---- 开始菜单 ---- */
+const SM_APPS = [
+  ["🌐", "网址导航", "nav"], ["🖥️", "分屏浮窗", "desk"], ["💬", "聊天室", "chat"], ["🎮", "游戏厅", "game"],
+  ["📝", "记事本", "note"], ["🧮", "计算器", "calc"], ["🐙", "GitHub", "github"], ["⚙️", "设置", "set"],
+];
+function toggleStart() {
+  const sm = $id("startMenu"), was = sm.classList.contains("show");
+  closeAllPops();
+  if (was) return;
+  $id("smSearch").value = "";
+  renderStart();
+  sm.classList.add("show");
+}
+function renderStart() {
+  const q = $id("smSearch").value.trim().toLowerCase();
+  const apps = SM_APPS.filter(a => !q || a[1].toLowerCase().includes(q));
+  const links = (NAV.common || []).filter(l => !q || l.n.toLowerCase().includes(q));
+  $id("smApps").innerHTML =
+    apps.map(a => `<button class="sm-item" onclick="runAct('${a[2]}')"><span class="ti">${a[0]}</span>${a[1]}</button>`).join("") +
+    links.map(l => `<button class="sm-item" onclick="closeAllPops();window.open('${l.u}','_blank')"><span class="ti">🔗</span>${l.n}</button>`).join("");
+  $id("smTiles").innerHTML = SM_APPS.slice(0, 9).map(a =>
+    `<button class="sm-tile" onclick="runAct('${a[2]}')"><span class="ti">${a[0]}</span>${a[1]}</button>`).join("");
+}
+function powerAct(k) {
+  closeAllPops();
+  if (k === "reboot") location.reload();
+  else if (k === "sleep") $id("sleepOv").style.display = "flex";
+  else { window.close(); setTimeout(() => alert("浏览器不允许脚本关闭本页，请手动关闭标签页 😊"), 200); }
+}
+
+/* ---- 任务栏自动隐藏 ---- */
+function applyTbHide() {
+  $id("pageHome").classList.toggle("tbhide", !!OPT.tbhide);
+}
+$id("tbHot").addEventListener("pointerenter", () => $id("wtaskbar").classList.add("peek"));
+$id("tbHot").addEventListener("click", () => $id("wtaskbar").classList.add("peek"));
+$id("wtaskbar").addEventListener("pointerleave", () => $id("wtaskbar").classList.remove("peek"));
+
+/* ===================== 动态壁纸（Canvas + 视频/GIF） ===================== */
+const wpCv = $id("wpCanvas"), wpCtx = wpCv.getContext("2d");
+let wpRaf = 0, wpName = "", wpS = null;
+let wpMedia = "";
+try { wpMedia = localStorage.getItem("wpMedia") || ""; } catch (_) {}
+
+/* 每种效果的粒子初始化（低性能模式粒子数砍半以下） */
+function wpInit(name, w, h) {
+  const R = Math.random, LP = !!OPT.lowperf;
+  if (name === "stars")  return Array.from({ length: LP ? 60 : 140 }, () => ({ x: R() * w, y: R() * h, r: R() * 1.6 + 0.4, ph: R() * 6.28 }));
+  if (name === "petals") return Array.from({ length: LP ? 18 : 36 },  () => ({ x: R() * w, y: R() * h, s: R() * 10 + 8, vx: R() * 0.6 - 0.2, vy: R() * 0.8 + 0.5, a: R() * 6.28, va: R() * 0.04 - 0.02 }));
+  if (name === "lines")  return Array.from({ length: LP ? 3 : 5 },   (_, i) => ({ hue: i * 70, off: R() * 1000, ph: i }));
+  if (name === "aurora") return [160, 260, 200].map(hue => ({ hue, ph: R() * 6.28 }));
+  return [];
+}
+const WPFX = {
+  stars(c, w, h, t, s) {
+    const g = c.createLinearGradient(0, 0, 0, h); g.addColorStop(0, "#0b1026"); g.addColorStop(1, "#1a1035");
+    c.fillStyle = g; c.fillRect(0, 0, w, h);
+    c.save(); c.translate(w / 2, h / 2); c.rotate(t * 0.00001); c.translate(-w / 2, -h / 2);
+    c.fillStyle = "#fff";
+    s.forEach(p => {
+      c.globalAlpha = 0.35 + 0.65 * Math.abs(Math.sin(t * 0.001 + p.ph));
+      c.beginPath(); c.arc(p.x, p.y, p.r, 0, 7); c.fill();
+    });
+    c.restore(); c.globalAlpha = 1;
+  },
+  waves(c, w, h, t) {
+    c.fillStyle = "#07131f"; c.fillRect(0, 0, w, h);
+    for (let i = 0; i < 3; i++) {
+      c.beginPath(); c.moveTo(0, h);
+      for (let x = 0; x <= w; x += 8)
+        c.lineTo(x, h * 0.55 + i * 40 + Math.sin(x * 0.008 + t * 0.001 * (1 + i * 0.4) + i * 2) * 22);
+      c.lineTo(w, h); c.closePath();
+      c.fillStyle = `rgba(${40 + i * 20},${120 + i * 30},255,${0.16 + i * 0.06})`; c.fill();
+    }
+  },
+  petals(c, w, h, t, s) {
+    const g = c.createLinearGradient(0, 0, 0, h); g.addColorStop(0, "#2b1530"); g.addColorStop(1, "#120a18");
+    c.fillStyle = g; c.fillRect(0, 0, w, h);
+    s.forEach(p => {
+      p.x += p.vx + Math.sin(t * 0.001 + p.a) * 0.3; p.y += p.vy; p.a += p.va;
+      if (p.y > h + 20) { p.y = -20; p.x = Math.random() * w; }
+      if (p.x > w + 20) p.x = -20; if (p.x < -20) p.x = w + 20;
+      c.save(); c.translate(p.x, p.y); c.rotate(p.a);
+      c.fillStyle = "rgba(255,150,190,.8)";
+      c.beginPath(); c.ellipse(0, 0, p.s * 0.6, p.s * 0.35, 0, 0, 7); c.fill();
+      c.restore();
+    });
+  },
+  lines(c, w, h, t, s) {
+    c.fillStyle = "rgba(10,12,24,.28)"; c.fillRect(0, 0, w, h);
+    c.lineWidth = 2;
+    s.forEach(L => {
+      c.beginPath();
+      for (let x = 0; x <= w; x += 10) {
+        const y = h / 2 + Math.sin(x * 0.006 + t * 0.0012 + L.off) * h * 0.28 * Math.sin(t * 0.0003 + L.ph);
+        x ? c.lineTo(x, y) : c.moveTo(x, y);
+      }
+      c.strokeStyle = `hsla(${(L.hue + t * 0.02) % 360},80%,60%,.7)`; c.stroke();
+    });
+  },
+  aurora(c, w, h, t, s) {
+    c.fillStyle = "#050a14"; c.fillRect(0, 0, w, h);
+    s.forEach((a, i) => {
+      const x = w * (0.25 + 0.25 * i) + Math.sin(t * 0.0002 + a.ph) * w * 0.18;
+      const y = h * 0.35 + Math.cos(t * 0.00015 + a.ph) * h * 0.12;
+      const g = c.createRadialGradient(x, y, 0, x, y, Math.max(w, h) * 0.45);
+      g.addColorStop(0, `hsla(${a.hue + Math.sin(t * 0.0003) * 30},85%,55%,.3)`);
+      g.addColorStop(1, "transparent");
+      c.fillStyle = g; c.fillRect(0, 0, w, h);
+    });
+  },
+};
+function startWp() {
+  stopWp();
+  const fx = OPT.wpfx || "stars";
+  const vid = $id("wpVideo"), gif = $id("wpGif");
+  vid.style.display = gif.style.display = wpCv.style.display = "none";
+  if (fx === "media" && wpMedia) { // 自定义壁纸：视频 / GIF / 图片 / 网络图
+    const isVideo = wpMedia.slice(0, 10) === "data:video";
+    if (OPT.lowperf) { // 低性能：视频暂停不解码；GIF/图片画成静态一帧
+      if (isVideo) { if (vid.src !== wpMedia) vid.src = wpMedia; vid.style.display = "block"; vid.pause(); }
+      else {
+        wpCv.style.display = "block";
+        wpCv.width = wpCv.clientWidth || innerWidth; wpCv.height = wpCv.clientHeight || innerHeight;
+        wpCtx.fillStyle = "#16192a"; wpCtx.fillRect(0, 0, wpCv.width, wpCv.height);
+        const im = new Image();
+        im.onload = () => wpCtx.drawImage(im, 0, 0, wpCv.width, wpCv.height);
+        im.src = wpMedia;
+      }
+      return;
+    }
+    if (isVideo) { if (vid.src !== wpMedia) vid.src = wpMedia; vid.style.display = "block"; vid.play().catch(() => {}); }
+    else { gif.src = wpMedia; gif.style.display = "block"; } // GIF、静态图、网络图都走 img 层
+    return;
+  }
+  wpCv.style.display = "block";
+  wpCv.width = wpCv.clientWidth || innerWidth;
+  wpCv.height = wpCv.clientHeight || innerHeight;
+  wpName = WPFX[fx] ? fx : "stars";
+  wpS = wpInit(wpName, wpCv.width, wpCv.height);
+  let last = 0;
+  const loop = t => {
+    wpRaf = requestAnimationFrame(loop);
+    if (OPT.lowperf && t - last < 50) return; // 低性能模式锁 20 FPS
+    last = t;
+    WPFX[wpName](wpCtx, wpCv.width, wpCv.height, t, wpS);
+  };
+  wpRaf = requestAnimationFrame(loop);
+}
+function stopWp() {
+  if (wpRaf) cancelAnimationFrame(wpRaf);
+  wpRaf = 0;
+  $id("wpVideo").pause();
+}
+function setWpFx(name) {
+  saveOpt("wpfx", name);
+  closeAllPops();
+  startWp();
+}
+/* 网络图片壁纸：贴网址即用 */
+function applyWpUrl(u) {
+  u = (u || $id("wpUrl").value).trim();
+  if (!u) { alert("请先填入图片网址"); return; }
+  $id("wpUrl").value = u;
+  wpMedia = u;
+  try { localStorage.setItem("wpMedia", u); } catch (_) {}
+  saveOpt("wpfx", "media");
+  startWp();
+}
+function uploadWp(inp) {
+  const f = inp.files[0]; if (!f) return;
+  if (f.size > 4.5 * 1024 * 1024) alert("文件较大，可能无法永久保存（本次打开期间有效），建议选 4.5MB 以下的文件");
+  const reader = new FileReader();
+  reader.onload = () => {
+    wpMedia = reader.result;
+    try { localStorage.setItem("wpMedia", wpMedia); } catch (_) { alert("文件太大存不下，刷新后需重新选择"); }
+    saveOpt("wpfx", "media");
+    closeAllPops();
+    startWp();
+  };
+  reader.readAsDataURL(f);
+  inp.value = "";
+}
+/* 页面不可见时暂停壁纸动画，节省资源 */
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) stopWp();
+  else if ($id("pageHome").classList.contains("active")) startWp();
+});
+window.addEventListener("resize", () => {
+  if ($id("pageHome").classList.contains("active")) startWp();
+});
+
+/* ===================== 主界面：任务栏时钟 ===================== */
 function tickClock() {
   const d = new Date();
   const h24 = OPT.h24 !== false, showSec = OPT.sec !== false;
@@ -1288,10 +2067,7 @@ function tickClock() {
   const p = n => String(n).padStart(2, "0");
   let t = p(h) + ":" + p(d.getMinutes());
   if (showSec) t += ":" + p(d.getSeconds());
-  document.getElementById("hcTime").textContent = t + suffix;
-  const wd = ["日","一","二","三","四","五","六"][d.getDay()];
-  document.getElementById("hcDate").textContent =
-    `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 星期${wd}`;
+  $id("tbClock").innerHTML = t + suffix + "<br>" + (d.getMonth() + 1) + "/" + d.getDate();
 }
 setInterval(tickClock, 1000);
 
@@ -1321,55 +2097,7 @@ function calMove(dir) {
   renderCal();
 }
 
-/* ===================== 主界面：待办 ===================== */
-let todos = [];
-try { todos = JSON.parse(localStorage.getItem("deskTodos") || "[]"); } catch (_) {}
-function saveTodos() { localStorage.setItem("deskTodos", JSON.stringify(todos)); }
-function renderTodos() {
-  const box = document.getElementById("todoList");
-  if (!todos.length) { box.innerHTML = `<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px">暂无待办，休息一下吧 ☕</div>`; return; }
-  box.innerHTML = "";
-  todos.forEach((t, i) => {
-    const div = document.createElement("div");
-    div.className = "todo-item" + (t.done ? " done" : "");
-    div.innerHTML = `<input type="checkbox" ${t.done ? "checked" : ""}><span></span><button class="del">✕</button>`;
-    div.querySelector("span").textContent = t.text;
-    div.querySelector("input").onchange = () => { t.done = !t.done; saveTodos(); renderTodos(); };
-    div.querySelector(".del").onclick = () => { todos.splice(i, 1); saveTodos(); renderTodos(); };
-    box.appendChild(div);
-  });
-}
-function addTodo() {
-  const inp = document.getElementById("todoInput");
-  const v = inp.value.trim();
-  if (!v) return;
-  todos.push({ text: v, done: false });
-  inp.value = "";
-  saveTodos(); renderTodos();
-}
-document.getElementById("todoInput").addEventListener("keydown", e => { if (e.key === "Enter") addTodo(); });
-
-/* ===================== 主界面：每日一言 ===================== */
-const QUOTES = [
-  ["海内存知己，天涯若比邻。", "王勃"],
-  ["长风破浪会有时，直挂云帆济沧海。", "李白"],
-  ["会当凌绝顶，一览众山小。", "杜甫"],
-  ["不积跬步，无以至千里。", "荀子"],
-  ["学而不思则罔，思而不学则殆。", "孔子"],
-  ["少壮不努力，老大徒伤悲。", "《长歌行》"],
-  ["黑发不知勤学早，白首方悔读书迟。", "颜真卿"],
-  ["宝剑锋从磨砺出，梅花香自苦寒来。", "《警世贤文》"],
-  ["纸上得来终觉浅，绝知此事要躬行。", "陆游"],
-  ["千磨万击还坚劲，任尔东西南北风。", "郑板桥"],
-  ["落红不是无情物，化作春泥更护花。", "龚自珍"],
-  ["问渠那得清如许？为有源头活水来。", "朱熹"],
-];
-let quoteIdx = new Date().getDate() % QUOTES.length;
-function showQuote() {
-  document.getElementById("quoteText").textContent = QUOTES[quoteIdx][0];
-  document.getElementById("quoteFrom").textContent = "—— " + QUOTES[quoteIdx][1];
-}
-function nextQuote() { quoteIdx = (quoteIdx + 1) % QUOTES.length; showQuote(); }
+/* （待办与每日一言已随旧桌面移除，日历保留在任务栏托盘面板中）
 
 /* ===================== 游戏 ===================== */
 let gameCleanup = null;
@@ -1378,7 +2106,7 @@ function openGame(name) {
   document.getElementById("gameLobby").style.display = "none";
   document.getElementById("gameStage").style.display = "block";
   document.getElementById("gsScore").textContent = "";
-  ({ g2048: initG2048, snake: initSnake, memory: initMemory, guess: initGuess })[name]();
+  ({ g2048: initG2048, snake: initSnake, memory: initMemory, guess: initGuess, tank: initTank, tanknet: initTanknet })[name]();
 }
 function closeGame() {
   if (gameCleanup) { gameCleanup(); gameCleanup = null; }
@@ -1581,35 +2309,222 @@ function initGuess() {
   document.getElementById("guessInp").addEventListener("keydown", e => { if (e.key === "Enter") window.doGuess(); });
 }
 
+/* ---- 坦克大战（原版 V1.1.2 已内置，无需外部文件，可直接上传 GitHub） ---- */
+function initTank() {
+  document.getElementById("gsTitle").textContent = "🪖 坦克大战 V1.1.2";
+  document.querySelector(".game-stage").style.maxWidth = "960px";
+  const f = document.createElement("iframe");
+  f.style.cssText = "width:100%;height:70vh;border:none;border-radius:10px;background:#0d1117";
+  f.srcdoc = TANK_HTML;
+  gsBody().innerHTML = "";
+  gsBody().appendChild(f);
+  gameCleanup = () => { document.querySelector(".game-stage").style.maxWidth = ""; };
+}
+
+/* ---- 坦克联机对战（MQTT 广域网 1v1，不碰原版坦克大战） ---- */
+function initTanknet() {
+  document.getElementById("gsTitle").textContent = "📡 坦克联机对战";
+  const B = gsBody();
+  B.innerHTML = `
+    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:10px;flex-wrap:wrap">
+      <input id="tnRoom" placeholder="房间号，如 1234" style="width:150px;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#fff;outline:none">
+      <button class="sbtn" id="tnJoin">进入房间</button>
+      <span id="tnSt" class="tip" style="margin:0;align-self:center">两台设备输入相同房间号即可开战 · WASD/方向键移动，空格开火</span>
+    </div>
+    <canvas id="tnCv" width="640" height="400" style="width:100%;max-width:640px;display:block;margin:0 auto;background:#0d1117;border-radius:10px"></canvas>
+    <div id="tnPad">
+      <button data-k="ArrowUp">▲</button><button data-k="ArrowLeft">◀</button><button data-k="ArrowDown">▼</button><button data-k="ArrowRight">▶</button><button data-k=" " style="background:rgba(255,95,87,.35)">🔥</button>
+    </div>`;
+  const cv = $id("tnCv"), cx = cv.getContext("2d");
+  const W = 640, H = 400, MYID = Math.random().toString(36).slice(2, 8);
+  const walls = [[300, 60, 40, 110], [300, 230, 40, 110], [120, 175, 80, 50], [440, 175, 80, 50]];
+  let me, foe = null, foeId = null, foeSeen = 0, bullets = [], keys = {}, cli = null, raf = 0, sendT = 0, over = "", topic = "";
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const inWall = (x, y, pad) => walls.some(w => x > w[0] - pad && x < w[0] + w[2] + pad && y > w[1] - pad && y < w[1] + w[3] + pad);
+  const pub = m => cli && cli.connected && cli.publish(topic, JSON.stringify(Object.assign({ id: MYID }, m)));
+  const reset = () => { me = { x: 60, y: 200, a: 0, hp: 5 }; bullets = []; over = ""; foe = null; foeId = null; };
+  reset();
+  $id("tnJoin").onclick = () => {
+    const r = $id("tnRoom").value.trim(); if (!r) { alert("请输入房间号"); return; }
+    if (cli) cli.end(true);
+    reset();
+    topic = "c2416/tanknet/" + r;
+    $id("tnSt").textContent = "连接中…";
+    cli = mqtt.connect("wss://broker.emqx.io:8084/mqtt");
+    cli.on("connect", () => { cli.subscribe(topic); $id("tnSt").textContent = "🟢 已进房间 " + r + "，等待对手…"; });
+    cli.on("message", (t, buf) => {
+      let m; try { m = JSON.parse(buf.toString()); } catch (_) { return; }
+      if (m.id === MYID) return;
+      if (foeId && m.id !== foeId) return; // 只接受第一个对手，1v1
+      if (!foeId) {
+        foeId = m.id;
+        me.x = MYID < foeId ? 60 : W - 60; me.y = 200; // 两人分列两侧
+        $id("tnSt").textContent = "⚔️ 对手已加入，开战！";
+      }
+      foeSeen = Date.now();
+      if (m.t === "s") foe = m;
+      if (m.t === "f") bullets.push({ x: m.x, y: m.y, a: m.a, foe: 1 });
+      if (m.t === "d" && !over) over = "🏆 你赢了！";
+    });
+  };
+  const KEYS = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "w", "a", "s", "d"];
+  const kd = e => { if (KEYS.includes(e.key)) { keys[e.key] = 1; e.preventDefault(); } };
+  const ku = e => keys[e.key] = 0;
+  addEventListener("keydown", kd); addEventListener("keyup", ku);
+  B.querySelectorAll("#tnPad button").forEach(b => {
+    const k = b.dataset.k;
+    b.addEventListener("pointerdown", e => { e.preventDefault(); keys[k] = 1; });
+    b.addEventListener("pointerup", () => keys[k] = 0);
+    b.addEventListener("pointerleave", () => keys[k] = 0);
+  });
+  let lastFire = 0, last = 0;
+  function step(t) {
+    raf = requestAnimationFrame(step);
+    if (t - last < 33) return; last = t; // 30FPS 足够且省电
+    if (!over) {
+      const dx = (keys.ArrowRight || keys.d ? 1 : 0) - (keys.ArrowLeft || keys.a ? 1 : 0);
+      const dy = (keys.ArrowDown || keys.s ? 1 : 0) - (keys.ArrowUp || keys.w ? 1 : 0);
+      if (dx || dy) {
+        me.a = Math.atan2(dy, dx);
+        const nx = clamp(me.x + dx * 2.6, 14, W - 14), ny = clamp(me.y + dy * 2.6, 14, H - 14);
+        if (!inWall(nx, me.y, 12)) me.x = nx;
+        if (!inWall(me.x, ny, 12)) me.y = ny;
+      }
+      if (keys[" "] && t - lastFire > 400) {
+        lastFire = t;
+        const b = { x: me.x + Math.cos(me.a) * 18, y: me.y + Math.sin(me.a) * 18, a: me.a, foe: 0 };
+        bullets.push(b); pub({ t: "f", x: b.x, y: b.y, a: b.a });
+      }
+      bullets = bullets.filter(b => {
+        b.x += Math.cos(b.a) * 6; b.y += Math.sin(b.a) * 6;
+        if (b.x < 0 || b.x > W || b.y < 0 || b.y > H || inWall(b.x, b.y, 0)) return false;
+        if (b.foe && Math.hypot(b.x - me.x, b.y - me.y) < 14) { // 自己判定被击中，公平且免同步
+          me.hp--;
+          if (me.hp <= 0) { over = "💥 你输了…"; pub({ t: "d" }); }
+          return false;
+        }
+        return true;
+      });
+      if (t - sendT > 80 && foeId) { sendT = t; pub({ t: "s", x: me.x, y: me.y, a: me.a, hp: me.hp }); }
+      else if (t - sendT > 500 && !foeId && cli && cli.connected) { sendT = t; pub({ t: "s", x: me.x, y: me.y, a: me.a, hp: me.hp }); } // 等待期慢速心跳，互相发现
+      if (foe && Date.now() - foeSeen > 6000) { foe = null; foeId = null; $id("tnSt").textContent = "对手掉线，等待新对手…"; }
+    }
+    cx.clearRect(0, 0, W, H);
+    cx.fillStyle = "#2a3150"; walls.forEach(w => cx.fillRect(w[0], w[1], w[2], w[3]));
+    const tank = (o, col) => {
+      cx.save(); cx.translate(o.x, o.y); cx.rotate(o.a);
+      cx.fillStyle = col; cx.fillRect(-13, -11, 26, 22);
+      cx.fillStyle = "#dfe5f1"; cx.fillRect(0, -3, 20, 6);
+      cx.restore();
+      cx.fillStyle = "#3ddc84"; cx.fillRect(o.x - 15, o.y - 24, 30 * Math.max(0, o.hp) / 5, 4);
+    };
+    tank(me, "#4f8cff");
+    if (foe) tank(foe, "#ff5f57");
+    cx.fillStyle = "#ffd32a"; bullets.forEach(b => { cx.beginPath(); cx.arc(b.x, b.y, 3.5, 0, 7); cx.fill(); });
+    if (over) {
+      cx.fillStyle = "rgba(0,0,0,.62)"; cx.fillRect(0, 0, W, H);
+      cx.fillStyle = "#fff"; cx.textAlign = "center";
+      cx.font = "bold 32px sans-serif"; cx.fillText(over, W / 2, H / 2);
+      cx.font = "14px sans-serif"; cx.fillText("再次点「进入房间」可重新开局", W / 2, H / 2 + 34);
+    }
+  }
+  raf = requestAnimationFrame(step);
+  gameCleanup = () => {
+    cancelAnimationFrame(raf);
+    removeEventListener("keydown", kd); removeEventListener("keyup", ku);
+    if (cli) cli.end(true);
+  };
+}
+
 /* ===================== 设置 ===================== */
 let OPT = {};
 try { OPT = JSON.parse(localStorage.getItem("deskOpts") || "{}"); } catch (_) {}
 function saveOpt(k, v) { OPT[k] = v; localStorage.setItem("deskOpts", JSON.stringify(OPT)); }
 
-/* 背景 */
-function setBg(src) {
-  const bg = document.getElementById("bgLayer");
-  if (src) { bg.style.backgroundImage = `url("${src}")`; document.body.classList.add("hasbg"); }
-  else { bg.style.backgroundImage = ""; document.body.classList.remove("hasbg"); }
+/* 背景音乐（全局播放，切页不断） */
+const bgAudio = new Audio();
+bgAudio.loop = true;
+function musUI() {
+  $id("musName").textContent = OPT.musicName || "无音乐";
+  $id("musToggle").textContent = bgAudio.paused ? "▶ 播放" : "⏸ 暂停";
+  $id("musState").textContent = bgAudio.src ? (bgAudio.paused ? "已暂停" : "正在播放") : "暂无音乐，请上传";
 }
-function applyBgUrl() {
-  const u = document.getElementById("setBgUrl").value.trim();
-  if (!u) { alert("请先填入图片地址"); return; }
-  setBg(u); saveOpt("bg", u);
-}
-function applyBgFile(inp) {
-  const f = inp.files[0];
-  if (!f) return;
+function loadMusic(inp) {
+  const f = inp.files[0]; if (!f) return;
+  if (f.size > 4.5 * 1024 * 1024) alert("文件较大，可能无法永久保存（本次打开期间有效），建议选 4.5MB 以下的音乐");
   const reader = new FileReader();
   reader.onload = () => {
-    setBg(reader.result);
-    try { saveOpt("bg", reader.result); }
-    catch (_) { alert("图片较大，无法永久保存（本次打开期间有效），建议换小一点的图") ; }
+    bgAudio.src = reader.result;
+    try { localStorage.setItem("bgMusic", reader.result); } catch (_) { alert("音乐太大存不下，刷新后需重新选择"); }
+    saveOpt("musicUrl", ""); // 切回本地文件模式
+    saveOpt("musicName", f.name);
+    bgAudio.play().catch(() => {});
+    saveOpt("musicPlaying", true);
+    musUI();
   };
   reader.readAsDataURL(f);
   inp.value = "";
 }
-function clearBg() { setBg(null); saveOpt("bg", ""); document.getElementById("setBgUrl").value = ""; }
+function toggleMusic() {
+  if (!bgAudio.src) { alert("暂无音乐，请先上传或贴网址"); return; }
+  if (bgAudio.paused) bgAudio.play().catch(() => {}); else bgAudio.pause();
+  saveOpt("musicPlaying", !bgAudio.paused);
+  musUI();
+}
+/* 网络音乐：贴网址即播 */
+function applyMusUrl(u, name) {
+  u = (u || $id("musUrl").value).trim();
+  if (!u) { alert("请先填入音乐网址"); return; }
+  $id("musUrl").value = u;
+  bgAudio.src = u;
+  saveOpt("musicUrl", u);
+  saveOpt("musicName", name || decodeURIComponent(u.split("/").pop().split("?")[0]).slice(0, 30) || "网络音乐");
+  bgAudio.play().catch(() => {});
+  saveOpt("musicPlaying", true);
+  musUI();
+}
+/* 在线音乐集（免费可直接外链的示例曲） */
+const MUS_SET = [
+  ["🎹 轻快电音 · 示例 1", "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"],
+  ["🎸 摇滚律动 · 示例 2", "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"],
+  ["🎻 舒缓旋律 · 示例 3", "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"],
+  ["🥁 节奏动感 · 示例 4", "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3"],
+  ["🎷 悠扬爵士 · 示例 5", "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3"],
+];
+function pickMus(i) {
+  if (i === "") return;
+  const m = MUS_SET[+i];
+  $id("musUrl").value = m[1];
+  applyMusUrl(m[1], m[0]);
+}
+function setVol(v) { // 同时服务于设置页滑块和任务栏音量面板
+  v = +v;
+  bgAudio.volume = v / 100;
+  saveOpt("musicVol", v);
+  $id("volSlider").value = v; $id("musVol").value = v;
+  $id("volNum").textContent = v;
+}
+function setLoop(b) { bgAudio.loop = !!b; saveOpt("musicLoop", !!b); $id("musLoop").checked = !!b; }
+function initMusic() {
+  $id("musSet").innerHTML = '<option value="">选一首在线示例曲…</option>' + MUS_SET.map((m, i) => `<option value="${i}">${m[0]}</option>`).join("");
+  let src = "";
+  if (OPT.musicUrl) { src = OPT.musicUrl; $id("musUrl").value = src; } // 网络音乐优先
+  else { try { src = localStorage.getItem("bgMusic") || ""; } catch (_) {} }
+  if (src) bgAudio.src = src;
+  setVol(OPT.musicVol == null ? 70 : OPT.musicVol);
+  setLoop(OPT.musicLoop !== false);
+  bgAudio.onplay = bgAudio.onpause = musUI;
+  if (src && OPT.musicPlaying) {
+    // 浏览器要求先交互：自动播失败就等用户点击任意处后恢复播放
+    bgAudio.play().catch(() => {
+      document.addEventListener("click", function once() {
+        if (OPT.musicPlaying && bgAudio.paused) bgAudio.play().catch(() => {});
+        document.removeEventListener("click", once);
+      });
+    });
+  }
+  musUI();
+}
 
 /* 主题色 */
 const THEMES = [["#4f8cff","#7c5cff"],["#ff5f57","#ff9f43"],["#28c840","#12b8a5"],["#e0508a","#c748b8"],["#ffd32a","#ff9f43"],["#00c2ff","#4f8cff"]];
@@ -1637,7 +2552,7 @@ function applyTitle() {
 
 /* 导出 / 导入 / 重置 */
 function exportSettings() {
-  const data = JSON.stringify({ opts: OPT, todos }, null, 2);
+  const data = JSON.stringify({ opts: OPT, icons: DICONS }, null, 2);
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([data], { type: "application/json" }));
   a.download = "工作台设置备份.json";
@@ -1651,8 +2566,8 @@ function importSettings(inp) {
     try {
       const data = JSON.parse(reader.result);
       if (data.opts) { OPT = data.opts; localStorage.setItem("deskOpts", JSON.stringify(OPT)); }
-      if (data.todos) { todos = data.todos; saveTodos(); }
-      applyAllOpts(); renderTodos();
+      if (Array.isArray(data.icons)) { DICONS = data.icons; saveIcons(); }
+      applyAllOpts(); renderDesk();
       alert("导入成功！");
     } catch (_) { alert("文件格式不对，导入失败"); }
   };
@@ -1660,7 +2575,7 @@ function importSettings(inp) {
   inp.value = "";
 }
 function resetAll() {
-  if (!confirm("确定恢复默认设置？（待办不会删除）")) return;
+  if (!confirm("确定恢复默认设置？（桌面图标、音乐文件不会删除）")) return;
   OPT = {};
   localStorage.removeItem("deskOpts");
   document.documentElement.style.removeProperty("--accent");
@@ -1670,30 +2585,41 @@ function resetAll() {
 
 /* 把已存设置应用到界面 */
 function applyAllOpts() {
-  setBg(OPT.bg || null);
-  if (OPT.bg && !OPT.bg.startsWith("data:")) document.getElementById("setBgUrl").value = OPT.bg;
   if (OPT.accent)  { document.documentElement.style.setProperty("--accent", OPT.accent);  document.getElementById("setAccent").value = OPT.accent; }
   if (OPT.accent2) { document.documentElement.style.setProperty("--accent2", OPT.accent2); document.getElementById("setAccent2").value = OPT.accent2; }
   document.getElementById("setHideBar").checked = !!OPT.hidebar;
+  document.getElementById("setTbHide").checked = !!OPT.tbhide;
+  document.getElementById("setLowPerf").checked = !!OPT.lowperf;
   document.getElementById("setH24").checked = OPT.h24 !== false;
   document.getElementById("setSec").checked = OPT.sec !== false;
   document.getElementById("setStartPage").value = OPT.start || "pageHome";
   document.getElementById("setTitle").value = OPT.title || "";
   if (OPT.title) document.title = OPT.title;
   applyHidebar();
+  applyTbHide();
+  applyLowPerf();
   tickClock();
+}
+/* 低性能模式：开 = 无毛玻璃 + 粒子减半 + 20FPS；关 = 全部恢复 */
+function applyLowPerf() {
+  document.body.classList.toggle("lowperf", !!OPT.lowperf);
+  if (document.body.classList.contains("homeon")) startWp(); // 立即按新模式重建壁纸
 }
 
 /* ===================== 初始化 ===================== */
 renderNav();
 renderApps();
-renderHomeIcons();
-renderCal();
-renderTodos();
-showQuote();
 renderThemeChips();
+renderDesk();
+renderWgts();
+renderTb();
+renderCal();
 applyAllOpts();
+initMusic();
 goPage(OPT.start || "pageHome");
+
+/* ---- 坦克大战 V1.1.2 原版整页代码（已内嵌，勿手动编辑下方这一行） ---- */
+let TANK_HTML = "<!DOCTYPE html>\n<html lang=\"zh-CN\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n<title>坦克大战 - 终极版<\/title>\n<style>\n*{margin:0;padding:0;box-sizing:border-box;touch-action:none;}\nhtml,body{\n  width:100%;height:100%;overflow:hidden;background:#0a0f1a;\n  font-family:'Segoe UI',system-ui,Arial,sans-serif;\n}\n\n/* ========== 主界面 ========== */\n#startScreen{\n  position:fixed;inset:0;\n  background:radial-gradient(ellipse at 20% 50%,rgba(59,130,246,0.08) 0%,transparent 50%),\n    radial-gradient(ellipse at 80% 20%,rgba(34,197,94,0.06) 0%,transparent 50%),#0a0f1a;\n  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;\n  z-index:200;padding:20px;animation:fadeIn 0.6s ease;\n}\n@keyframes fadeIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}\n#startScreen h1{\n  color:#fff;font-size:46px;font-weight:800;letter-spacing:4px;\n  text-shadow:0 0 40px rgba(59,130,246,0.5),0 4px 12px rgba(0,0,0,0.5);position:relative;\n}\n#startScreen h1::after{\n  content:'';position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);\n  width:60%;height:3px;background:linear-gradient(90deg,transparent,#3b82f6,transparent);border-radius:2px;\n}\n.subtitle{color:#94a3b8;font-size:15px;letter-spacing:2px;margin-top:-12px;}\n\n.difficulty-section{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:8px;}\n.difficulty-label{color:#64748b;font-size:13px;letter-spacing:1px;text-transform:uppercase;}\n.difficulty-group{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}\n.difficulty-option{\n  padding:12px 28px;border:1.5px solid #1e293b;background:rgba(30,41,59,0.6);\n  color:#94a3b8;border-radius:12px;font-size:15px;cursor:pointer;transition:all 0.25s ease;\n  backdrop-filter:blur(8px);min-width:100px;text-align:center;\n}\n.difficulty-option:hover{border-color:#3b82f6;color:#e2e8f0;background:rgba(59,130,246,0.1);transform:translateY(-2px);}\n.difficulty-option.selected{\n  background:linear-gradient(135deg,#3b82f6,#2563eb);border-color:#3b82f6;color:#fff;\n  box-shadow:0 4px 20px rgba(59,130,246,0.4),inset 0 1px 0 rgba(255,255,255,0.15);transform:translateY(-2px);\n}\n\n.stats-bar{\n  display:flex;gap:20px;align-items:center;background:rgba(30,41,59,0.6);\n  border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:10px 24px;margin-top:4px;\n}\n.stat-item{display:flex;align-items:center;gap:6px;color:#e2e8f0;font-size:14px;font-weight:600;}\n.stat-item .icon{font-size:16px;}\n.stat-item .label{color:#64748b;font-size:11px;}\n\n.shop-btn{\n  padding:10px 32px;font-size:15px;border:none;border-radius:10px;\n  background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-weight:700;\n  cursor:pointer;letter-spacing:1px;transition:all 0.3s ease;\n  box-shadow:0 4px 15px rgba(245,158,11,0.3);margin-top:4px;\n}\n.shop-btn:hover{transform:translateY(-2px);box-shadow:0 6px 25px rgba(245,158,11,0.5);}\n\n#startGameBtn{\n  padding:16px 56px;font-size:18px;border:none;border-radius:14px;\n  background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-weight:700;\n  cursor:pointer;margin-top:10px;letter-spacing:2px;transition:all 0.3s ease;\n  box-shadow:0 4px 20px rgba(34,197,94,0.3);position:relative;overflow:hidden;\n}\n#startGameBtn::before{\n  content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;\n  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);transition:left 0.5s ease;\n}\n#startGameBtn:hover::before{left:100%;}\n#startGameBtn:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(34,197,94,0.5);}\n#startGameBtn:disabled{opacity:0.35;cursor:not-allowed;transform:none;box-shadow:none;}\n#startGameBtn:disabled::before{display:none;}\n\n.grid-bg{position:absolute;inset:0;\n  background-image:linear-gradient(rgba(59,130,246,0.03) 1px,transparent 1px),\n    linear-gradient(90deg,rgba(59,130,246,0.03) 1px,transparent 1px);\n  background-size:50px 50px;pointer-events:none;z-index:0;\n}\n\n/* ========== 商店弹窗 ========== */\n.shop-modal{\n  position:fixed;inset:0;background:rgba(10,15,26,0.92);backdrop-filter:blur(12px);\n  display:none;flex-direction:column;align-items:center;justify-content:center;z-index:400;\n  padding:20px;animation:fadeIn 0.3s ease;\n}\n.shop-modal.show{display:flex;}\n.shop-title{color:#fbbf24;font-size:28px;font-weight:800;margin-bottom:16px;letter-spacing:2px;}\n.shop-sub{color:#94a3b8;font-size:13px;margin-bottom:20px;}\n.shop-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;max-width:600px;width:100%;}\n.shop-card{\n  background:rgba(30,41,59,0.7);border:1px solid rgba(255,255,255,0.08);border-radius:12px;\n  padding:16px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;\n  transition:all 0.2s ease;\n}\n.shop-card:hover{border-color:#3b82f6;background:rgba(59,130,246,0.1);transform:translateY(-2px);}\n.shop-card.disabled{opacity:0.4;cursor:not-allowed;}\n.shop-card .name{color:#e2e8f0;font-size:14px;font-weight:700;}\n.shop-card .desc{color:#94a3b8;font-size:11px;text-align:center;}\n.shop-card .price{color:#fbbf24;font-size:13px;font-weight:700;}\n.shop-close{\n  margin-top:20px;padding:10px 36px;border:none;border-radius:10px;\n  background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-weight:700;cursor:pointer;\n}\n\n/* ========== 游戏容器 ========== */\n#gameWrap{width:100%;height:100%;display:none;align-items:center;justify-content:center;background:#0a0f1a;}\n#gameCanvas{display:block;background:#1a2e1a;width:100%;height:100%;}\n\n/* ========== 摇杆与技能 ========== */\n#joyMoveBox,#joyAimBox{\n  position:fixed;width:140px;height:140px;border-radius:50%;z-index:10;\n  border:2px solid rgba(255,255,255,0.08);\n  background:radial-gradient(circle,rgba(255,255,255,0.06) 0%,rgba(255,255,255,0.02) 70%,transparent 100%);\n  backdrop-filter:blur(4px);transition:border-color 0.2s,box-shadow 0.2s;\n}\n#joyMoveBox{left:3vw;bottom:3vw;}#joyAimBox{right:3vw;bottom:3vw;}\n#joyMoveBox.active{border-color:rgba(59,130,246,0.4);box-shadow:0 0 30px rgba(59,130,246,0.15);}\n#joyAimBox.active{border-color:rgba(239,68,68,0.4);box-shadow:0 0 30px rgba(239,68,68,0.15);}\n#joyMoveStick,#joyAimStick{\n  width:52px;height:52px;border-radius:50%;position:absolute;left:50%;top:50%;\n  transform:translate(-50%,-50%);pointer-events:none;transition:transform 0.08s ease;\n}\n#joyMoveStick{background:linear-gradient(135deg,rgba(59,130,246,0.9),rgba(37,99,235,0.9));box-shadow:0 4px 20px rgba(59,130,246,0.4),inset 0 1px 0 rgba(255,255,255,0.2);}\n#joyAimStick{background:linear-gradient(135deg,rgba(239,68,68,0.9),rgba(220,38,38,0.9));box-shadow:0 4px 20px rgba(239,68,68,0.4),inset 0 1px 0 rgba(255,255,255,0.2);}\n.joy-label{position:absolute;top:-28px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.35);font-size:11px;letter-spacing:1px;white-space:nowrap;}\n\n#skillBtn{\n  position:fixed;left:50%;bottom:3vw;transform:translateX(-50%);z-index:10;\n  width:64px;height:64px;border-radius:50%;border:2px solid rgba(251,191,36,0.4);\n  background:radial-gradient(circle,rgba(251,191,36,0.2),rgba(251,191,36,0.05));\n  color:#fbbf24;font-size:24px;display:none;align-items:center;justify-content:center;\n  cursor:pointer;backdrop-filter:blur(4px);box-shadow:0 4px 20px rgba(251,191,36,0.2);\n}\n#skillBtn.active{animation:skillPulse 1s infinite;}\n@keyframes skillPulse{0%{box-shadow:0 0 0 0 rgba(251,191,36,0.4)}70%{box-shadow:0 0 0 10px rgba(251,191,36,0)}100%{box-shadow:0 0 0 0 rgba(251,191,36,0)}}\n\n/* ========== HUD ========== */\n#hud{\n  position:fixed;top:0;left:0;right:0;padding:16px 20px;display:none;\n  justify-content:space-between;align-items:flex-start;z-index:5;pointer-events:none;\n  background:linear-gradient(180deg,rgba(10,15,26,0.8) 0%,transparent 100%);\n}\n.hud-left,.hud-right{display:flex;flex-direction:column;gap:8px;}\n.hud-item{display:flex;align-items:center;gap:8px;color:#e2e8f0;font-size:14px;font-weight:600;}\n.hud-item .label{color:#64748b;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:1px;}\n.hp-bar-container{width:160px;height:10px;background:rgba(255,255,255,0.08);border-radius:5px;overflow:hidden;border:1px solid rgba(255,255,255,0.05);}\n.hp-bar{height:100%;border-radius:5px;transition:width 0.3s ease,background 0.3s ease;background:linear-gradient(90deg,#22c55e,#4ade80);box-shadow:0 0 10px rgba(34,197,94,0.3);}\n.hp-bar.low{background:linear-gradient(90deg,#ef4444,#f87171);box-shadow:0 0 10px rgba(239,68,68,0.3);}\n.hp-bar.medium{background:linear-gradient(90deg,#f59e0b,#fbbf24);box-shadow:0 0 10px rgba(245,158,11,0.3);}\n.score-value{font-size:22px;font-weight:800;color:#fbbf24;text-shadow:0 0 20px rgba(251,191,36,0.3);font-variant-numeric:tabular-nums;}\n.wave-badge{background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.25);color:#60a5fa;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;}\n.combo-display{display:flex;align-items:center;gap:6px;opacity:0;transform:translateY(-5px);transition:all 0.3s ease;}\n.combo-display.show{opacity:1;transform:translateY(0);}\n.combo-display .combo-x{color:#f472b6;font-size:13px;font-weight:700;}\n.combo-display .combo-num{color:#fbbf24;font-size:20px;font-weight:800;text-shadow:0 0 15px rgba(251,191,36,0.4);}\n\n#settingsBtn{\n  pointer-events:auto;padding:6px 14px;border-radius:8px;background:rgba(30,41,59,0.6);\n  border:1px solid rgba(255,255,255,0.1);color:#94a3b8;font-size:12px;cursor:pointer;\n  transition:all 0.2s ease;\n}\n#settingsBtn:hover{border-color:#3b82f6;color:#fff;background:rgba(59,130,246,0.2);}\n\n/* ========== 设置菜单 ========== */\n#settingsMenu{\n  position:fixed;inset:0;background:rgba(10,15,26,0.85);backdrop-filter:blur(10px);\n  display:none;flex-direction:column;align-items:center;justify-content:center;z-index:250;\n  gap:16px;animation:fadeIn 0.3s ease;\n}\n#settingsMenu.show{display:flex;}\n.settings-title{color:#fff;font-size:32px;font-weight:800;margin-bottom:10px;letter-spacing:2px;}\n.settings-btn{\n  width:260px;padding:14px 20px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);\n  background:rgba(30,41,59,0.7);color:#e2e8f0;font-size:15px;font-weight:700;cursor:pointer;\n  transition:all 0.2s ease;text-align:center;\n}\n.settings-btn:hover{transform:translateY(-2px);border-color:#3b82f6;background:rgba(59,130,246,0.15);}\n.settings-btn.danger:hover{border-color:#ef4444;background:rgba(239,68,68,0.15);}\n.settings-btn.safe{border-color:rgba(34,197,94,0.3);color:#4ade80;}\n.settings-btn.safe:hover{background:rgba(34,197,94,0.15);}\n.settings-btn:disabled{opacity:0.3;cursor:not-allowed;transform:none;}\n.settings-close{color:#94a3b8;font-size:13px;margin-top:8px;cursor:pointer;}\n.settings-close:hover{color:#fff;}\n\n/* ========== 状态栏 ========== */\n#statusBar{\n  position:fixed;bottom:0;left:0;right:0;padding:8px 20px;\n  display:none;justify-content:center;gap:12px;z-index:5;pointer-events:none;\n  background:linear-gradient(0deg,rgba(10,15,26,0.9) 0%,transparent 100%);\n}\n.status-item{\n  display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;\n  background:rgba(30,41,59,0.6);border:1px solid rgba(255,255,255,0.08);\n  color:#e2e8f0;font-size:12px;font-weight:600;animation:statusIn 0.3s ease;\n}\n@keyframes statusIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}\n.status-icon{font-size:14px;}\n.status-text{font-size:11px;}\n.status-item.damage{border-color:rgba(239,68,68,0.3);color:#fca5a5;}\n.status-item.shield{border-color:rgba(59,130,246,0.3);color:#93c5fd;}\n.status-item.god{border-color:rgba(251,191,36,0.3);color:#fbbf24;}\n.status-item.poison{border-color:rgba(34,197,94,0.3);color:#4ade80;}\n.status-item.stun{border-color:rgba(168,85,247,0.3);color:#c4b5fd;}\n\n/* ========== Boss 相关 ========== */\n#bossWarning{\n  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:50;\n  pointer-events:none;display:none;flex-direction:column;align-items:center;gap:12px;\n}\n#bossWarning.show{display:flex;animation:bossWarnPulse 0.6s ease infinite alternate;}\n@keyframes bossWarnPulse{from{opacity:0.6;transform:translate(-50%,-50%) scale(0.95)}to{opacity:1;transform:translate(-50%,-50%) scale(1.05)}}\n.boss-warn-title{color:#ef4444;font-size:48px;font-weight:900;letter-spacing:6px;text-shadow:0 0 60px rgba(239,68,68,0.6),0 4px 20px rgba(0,0,0,0.5);}\n.boss-warn-sub{color:#fca5a5;font-size:18px;letter-spacing:2px;}\n#bossHpBarWrap{\n  position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:6;\n  display:none;flex-direction:column;align-items:center;gap:6px;pointer-events:none;\n}\n#bossHpBarWrap.show{display:flex;}\n.boss-hp-label{color:#ef4444;font-size:14px;font-weight:700;letter-spacing:2px;text-shadow:0 0 10px rgba(239,68,68,0.4);}\n.boss-hp-container{width:400px;max-width:80vw;height:14px;background:rgba(0,0,0,0.5);border-radius:7px;overflow:hidden;border:1px solid rgba(239,68,68,0.3);}\n.boss-hp-bar{height:100%;border-radius:7px;background:linear-gradient(90deg,#dc2626,#ef4444,#f87171);box-shadow:0 0 15px rgba(239,68,68,0.4);transition:width 0.2s ease;}\n\n/* ========== 战场商店按钮 ========== */\n#battleShopBtn{\n  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:45;\n  display:none;padding:14px 40px;border-radius:14px;border:none;\n  background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:18px;font-weight:800;\n  cursor:pointer;box-shadow:0 8px 30px rgba(245,158,11,0.4);animation:shopPop 0.5s ease;\n}\n#battleShopBtn.show{display:block;}\n@keyframes shopPop{0%{transform:translate(-50%,-50%) scale(0)}80%{transform:translate(-50%,-50%) scale(1.1)}100%{transform:translate(-50%,-50%) scale(1)}}\n\n/* ========== 波次/击杀/闪屏 ========== */\n#waveAnnounce{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:50;pointer-events:none;display:none;}\n#waveAnnounce.show{display:block;animation:wavePop 1.5s ease forwards;}\n@keyframes wavePop{0%{opacity:0;transform:translate(-50%,-50%) scale(0.5)}30%{opacity:1;transform:translate(-50%,-50%) scale(1.2)}60%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}\n.wave-announce-text{color:#fbbf24;font-size:56px;font-weight:900;letter-spacing:4px;text-shadow:0 0 40px rgba(251,191,36,0.5),0 4px 20px rgba(0,0,0,0.5);}\n#killFeed{position:fixed;top:80px;right:20px;display:flex;flex-direction:column;gap:6px;z-index:6;pointer-events:none;}\n.kill-item{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.2);color:#fca5a5;padding:6px 14px;border-radius:8px;font-size:13px;font-weight:600;opacity:0;transform:translateX(20px);animation:killSlide 2s ease forwards;}\n@keyframes killSlide{0%{opacity:0;transform:translateX(20px)}15%{opacity:1;transform:translateX(0)}80%{opacity:1;transform:translateX(0)}100%{opacity:0;transform:translateX(-10px)}}\n#damageFlash{position:fixed;inset:0;background:rgba(239,68,68,0);pointer-events:none;z-index:4;transition:background 0.1s ease;}\n#damageFlash.active{background:rgba(239,68,68,0.15);}\n\n/* ========== 游戏结束 ========== */\n#gameOverScreen{\n  position:fixed;inset:0;background:rgba(10,15,26,0.92);backdrop-filter:blur(12px);\n  display:none;flex-direction:column;align-items:center;justify-content:center;gap:24px;z-index:300;animation:fadeIn 0.4s ease;\n}\n#gameOverScreen h2{color:#ef4444;font-size:42px;font-weight:800;letter-spacing:3px;text-shadow:0 0 40px rgba(239,68,68,0.4);}\n.gameover-stats{\n  background:rgba(30,41,59,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:16px;\n  padding:28px 40px;display:flex;flex-direction:column;gap:16px;min-width:260px;\n}\n.stat-row{display:flex;justify-content:space-between;align-items:center;color:#94a3b8;font-size:15px;}\n.stat-row .stat-val{color:#e2e8f0;font-weight:700;font-size:18px;}\n.stat-row .stat-val.score{color:#fbbf24;font-size:24px;text-shadow:0 0 15px rgba(251,191,36,0.3);}\n#restartBtn{\n  padding:14px 48px;font-size:17px;border:none;border-radius:12px;\n  background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;font-weight:700;cursor:pointer;\n  letter-spacing:2px;transition:all 0.3s ease;box-shadow:0 4px 20px rgba(59,130,246,0.3);margin-top:8px;\n}\n#restartBtn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(59,130,246,0.5);}\n\n/* ========== 掉落物/爆炸圈 ========== */\n.loot-item{position:absolute;border-radius:50%;z-index:3;pointer-events:none;}\n<\/style>\n<\/head>\n<body>\n\n<!-- 主界面 -->\n<div id=\"startScreen\">\n  <div class=\"grid-bg\"><\/div>\n  <h1>坦克大战<\/h1>\n  <div class=\"subtitle\">双摇杆射击 · 生存挑战<\/div>\n\n  <div class=\"difficulty-section\">\n    <div class=\"difficulty-label\">选择难度<\/div>\n    <div class=\"difficulty-group\">\n      <button class=\"difficulty-option\" data-diff=\"easy\">简单<\/button>\n      <button class=\"difficulty-option\" data-diff=\"normal\">普通<\/button>\n      <button class=\"difficulty-option\" data-diff=\"hard\">困难<\/button>\n    <\/div>\n  <\/div>\n\n  <div class=\"stats-bar\">\n    <div class=\"stat-item\"><span class=\"icon\">⚡<\/span><span class=\"label\">体力<\/span><span id=\"menuStamina\">10<\/span><\/div>\n    <div class=\"stat-item\"><span class=\"icon\">⭐<\/span><span class=\"label\">经验<\/span><span id=\"menuExp\">0<\/span><\/div>\n    <div class=\"stat-item\"><span class=\"icon\">🛡️<\/span><span class=\"label\">安全模式<\/span><span id=\"menuSafe\">3<\/span><\/div>\n  <\/div>\n\n  <button class=\"shop-btn\" id=\"initShopBtn\">初始商店<\/button>\n  <button id=\"startGameBtn\" disabled>开始游戏<\/button>\n<\/div>\n\n<!-- 初始商店 -->\n<div class=\"shop-modal\" id=\"initShopModal\">\n  <div class=\"shop-title\">初始商店<\/div>\n  <div class=\"shop-sub\">消耗体力获得永久属性提升 · 经验值兑换体力 100:1<\/div>\n  <div class=\"shop-grid\" id=\"initShopGrid\"><\/div>\n  <div class=\"shop-sub\" id=\"initShopCurrency\" style=\"margin-top:10px;margin-bottom:0;\">当前体力: 10 | 经验: 0<\/div>\n  <button class=\"shop-close\" id=\"initShopClose\">关闭<\/button>\n<\/div>\n\n<!-- 战场商店 -->\n<div class=\"shop-modal\" id=\"battleShopModal\">\n  <div class=\"shop-title\">战场商店<\/div>\n  <div class=\"shop-sub\">消耗积分获得临时道具与能力<\/div>\n  <div class=\"shop-grid\" id=\"battleShopGrid\"><\/div>\n  <div class=\"shop-sub\" id=\"battleShopCurrency\" style=\"margin-top:10px;margin-bottom:0;\">当前积分: 0<\/div>\n  <button class=\"shop-close\" id=\"battleShopClose\">关闭<\/button>\n<\/div>\n\n<!-- 游戏容器 -->\n<div id=\"gameWrap\"><canvas id=\"gameCanvas\"><\/canvas><\/div>\n\n<!-- 摇杆 -->\n<div id=\"joyMoveBox\"><div class=\"joy-label\">移动<\/div><div id=\"joyMoveStick\"><\/div><\/div>\n<div id=\"joyAimBox\"><div class=\"joy-label\">瞄准<\/div><div id=\"joyAimStick\"><\/div><\/div>\n\n<!-- 技能按钮 -->\n<div id=\"skillBtn\">💣<\/div>\n\n<!-- HUD -->\n<div id=\"hud\">\n  <div class=\"hud-left\">\n    <div class=\"hud-item\"><span class=\"label\">生命值<\/span><div class=\"hp-bar-container\"><div class=\"hp-bar\" id=\"hpBar\" style=\"width:100%\"><\/div><\/div><\/div>\n    <div class=\"hud-item\"><span class=\"label\">连击<\/span><div class=\"combo-display\" id=\"comboDisplay\"><span class=\"combo-x\">x<\/span><span class=\"combo-num\" id=\"comboNum\">0<\/span><\/div><\/div>\n  <\/div>\n  <div class=\"hud-right\">\n    <div class=\"hud-item\"><button id=\"settingsBtn\">⚙️ 设置<\/button><\/div>\n    <div class=\"hud-item\"><span class=\"label\">积分<\/span><span class=\"score-value\" id=\"scoreVal\">0<\/span><\/div>\n    <div class=\"hud-item\"><span class=\"label\">波次<\/span><span class=\"wave-badge\" id=\"waveBadge\">第 1 波<\/span><\/div>\n    <div class=\"hud-item\"><span class=\"label\">敌人<\/span><span id=\"enemyCount\">0<\/span><\/div>\n  <\/div>\n<\/div>\n\n<!-- 设置菜单 -->\n<div id=\"settingsMenu\">\n  <div class=\"settings-title\">游戏菜单<\/div>\n  <button class=\"settings-btn danger\" id=\"btnQuit\">退出游戏（不保存）<\/button>\n  <button class=\"settings-btn\" id=\"btnEvac\">撤离（保留积分→体力）<\/button>\n  <button class=\"settings-btn safe\" id=\"btnSafe\">安全模式（剩余 <span id=\"safeCount\">0<\/span>）<\/button>\n  <button class=\"settings-btn\" id=\"btnUnset\" style=\"opacity:0.6;cursor:default;\">未设置<\/button>\n  <div class=\"settings-close\" id=\"btnResume\">点击空白处继续游戏<\/div>\n<\/div>\n\n<!-- 战场商店激活按钮 -->\n<button id=\"battleShopBtn\">🛒 战场商店已激活<\/button>\n\n<!-- Boss 血条/警告 -->\n<div id=\"bossHpBarWrap\"><div class=\"boss-hp-label\">BOSS<\/div><div class=\"boss-hp-container\"><div class=\"boss-hp-bar\" id=\"bossHpBar\" style=\"width:100%\"><\/div><\/div><\/div>\n<div id=\"bossWarning\"><div class=\"boss-warn-title\">BOSS 降临<\/div><div class=\"boss-warn-sub\">准备迎接强敌<\/div><\/div>\n\n<!-- 波次公告 -->\n<div id=\"waveAnnounce\"><div class=\"wave-announce-text\" id=\"waveAnnounceText\">第 1 波<\/div><\/div>\n\n<!-- 击杀提示 -->\n<div id=\"killFeed\"><\/div>\n\n<!-- 伤害闪屏 -->\n<div id=\"damageFlash\"><\/div>\n\n<!-- 状态栏 -->\n<div id=\"statusBar\"><\/div>\n\n<!-- 游戏结束 -->\n<div id=\"gameOverScreen\">\n  <h2 id=\"endTitle\">任务失败<\/h2>\n  <div class=\"gameover-stats\">\n    <div class=\"stat-row\"><span>最终得分<\/span><span class=\"stat-val score\" id=\"finalScore\">0<\/span><\/div>\n    <div class=\"stat-row\"><span>击杀敌人<\/span><span class=\"stat-val\" id=\"finalKills\">0<\/span><\/div>\n    <div class=\"stat-row\"><span>最高连击<\/span><span class=\"stat-val\" id=\"finalCombo\">0<\/span><\/div>\n    <div class=\"stat-row\"><span>生存时间<\/span><span class=\"stat-val\" id=\"finalTime\">0s<\/span><\/div>\n    <div class=\"stat-row\"><span>击败Boss<\/span><span class=\"stat-val\" id=\"finalBosses\">0<\/span><\/div>\n    <div class=\"stat-row\"><span>获得经验<\/span><span class=\"stat-val\" id=\"finalExp\">0<\/span><\/div>\n  <\/div>\n  <button id=\"restartBtn\">再来一局<\/button>\n<\/div>\n\n<script>\n/* ==================== 全局配置与数据 ==================== */\nconst BASE_W=1920,BASE_H=1080;\nlet scaleX=1,scaleY=1,currentAspect=\"16/9\";\n\nconst DIFFICULTY={\n  easy:{enemyCount:2,enemyFireInterval:400,enemySpeed:0.3,enemyDamage:1,bossHpMult:0.7,bossSpeedMult:0.8,enemyHpMult:0.7},\n  normal:{enemyCount:3,enemyFireInterval:300,enemySpeed:0.4,enemyDamage:1,bossHpMult:1,bossSpeedMult:1,enemyHpMult:1},\n  hard:{enemyCount:5,enemyFireInterval:200,enemySpeed:0.6,enemyDamage:2,bossHpMult:1.4,bossSpeedMult:1.2,enemyHpMult:1.5}\n};\n\nconst DEFAULT_DATA={stamina:10,lastStaminaDate:'',exp:0,upgrades:{maxHp:0,speed:0,damage:0},safeModeCharges:3,bestScore:0};\nfunction loadData(){\n  const raw=localStorage.getItem('tankBattleData');\n  let data=raw?JSON.parse(raw):{...DEFAULT_DATA};\n  const today=new Date().toDateString();\n  if(data.lastStaminaDate!==today){data.stamina=10;data.lastStaminaDate=today;}\n  if(!data.upgrades)data.upgrades={maxHp:0,speed:0,damage:0};\n  if(data.safeModeCharges===undefined)data.safeModeCharges=3;\n  return data;\n}\nfunction saveData(data){localStorage.setItem('tankBattleData',JSON.stringify(data));}\nlet gameData=loadData();\n\nlet selectedDiff=null,currentDiff='normal';\nlet gameRunning=false,gamePaused=false,gameStartTime=0;\nlet totalKills=0,totalBossKills=0,maxCombo=0,currentCombo=0,comboTimer=0;\nlet currentWave=1,waveKillCount=0,waveInProgress=true,bossSpawned=false;\nlet battleScore=0,battleExp=0,battleKills=0;\nlet safeModeActive=false,safeModeTimer=0;\nlet invincibleTimer=0,shieldHits=0;\nlet damageLog=[]; // {time,dmg}\nlet currentSkillItem=null; // {type,icon}\n\nconst canvas=document.getElementById('gameCanvas'),ctx=canvas.getContext('2d');\nconst startScreen=document.getElementById('startScreen'),gameWrap=document.getElementById('gameWrap');\nconst hud=document.getElementById('hud'),startBtn=document.getElementById('startGameBtn');\nconst diffBtns=document.querySelectorAll('.difficulty-option');\nconst gameOverScreen=document.getElementById('gameOverScreen'),restartBtn=document.getElementById('restartBtn');\nconst damageFlash=document.getElementById('damageFlash'),bossWarning=document.getElementById('bossWarning');\nconst bossHpBarWrap=document.getElementById('bossHpBarWrap'),bossHpBar=document.getElementById('bossHpBar');\nconst waveAnnounce=document.getElementById('waveAnnounce'),waveAnnounceText=document.getElementById('waveAnnounceText');\nconst settingsMenu=document.getElementById('settingsMenu'),settingsBtn=document.getElementById('settingsBtn');\nconst statusBar=document.getElementById('statusBar'),skillBtn=document.getElementById('skillBtn');\nconst battleShopBtn=document.getElementById('battleShopBtn');\n\n/* ==================== 玩家数据 ==================== */\nconst playerTank={\n  x:BASE_W/2,y:BASE_H/2,angle:0,speed:2.2,size:22,\n  hp:10,maxHp:10,score:0,bulletDmg:1,bulletSpeed:6,fireCooldown:0\n};\nlet moveX=0,moveY=0,aimX=0,aimY=0;\nconst joyRadius=65;\nlet movePointerId=null,aimPointerId=null;\nlet bullets=[],enemies=[],boss=null,items=[],explosions=[],statusEffects=[];\nconst MAX_ENEMY_BASE=3;\n\n/* ==================== UI 更新 ==================== */\nfunction updateMenuStats(){\n  document.getElementById('menuStamina').textContent=gameData.stamina;\n  document.getElementById('menuExp').textContent=gameData.exp;\n  document.getElementById('menuSafe').textContent=gameData.safeModeCharges;\n}\nupdateMenuStats();\n\n/* ==================== 难度选择 ==================== */\ndiffBtns.forEach(btn=>{\n  btn.addEventListener('click',()=>{\n    diffBtns.forEach(b=>b.classList.remove('selected'));\n    btn.classList.add('selected');\n    selectedDiff=btn.dataset.diff;\n    startBtn.disabled=false;\n  });\n});\n\n/* ==================== 初始商店 ==================== */\nconst initShopItems=[\n  {id:'maxHp',name:'生命强化',desc:'最大生命 +1',price:2,icon:'❤️'},\n  {id:'speed',name:'引擎升级',desc:'移动速度 +0.2',price:3,icon:'⚡'},\n  {id:'damage',name:'火力提升',desc:'子弹伤害 +1',price:2,icon:'🔥'},\n  {id:'safeMode',name:'安全协议',desc:'安全模式次数 +1',price:5,icon:'🛡️'},\n  {id:'expToStamina',name:'经验兑换',desc:'100经验 → 1体力',price:-100,icon:'🔄',isExchange:true}\n];\nfunction renderInitShop(){\n  const grid=document.getElementById('initShopGrid');\n  grid.innerHTML='';\n  initShopItems.forEach(item=>{\n    const card=document.createElement('div');card.className='shop-card';\n    const canAfford=item.isExchange?gameData.exp>=100:gameData.stamina>=item.price;\n    if(!canAfford)card.classList.add('disabled');\n    card.innerHTML=`<div style=\"font-size:24px\">${item.icon}<\/div><div class=\"name\">${item.name}<\/div><div class=\"desc\">${item.desc}<\/div><div class=\"price\">${item.isExchange?'100经验':item.price+'体力'}<\/div>`;\n    card.onclick=()=>buyInitItem(item);\n    grid.appendChild(card);\n  });\n  document.getElementById('initShopCurrency').textContent=`当前体力: ${gameData.stamina} | 经验: ${gameData.exp}`;\n}\nfunction buyInitItem(item){\n  if(item.isExchange){\n    if(gameData.exp<100)return;\n    gameData.exp-=100;gameData.stamina+=1;\n  }else{\n    if(gameData.stamina<item.price)return;\n    gameData.stamina-=item.price;\n    if(item.id==='maxHp')gameData.upgrades.maxHp++;\n    else if(item.id==='speed')gameData.upgrades.speed++;\n    else if(item.id==='damage')gameData.upgrades.damage++;\n    else if(item.id==='safeMode')gameData.safeModeCharges++;\n  }\n  saveData(gameData);updateMenuStats();renderInitShop();\n}\ndocument.getElementById('initShopBtn').onclick=()=>{renderInitShop();document.getElementById('initShopModal').classList.add('show');};\ndocument.getElementById('initShopClose').onclick=()=>document.getElementById('initShopModal').classList.remove('show');\n\n/* ==================== 战场商店 ==================== */\nconst battleShopItems=[\n  {id:'heal',name:'紧急维修',desc:'回复 3 生命',price:200,icon:'❤️',effect:'heal'},\n  {id:'shield',name:'能量护盾',desc:'抵挡 3 次伤害',price:300,icon:'🛡️',effect:'shield'},\n  {id:'bomb',name:'集束炸弹',desc:'放置后 3 秒清屏',price:500,icon:'💣',effect:'bomb'},\n  {id:'rage',name:'狂暴模式',desc:'射速翻倍 10 秒',price:400,icon:'🔥',effect:'rage'},\n  {id:'god',name:'无敌金身',desc:'5 秒无敌',price:1000,icon:'✨',effect:'god'}\n];\nlet battleShopActive=false;\nfunction renderBattleShop(){\n  const grid=document.getElementById('battleShopGrid');\n  grid.innerHTML='';\n  battleShopItems.forEach(item=>{\n    const card=document.createElement('div');card.className='shop-card';\n    if(battleScore<item.price)card.classList.add('disabled');\n    card.innerHTML=`<div style=\"font-size:24px\">${item.icon}<\/div><div class=\"name\">${item.name}<\/div><div class=\"desc\">${item.desc}<\/div><div class=\"price\">${item.price}积分<\/div>`;\n    card.onclick=()=>buyBattleItem(item);\n    grid.appendChild(card);\n  });\n  document.getElementById('battleShopCurrency').textContent=`当前积分: ${battleScore}`;\n}\nfunction buyBattleItem(item){\n  if(battleScore<item.price||!battleShopActive)return;\n  battleScore-=item.price;\n  if(item.effect==='heal'){playerTank.hp=Math.min(playerTank.maxHp,playerTank.hp+3);}\n  else if(item.effect==='shield'){shieldHits=3;addStatus('shield','护盾',5);}\n  else if(item.effect==='bomb'){currentSkillItem={type:'bomb',icon:'💣'};updateSkillBtn();}\n  else if(item.effect==='rage'){addStatus('rage','狂暴',10);}\n  else if(item.effect==='god'){invincibleTimer=300;addStatus('god','金身',5);}\n  updateHUD();renderBattleShop();\n}\ndocument.getElementById('battleShopClose').onclick=()=>document.getElementById('battleShopModal').classList.remove('show');\nbattleShopBtn.onclick=()=>{renderBattleShop();document.getElementById('battleShopModal').classList.add('show');gamePaused=true;};\n\nfunction updateSkillBtn(){\n  if(currentSkillItem){skillBtn.style.display='flex';skillBtn.textContent=currentSkillItem.icon;skillBtn.classList.add('active');}\n  else{skillBtn.style.display='none';skillBtn.classList.remove('active');}\n}\nskillBtn.onclick=()=>{\n  if(!currentSkillItem||gamePaused)return;\n  if(currentSkillItem.type==='bomb'){\n    explosions.push({x:playerTank.x,y:playerTank.y,radius:0,maxRadius:400,phase:'charge',timer:180,dmg:5,fromPlayer:true});\n    currentSkillItem=null;updateSkillBtn();\n  }\n};\n\n/* ==================== 设置菜单 ==================== */\nsettingsBtn.onclick=()=>{gamePaused=true;document.getElementById('safeCount').textContent=gameData.safeModeCharges;settingsMenu.classList.add('show');};\ndocument.getElementById('btnResume').onclick=()=>{settingsMenu.classList.remove('show');gamePaused=false;};\ndocument.getElementById('btnQuit').onclick=()=>{\n  settingsMenu.classList.remove('show');gameRunning=false;gameWrap.style.display='none';hud.style.display='none';\n  skillBtn.style.display='none';statusBar.style.display='none';bossHpBarWrap.classList.remove('show');\n  startScreen.style.display='flex';updateMenuStats();\n};\ndocument.getElementById('btnEvac').onclick=()=>{\n  const staminaGain=Math.floor(battleScore/1000);\n  gameData.stamina+=staminaGain;\n  gameData.exp+=battleExp;\n  saveData(gameData);updateMenuStats();\n  settingsMenu.classList.remove('show');\n  gameRunning=false;gameWrap.style.display='none';hud.style.display='none';\n  skillBtn.style.display='none';statusBar.style.display='none';bossHpBarWrap.classList.remove('show');\n  startScreen.style.display='flex';\n  alert(`撤离成功！获得 ${staminaGain} 体力，${battleExp} 经验已保留。`);\n};\ndocument.getElementById('btnSafe').onclick=()=>{\n  if(gameData.safeModeCharges<=0)return;\n  gameData.safeModeCharges--;saveData(gameData);updateMenuStats();\n  enemies.forEach(e=>{e.stunTimer=180;});\n  bullets=[];invincibleTimer=600;addStatus('god','安全模式',10);\n  settingsMenu.classList.remove('show');gamePaused=false;\n};\n\n/* ==================== 状态系统 ==================== */\nfunction addStatus(type,text,durationSec){\n  const existing=statusEffects.find(s=>s.type===type);\n  if(existing){existing.timer=durationSec*60;existing.text=text;return;}\n  statusEffects.push({type,text,timer:durationSec*60});\n}\nfunction updateStatusBar(){\n  statusBar.innerHTML='';\n  const map={damage:['damage','扣血','⬇️'],shield:['shield','护盾','🛡️'],god:['god','金身','✨'],poison:['poison','中毒','☠️'],stun:['stun','眩晕','💫'],rage:['rage','狂暴','🔥']};\n  statusEffects.forEach(s=>{\n    if(s.timer<=0)return;\n    const info=map[s.type]||['','',''];const el=document.createElement('div');\n    el.className=`status-item ${info[0]}`;el.innerHTML=`<span class=\"status-icon\">${info[2]||'⚡'}<\/span><span class=\"status-text\">${s.text}<\/span>`;\n    statusBar.appendChild(el);\n  });\n}\n\n/* ==================== 游戏初始化 ==================== */\nstartBtn.addEventListener('click',()=>{\n  if(!selectedDiff)return;\n  currentDiff=selectedDiff;\n  canvas.style.aspectRatio='16/9';\n  startScreen.style.display='none';gameWrap.style.display='flex';hud.style.display='flex';\n  statusBar.style.display='flex';resizeCanvas();startGame();\n});\nrestartBtn.addEventListener('click',()=>{gameOverScreen.style.display='none';startGame();});\nfunction resizeCanvas(){\n  const rect=gameWrap.getBoundingClientRect();\n  canvas.width=rect.width;canvas.height=rect.height;\n  scaleX=canvas.width/BASE_W;scaleY=canvas.height/BASE_H;\n}\nwindow.addEventListener('resize',resizeCanvas);\n\nfunction startGame(){\n  gameRunning=true;gamePaused=false;gameStartTime=Date.now();\n  totalKills=0;totalBossKills=0;maxCombo=0;currentCombo=0;comboTimer=0;\n  currentWave=1;waveKillCount=0;waveInProgress=true;bossSpawned=false;\n  battleScore=0;battleExp=0;battleKills=0;\n  safeModeActive=false;invincibleTimer=0;shieldHits=0;damageLog=[];\n  currentSkillItem=null;updateSkillBtn();battleShopActive=false;battleShopBtn.classList.remove('show');\n  statusEffects=[];\n\n  const d=DIFFICULTY[currentDiff];\n  playerTank.x=BASE_W/2;playerTank.y=BASE_H/2;playerTank.angle=0;\n  playerTank.maxHp=10+gameData.upgrades.maxHp;\n  playerTank.hp=playerTank.maxHp;\n  playerTank.speed=2.2+gameData.upgrades.speed*0.2;\n  playerTank.bulletDmg=1+gameData.upgrades.damage;\n  playerTank.score=0;\n\n  bullets=[];enemies=[];boss=null;items=[];explosions=[];\n  for(let i=0;i<Math.min(d.enemyCount,2);i++)enemies.push(spawnEnemy());\n\n  bossWarning.classList.remove('show');bossHpBarWrap.classList.remove('show');\n  showWaveAnnounce(1);updateHUD();gameLoop();\n}\n\nfunction showWaveAnnounce(wave){\n  waveAnnounceText.textContent=`第 ${wave} 波`;\n  waveAnnounce.classList.add('show');\n  setTimeout(()=>waveAnnounce.classList.remove('show'),1500);\n}\nfunction showBossWarning(){\n  bossWarning.classList.add('show');\n  setTimeout(()=>bossWarning.classList.remove('show'),3000);\n}\n\n/* ==================== 生成逻辑 ==================== */\nfunction spawnEnemy(){\n  const d=DIFFICULTY[currentDiff];\n  let x,y;\n  do{x=Math.random()*BASE_W;y=Math.random()*BASE_H;}\n  while(Math.hypot(x-playerTank.x,y-playerTank.y)<300);\n  const hp=Math.floor(3*d.enemyHpMult);\n  return{x,y,hp,maxHp:hp,angle:Math.random()*Math.PI*2,size:20,fireTimer:0,fireInterval:d.enemyFireInterval,maxFireDist:300,isBoss:false,stunTimer:0};\n}\nfunction spawnBoss(wave){\n  const d=DIFFICULTY[currentDiff];\n  const bossLevel=Math.floor((wave-1)/5);\n  let x,y;\n  do{x=Math.random()*BASE_W;y=Math.random()*BASE_H;}\n  while(Math.hypot(x-playerTank.x,y-playerTank.y)<500);\n  const hp=Math.floor((20+bossLevel*10)*d.bossHpMult);\n  return{\n    x,y,hp,maxHp:hp,angle:Math.random()*Math.PI*2,size:35,\n    speed:(1.8+bossLevel*0.3)*d.bossSpeedMult,fireTimer:0,\n    fireInterval:Math.max(30,80-bossLevel*10),maxFireDist:500,isBoss:true,\n    shotsFired:0,maxShots:20,resting:false,restTimer:0,restDuration:300,bossLevel:bossLevel,\n    stunTimer:0\n  };\n}\n\n/* ==================== HUD 更新 ==================== */\nfunction updateHUD(){\n  const hpPercent=(playerTank.hp/playerTank.maxHp)*100;\n  const hpBar=document.getElementById('hpBar');\n  hpBar.style.width=hpPercent+'%';hpBar.className='hp-bar';\n  if(hpPercent<=30)hpBar.classList.add('low');\n  else if(hpPercent<=60)hpBar.classList.add('medium');\n\n  document.getElementById('scoreVal').textContent=battleScore;\n  document.getElementById('enemyCount').textContent=enemies.length+(boss?1:0);\n\n  const comboDisplay=document.getElementById('comboDisplay');\n  if(currentCombo>1){comboDisplay.classList.add('show');document.getElementById('comboNum').textContent=currentCombo;}\n  else comboDisplay.classList.remove('show');\n  document.getElementById('waveBadge').textContent=`第 ${currentWave} 波`;\n\n  if(boss){bossHpBarWrap.classList.add('show');bossHpBar.style.width=(boss.hp/boss.maxHp*100)+'%';}\n  else bossHpBarWrap.classList.remove('show');\n}\n\nfunction showKillFeed(text,isBoss){\n  const feed=document.getElementById('killFeed');\n  const item=document.createElement('div');item.className='kill-item';\n  if(isBoss){item.style.background='rgba(251,191,36,0.2)';item.style.borderColor='rgba(251,191,36,0.3)';item.style.color='#fbbf24';item.textContent=text;}\n  else{const bonus=currentCombo>1?` (+${currentCombo*10}连击)`:'';item.textContent=text+bonus;}\n  feed.appendChild(item);setTimeout(()=>item.remove(),2000);\n}\nfunction showDamageFlash(){damageFlash.classList.add('active');setTimeout(()=>damageFlash.classList.remove('active'),150);}\nfunction addCombo(){\n  currentCombo++;comboTimer=120;\n  if(currentCombo>maxCombo)maxCombo=currentCombo;\n  updateHUD();\n}\n\n/* ==================== 摇杆控制 ==================== */\nfunction resetMoveJoy(){\n  joyMoveStick.style.left=\"50%\";joyMoveStick.style.top=\"50%\";\n  moveX=0;moveY=0;movePointerId=null;joyMoveBox.classList.remove('active');\n}\nfunction resetAimJoy(){\n  joyAimStick.style.left=\"50%\";joyAimStick.style.top=\"50%\";\n  aimX=0;aimY=0;aimPointerId=null;joyAimBox.classList.remove('active');\n}\n\ndocument.addEventListener(\"pointerdown\",e=>{\n  const rect=joyMoveBox.getBoundingClientRect();\n  const cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;\n  if(Math.hypot(e.clientX-cx,e.clientY-cy)<=rect.width/2+20&&movePointerId===null){\n    e.preventDefault();movePointerId=e.pointerId;joyMoveBox.classList.add('active');joyMoveBox.setPointerCapture(e.pointerId);updateMoveJoy(e.clientX,e.clientY);\n  }\n});\ndocument.addEventListener(\"pointerdown\",e=>{\n  const rect=joyAimBox.getBoundingClientRect();\n  const cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;\n  if(Math.hypot(e.clientX-cx,e.clientY-cy)<=rect.width/2+20&&aimPointerId===null){\n    e.preventDefault();aimPointerId=e.pointerId;joyAimBox.classList.add('active');joyAimBox.setPointerCapture(e.pointerId);updateAimJoy(e.clientX,e.clientY);\n  }\n});\ndocument.addEventListener(\"pointermove\",e=>{\n  if(e.pointerId===movePointerId){e.preventDefault();updateMoveJoy(e.clientX,e.clientY);}\n  if(e.pointerId===aimPointerId){e.preventDefault();updateAimJoy(e.clientX,e.clientY);}\n});\ndocument.addEventListener(\"pointerup\",e=>{\n  if(e.pointerId===movePointerId)resetMoveJoy();\n  if(e.pointerId===aimPointerId){\n    if(Math.hypot(aimX,aimY)>10){\n      bullets.push({x:playerTank.x+Math.cos(playerTank.angle)*26,y:playerTank.y+Math.sin(playerTank.angle)*26,vx:Math.cos(playerTank.angle)*playerTank.bulletSpeed,vy:Math.sin(playerTank.angle)*playerTank.bulletSpeed,r:5,isPlayer:true,dmg:playerTank.bulletDmg});\n    }\n    resetAimJoy();\n  }\n});\ndocument.addEventListener(\"pointercancel\",e=>{\n  if(e.pointerId===movePointerId)resetMoveJoy();\n  if(e.pointerId===aimPointerId){\n    if(Math.hypot(aimX,aimY)>10){\n      bullets.push({x:playerTank.x+Math.cos(playerTank.angle)*26,y:playerTank.y+Math.sin(playerTank.angle)*26,vx:Math.cos(playerTank.angle)*playerTank.bulletSpeed,vy:Math.sin(playerTank.angle)*playerTank.bulletSpeed,r:5,isPlayer:true,dmg:playerTank.bulletDmg});\n    }\n    resetAimJoy();\n  }\n});\n\nfunction updateMoveJoy(clientX,clientY){\n  const rect=joyMoveBox.getBoundingClientRect();\n  const ox=rect.left+rect.width/2,oy=rect.top+rect.height/2;\n  let dx=clientX-ox,dy=clientY-oy;\n  const dist=Math.hypot(dx,dy);\n  if(dist>joyRadius){dx=dx/dist*joyRadius;dy=dy/dist*joyRadius;}\n  joyMoveStick.style.left=(50+dx/joyRadius*50)+\"%\";joyMoveStick.style.top=(50+dy/joyRadius*50)+\"%\";\n  moveX=dx/joyRadius;moveY=dy/joyRadius;\n}\nfunction updateAimJoy(clientX,clientY){\n  const rect=joyAimBox.getBoundingClientRect();\n  const ox=rect.left+rect.width/2,oy=rect.top+rect.height/2;\n  let dx=clientX-ox,dy=clientY-oy;\n  const dist=Math.hypot(dx,dy);\n  if(dist>joyRadius){dx=dx/dist*joyRadius;dy=dy/dist*joyRadius;}\n  joyAimStick.style.left=(50+dx/joyRadius*50)+\"%\";joyAimStick.style.top=(50+dy/joyRadius*50)+\"%\";\n  aimX=dx;aimY=dy;\n  if(Math.abs(dx)+Math.abs(dy)>2)playerTank.angle=Math.atan2(dy,dx);\n}\n\n/* ==================== 游戏结束 ==================== */\nfunction gameOver(isEvac=false){\n  gameRunning=false;\n  const survivalTime=Math.floor((Date.now()-gameStartTime)/1000);\n  if(!isEvac){\n    gameData.exp+=battleExp;saveData(gameData);\n  }\n  document.getElementById('endTitle').textContent=isEvac?'撤离成功':'任务失败';\n  document.getElementById('finalScore').textContent=battleScore;\n  document.getElementById('finalKills').textContent=totalKills;\n  document.getElementById('finalCombo').textContent=maxCombo;\n  document.getElementById('finalTime').textContent=survivalTime+'s';\n  document.getElementById('finalBosses').textContent=totalBossKills;\n  document.getElementById('finalExp').textContent=battleExp;\n  gameOverScreen.style.display='flex';\n}\n\n/* ==================== 绘制函数 ==================== */\nfunction drawTank(e,bodyColor,strokeColor,barrelColor,barrelStroke){\n  ctx.save();ctx.translate(e.x,e.y);ctx.rotate(e.angle);\n  ctx.fillStyle='rgba(0,0,0,0.3)';ctx.fillRect(-e.size+3,-e.size/2+3,e.size*1.4,e.size);\n  ctx.fillStyle=bodyColor;ctx.fillRect(-e.size,-e.size/2,e.size*1.4,e.size);\n  ctx.strokeStyle=strokeColor;ctx.lineWidth=2;ctx.strokeRect(-e.size,-e.size/2,e.size*1.4,e.size);\n  ctx.fillStyle=barrelColor;ctx.fillRect(0,-4,e.size*0.9,8);\n  ctx.strokeStyle=barrelStroke;ctx.lineWidth=1;ctx.strokeRect(0,-4,e.size*0.9,8);\n  ctx.fillStyle='#fbbf24';ctx.beginPath();ctx.arc(e.size*0.9,0,3,0,Math.PI*2);ctx.fill();\n  const hpPercent=e.hp/e.maxHp;\n  ctx.fillStyle='rgba(0,0,0,0.5)';ctx.fillRect(-e.size,-e.size/2-10,e.size*1.4,4);\n  ctx.fillStyle=hpPercent>0.5?'#22c55e':'#ef4444';ctx.fillRect(-e.size,-e.size/2-10,e.size*1.4*hpPercent,4);\n  ctx.restore();\n}\n\n\n/* ==================== 主游戏循环 ==================== */\nfunction gameLoop(){\n  if(!gameRunning)return;\n  if(gamePaused){requestAnimationFrame(gameLoop);return;}\n\n  ctx.clearRect(0,0,canvas.width,canvas.height);\n  if(playerTank.hp<=0){gameOver();return;}\n\n  // 连击计时\n  if(currentCombo>0){comboTimer--;if(comboTimer<=0){currentCombo=0;updateHUD();}}\n\n  // 状态效果计时\n  for(let i=statusEffects.length-1;i>=0;i--){\n    statusEffects[i].timer--;\n    if(statusEffects[i].timer<=0)statusEffects.splice(i,1);\n  }\n  if(invincibleTimer>0)invincibleTimer--;\n  updateStatusBar();\n\n  // 伤害上限保护检查\n  const now=Date.now();\n  damageLog=damageLog.filter(l=>now-l.time<500);\n  const recentDmg=damageLog.reduce((a,l)=>a+l.dmg,0);\n  if(recentDmg>=3){\n    invincibleTimer=180; // 3秒金身\n    damageLog=[];\n    addStatus('god','伤害保护',3);\n  }\n\n  ctx.save();ctx.scale(scaleX,scaleY);\n\n  // 网格背景\n  ctx.strokeStyle='rgba(255,255,255,0.03)';ctx.lineWidth=1;\n  for(let gx=0;gx<BASE_W;gx+=80){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,BASE_H);ctx.stroke();}\n  for(let gy=0;gy<BASE_H;gy+=80){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(BASE_W,gy);ctx.stroke();}\n\n  // 玩家移动\n  const rageMult=statusEffects.find(s=>s.type==='rage')?2:1;\n  playerTank.x+=moveX*playerTank.speed*rageMult;\n  playerTank.y+=moveY*playerTank.speed*rageMult;\n  playerTank.x=Math.max(playerTank.size,Math.min(BASE_W-playerTank.size,playerTank.x));\n  playerTank.y=Math.max(playerTank.size,Math.min(BASE_H-playerTank.size,playerTank.y));\n\n  // 绘制玩家\n  ctx.save();ctx.translate(playerTank.x,playerTank.y);ctx.rotate(playerTank.angle);\n  if(invincibleTimer>0&&Math.floor(invincibleTimer/6)%2===0){\n    ctx.globalAlpha=0.5;\n  }\n  ctx.fillStyle='rgba(0,0,0,0.3)';ctx.fillRect(-playerTank.size+3,-playerTank.size/2+3,playerTank.size*1.4,playerTank.size);\n  ctx.fillStyle='#3b82f6';ctx.fillRect(-playerTank.size,-playerTank.size/2,playerTank.size*1.4,playerTank.size);\n  ctx.strokeStyle='#60a5fa';ctx.lineWidth=2;ctx.strokeRect(-playerTank.size,-playerTank.size/2,playerTank.size*1.4,playerTank.size);\n  ctx.fillStyle='#93c5fd';ctx.fillRect(0,-4,playerTank.size*0.9,8);\n  ctx.strokeStyle='#bfdbfe';ctx.lineWidth=1;ctx.strokeRect(0,-4,playerTank.size*0.9,8);\n  ctx.fillStyle='#fbbf24';ctx.beginPath();ctx.arc(playerTank.size*0.9,0,3,0,Math.PI*2);ctx.fill();\n  // 护盾光环\n  if(shieldHits>0){ctx.strokeStyle='rgba(59,130,246,0.6)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,playerTank.size+6,0,Math.PI*2);ctx.stroke();}\n  ctx.restore();\n\n  // 绘制子弹\n  for(let i=bullets.length-1;i>=0;i--){\n    const b=bullets[i];b.x+=b.vx;b.y+=b.vy;\n    if(b.x<0||b.x>BASE_W||b.y<0||b.y>BASE_H){bullets.splice(i,1);continue;}\n    ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.lineTo(b.x-b.vx*3,b.y-b.vy*3);\n    ctx.strokeStyle=b.isPlayer?'rgba(251,191,36,0.3)':'rgba(239,68,68,0.3)';ctx.lineWidth=b.r;ctx.stroke();\n    ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);\n    ctx.fillStyle=b.isPlayer?'#fbbf24':'#ef4444';\n    ctx.shadowColor=b.isPlayer?'#fbbf24':'#ef4444';ctx.shadowBlur=8;ctx.fill();ctx.shadowBlur=0;\n  }\n\n  // ========== 波次逻辑 ==========\n  const d=DIFFICULTY[currentDiff];\n  const killsPerWave=5;\n\n  if(waveKillCount>=killsPerWave&&!bossSpawned&&!boss){\n    currentWave++;waveKillCount=0;waveInProgress=true;\n    if(currentWave%5===0){\n      showBossWarning();\n      setTimeout(()=>{boss=spawnBoss(currentWave);bossSpawned=true;showWaveAnnounce(currentWave);updateHUD();},2500);\n    }else{showWaveAnnounce(currentWave);}\n  }\n\n  // 生成普通敌人\n  const targetEnemyCount=boss?Math.max(1,d.enemyCount-2):d.enemyCount;\n  while(enemies.length<targetEnemyCount)enemies.push(spawnEnemy());\n\n  // ========== 普通敌人逻辑 ==========\n  for(let ei=enemies.length-1;ei>=0;ei--){\n    const e=enemies[ei];\n    if(e.stunTimer>0){e.stunTimer--;drawTank(e,'#7c3aed','#a78bfa','#c4b5fd','#ddd6fe');continue;}\n\n    const targetAngle=Math.atan2(playerTank.y-e.y,playerTank.x-e.x);\n    e.angle+=(targetAngle-e.angle)*0.015;\n    const distToPlayer=Math.hypot(playerTank.x-e.x,playerTank.y-e.y);\n    if(distToPlayer>250){e.x+=Math.cos(e.angle)*d.enemySpeed;e.y+=Math.sin(e.angle)*d.enemySpeed;}\n    e.x=Math.max(e.size,Math.min(BASE_W-e.size,e.x));\n    e.y=Math.max(e.size,Math.min(BASE_H-e.size,e.y));\n\n    e.fireTimer++;\n    if(e.fireTimer>=d.enemyFireInterval&&distToPlayer<e.maxFireDist){\n      e.fireTimer=0;\n      bullets.push({x:e.x+Math.cos(e.angle)*24,y:e.y+Math.sin(e.angle)*24,vx:Math.cos(e.angle)*2.5,vy:Math.sin(e.angle)*2.5,r:4,isPlayer:false,dmg:d.enemyDamage});\n    }\n\n    // 玩家子弹打敌人\n    for(let bi=bullets.length-1;bi>=0;bi--){\n      const b=bullets[bi];if(!b.isPlayer)continue;\n      if(Math.hypot(b.x-e.x,b.y-e.y)<e.size+b.r){\n        e.hp-=b.dmg||1;bullets.splice(bi,1);\n        if(e.hp<=0){\n          enemies.splice(ei,1);\n          const comboBonus=currentCombo*10;\n          battleScore+=100+comboBonus;battleKills++;totalKills++;waveKillCount++;\n          battleExp+=10; // 杀敌经验\n          addCombo();showKillFeed(\"击杀敌人! +100\",false);updateHUD();\n        }\n        break;\n      }\n    }\n\n    // 敌人子弹打玩家\n    for(let bi=bullets.length-1;bi>=0;bi--){\n      const b=bullets[bi];if(b.isPlayer)continue;\n      if(Math.hypot(b.x-playerTank.x,b.y-playerTank.y)<playerTank.size+b.r){\n        if(invincibleTimer>0||shieldHits>0){\n          if(shieldHits>0)shieldHits--;\n          bullets.splice(bi,1);continue;\n        }\n        playerTank.hp-=(b.dmg||1);bullets.splice(bi,1);\n        damageLog.push({time:Date.now(),dmg:b.dmg||1});\n        currentCombo=0;comboTimer=0;addStatus('damage','扣血',1);\n        showDamageFlash();updateHUD();break;\n      }\n    }\n\n    drawTank(e,'#dc2626','#f87171','#fca5a5','#fecaca');\n  }\n\n  // ========== Boss 逻辑 ==========\n  if(boss){\n    if(boss.stunTimer>0){boss.stunTimer--;}\n    else{\n      const distToPlayer=Math.hypot(playerTank.x-boss.x,playerTank.y-boss.y);\n      const targetAngle=Math.atan2(playerTank.y-boss.y,playerTank.x-boss.x);\n      if(boss.resting){\n        boss.restTimer++;\n        if(boss.restTimer>=boss.restDuration){boss.resting=false;boss.shotsFired=0;boss.restTimer=0;}\n        boss.angle+=(targetAngle-boss.angle)*0.01;\n      }else{\n        boss.angle+=(targetAngle-boss.angle)*0.03;\n        if(distToPlayer>200){boss.x+=Math.cos(boss.angle)*boss.speed;boss.y+=Math.sin(boss.angle)*boss.speed;}\n        boss.fireTimer++;\n        if(boss.fireTimer>=boss.fireInterval&&distToPlayer<boss.maxFireDist){\n          boss.fireTimer=0;boss.shotsFired++;\n          const spread=boss.bossLevel>=1?0.15:0;\n          const angles=spread>0?[-spread,0,spread]:[0];\n          angles.forEach(a=>{\n            bullets.push({x:boss.x+Math.cos(boss.angle+a)*30,y:boss.y+Math.sin(boss.angle+a)*30,vx:Math.cos(boss.angle+a)*4,vy:Math.sin(boss.angle+a)*4,r:5,isPlayer:false,dmg:2});\n          });\n          if(boss.shotsFired>=boss.maxShots){boss.resting=true;boss.restTimer=0;}\n        }\n      }\n    }\n    boss.x=Math.max(boss.size,Math.min(BASE_W-boss.size,boss.x));\n    boss.y=Math.max(boss.size,Math.min(BASE_H-boss.size,boss.y));\n\n    // 玩家子弹打Boss\n    for(let bi=bullets.length-1;bi>=0;bi--){\n      const b=bullets[bi];if(!b.isPlayer)continue;\n      if(Math.hypot(b.x-boss.x,b.y-boss.y)<boss.size+b.r){\n        boss.hp-=(b.dmg||1);bullets.splice(bi,1);\n        if(boss.hp<=0){\n          const bossScore=500+boss.bossLevel*200;\n          battleScore+=bossScore;battleKills++;totalKills++;totalBossKills++;waveKillCount++;\n          battleExp+=50; // Boss经验\n          bossSpawned=false;showKillFeed(`击败BOSS! +${bossScore}`,true);\n          // Boss死亡自爆圈\n          explosions.push({x:boss.x,y:boss.y,radius:0,maxRadius:200,phase:'warn',timer:180,dmg:3,fromPlayer:false});\n          // 10秒后生成掉落\n          setTimeout(()=>{\n            if(!gameRunning)return;\n            for(let i=0;i<3;i++){\n              const angle=Math.random()*Math.PI*2;\n              const dist=100+Math.random()*300;\n              items.push({x:boss.x+Math.cos(angle)*dist,y:boss.y+Math.sin(angle)*dist,type:'bomb',timer:300,radius:60,phase:'warn'});\n            }\n            items.push({x:boss.x+(Math.random()-0.5)*200,y:boss.y+(Math.random()-0.5)*200,type:'heal',radius:15});\n          },10000);\n          boss=null;addCombo();updateHUD();break;\n        }\n      }\n    }\n\n    // Boss子弹打玩家\n    if(boss){\n      for(let bi=bullets.length-1;bi>=0;bi--){\n        const b=bullets[bi];if(b.isPlayer)continue;\n        if(Math.hypot(b.x-playerTank.x,b.y-playerTank.y)<playerTank.size+b.r){\n          if(invincibleTimer>0||shieldHits>0){if(shieldHits>0)shieldHits--;bullets.splice(bi,1);continue;}\n          playerTank.hp-=2;bullets.splice(bi,1);\n          damageLog.push({time:Date.now(),dmg:2});\n          currentCombo=0;comboTimer=0;addStatus('damage','扣血',1);\n          showDamageFlash();updateHUD();break;\n        }\n      }\n    }\n\n    if(boss){\n      ctx.save();ctx.translate(boss.x,boss.y);ctx.rotate(boss.angle);\n      ctx.strokeStyle=boss.resting?'rgba(239,68,68,0.3)':'rgba(239,68,68,0.6)';\n      ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,boss.size+8,0,Math.PI*2);ctx.stroke();\n      if(boss.resting){\n        ctx.fillStyle='rgba(239,68,68,0.15)';ctx.beginPath();ctx.arc(0,0,boss.size+15,0,Math.PI*2);ctx.fill();\n        const restProgress=boss.restTimer/boss.restDuration;\n        ctx.strokeStyle='#ef4444';ctx.lineWidth=4;ctx.beginPath();\n        ctx.arc(0,0,boss.size+20,-Math.PI/2,-Math.PI/2+restProgress*Math.PI*2);ctx.stroke();\n      }\n      ctx.fillStyle='rgba(0,0,0,0.3)';ctx.fillRect(-boss.size+4,-boss.size/2+4,boss.size*1.6,boss.size);\n      ctx.fillStyle='#991b1b';ctx.fillRect(-boss.size,-boss.size/2,boss.size*1.6,boss.size);\n      ctx.strokeStyle='#ef4444';ctx.lineWidth=3;ctx.strokeRect(-boss.size,-boss.size/2,boss.size*1.6,boss.size);\n      ctx.fillStyle='#fca5a5';ctx.fillRect(0,-6,boss.size,12);\n      ctx.strokeStyle='#fecaca';ctx.lineWidth=1;ctx.strokeRect(0,-6,boss.size,12);\n      ctx.fillStyle='#fbbf24';ctx.beginPath();ctx.arc(boss.size,0,5,0,Math.PI*2);ctx.fill();\n      ctx.restore();\n      updateHUD();\n    }\n  }\n\n  // ========== 爆炸圈逻辑 ==========\n  for(let i=explosions.length-1;i>=0;i--){\n    const ex=explosions[i];ex.timer--;\n    if(ex.phase==='warn'){\n      // 警告阶段：画一个逐渐填充的圆\n      const progress=1-ex.timer/180; // 3秒\n      ctx.strokeStyle='rgba(239,68,68,0.8)';ctx.lineWidth=3;\n      ctx.beginPath();ctx.arc(ex.x,ex.y,ex.maxRadius,0,Math.PI*2);ctx.stroke();\n      ctx.fillStyle=`rgba(239,68,68,${progress*0.3})`;\n      ctx.beginPath();ctx.arc(ex.x,ex.y,ex.maxRadius*progress,0,Math.PI*2);ctx.fill();\n      if(ex.timer<=0){\n        ex.phase='burst';ex.timer=30;ex.radius=0;\n      }\n    }else if(ex.phase==='burst'){\n      // 爆发阶段：圆圈向外扩散\n      ex.radius+=ex.maxRadius/30;\n      ctx.strokeStyle='rgba(239,68,68,0.9)';ctx.lineWidth=4;\n      ctx.beginPath();ctx.arc(ex.x,ex.y,ex.radius,0,Math.PI*2);ctx.stroke();\n      // 检测碰撞\n      const distToPlayer=Math.hypot(playerTank.x-ex.x,playerTank.y-ex.y);\n      if(Math.abs(distToPlayer-ex.radius)<20&&invincibleTimer<=0&&shieldHits<=0){\n        playerTank.hp-=ex.dmg;damageLog.push({time:Date.now(),dmg:ex.dmg});\n        addStatus('damage','爆炸伤害',1);showDamageFlash();updateHUD();\n      }\n      // 检测敌人\n      enemies.forEach(e=>{if(Math.hypot(e.x-ex.x,e.y-ex.y)<ex.radius+10)e.hp-=5;});\n      if(ex.timer<=0)explosions.splice(i,1);\n    }\n  }\n\n  // ========== 掉落物逻辑 ==========\n  for(let i=items.length-1;i>=0;i--){\n    const it=items[i];\n    if(it.type==='bomb'){\n      it.timer--;\n      if(it.phase==='warn'){\n        const progress=1-it.timer/300;\n        ctx.strokeStyle='rgba(245,158,11,0.8)';ctx.lineWidth=2;\n        ctx.beginPath();ctx.arc(it.x,it.y,it.radius,0,Math.PI*2);ctx.stroke();\n        ctx.fillStyle=`rgba(245,158,11,${progress*0.3})`;\n        ctx.beginPath();ctx.arc(it.x,it.y,it.radius*progress,0,Math.PI*2);ctx.fill();\n        if(it.timer<=0){it.phase='burst';it.timer=30;it.currentRadius=0;}\n      }else if(it.phase==='burst'){\n        it.currentRadius+=it.radius/30;\n        ctx.strokeStyle='rgba(245,158,11,0.9)';ctx.lineWidth=3;\n        ctx.beginPath();ctx.arc(it.x,it.y,it.currentRadius,0,Math.PI*2);ctx.stroke();\n        const distToPlayer=Math.hypot(playerTank.x-it.x,playerTank.y-it.y);\n        if(Math.abs(distToPlayer-it.currentRadius)<15&&invincibleTimer<=0&&shieldHits<=0){\n          playerTank.hp-=2;damageLog.push({time:Date.now(),dmg:2});\n          addStatus('damage','炸弹',1);showDamageFlash();updateHUD();\n        }\n        if(it.timer<=0)items.splice(i,1);\n      }\n    }else if(it.type==='heal'){\n      // 回血包永久存在\n      ctx.fillStyle='rgba(34,197,94,0.2)';ctx.beginPath();ctx.arc(it.x,it.y,it.radius+4,0,Math.PI*2);ctx.fill();\n      ctx.fillStyle='#22c55e';ctx.beginPath();ctx.arc(it.x,it.y,it.radius,0,Math.PI*2);ctx.fill();\n      ctx.strokeStyle='#4ade80';ctx.lineWidth=2;ctx.beginPath();ctx.arc(it.x,it.y,it.radius,0,Math.PI*2);ctx.stroke();\n      ctx.fillStyle='#fff';ctx.font='bold 12px Arial';ctx.textAlign='center';ctx.textBaseline='middle';\n      ctx.fillText('+',it.x,it.y);\n      // 拾取检测\n      if(Math.hypot(playerTank.x-it.x,playerTank.y-it.y)<playerTank.size+it.radius){\n        playerTank.hp=Math.min(playerTank.maxHp,playerTank.hp+2);\n        items.splice(i,1);updateHUD();\n      }\n    }\n  }\n\n  // ========== 战场商店激活检测 ==========\n  if(bossSpawned&&!boss&&!battleShopActive){\n    battleShopActive=true;\n    battleShopBtn.classList.add('show');\n    setTimeout(()=>battleShopBtn.classList.remove('show'),5000);\n  }\n  if(boss)battleShopActive=false;\n\n  ctx.restore();\n  requestAnimationFrame(gameLoop);\n}\n<\/script>\n<\/body>\n<\/html>\n";
 </script>
 </body>
 </html>
