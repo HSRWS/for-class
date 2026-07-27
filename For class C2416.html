@@ -1,0 +1,1699 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>我的导航 · 分屏浮窗 · 聊天</title>
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --accent: #4f8cff;
+    --accent2: #7c5cff;
+    --bg: #0f1220;
+    --panel: rgba(255,255,255,0.06);
+    --text: #e8ecf5;
+    --muted: #9aa3b5;
+  }
+  html, body { height: 100%; }
+  body {
+    font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+    background: radial-gradient(1200px 800px at 20% 10%, #1a2140 0%, var(--bg) 55%),
+                radial-gradient(900px 700px at 90% 90%, #241a3f 0%, transparent 60%);
+    color: var(--text);
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ===== 顶部导航栏 ===== */
+  .topbar {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 16px;
+    background: rgba(10,12,22,0.6);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    position: relative;
+    z-index: 5000;
+  }
+  .brand {
+    font-weight: 700;
+    font-size: 18px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: flex; align-items: center; gap: 8px;
+    white-space: nowrap;
+  }
+  .tabs { display: flex; gap: 6px; margin-left: 6px; overflow-x: auto; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 8px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 14px;
+    transition: .2s;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .tab:hover { color: var(--text); background: var(--panel); }
+  .tab.active {
+    color: #fff;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    box-shadow: 0 6px 18px rgba(79,140,255,0.35);
+  }
+
+  /* ===== 页面容器 ===== */
+  .page { display: none; height: calc(100vh - 56px); }
+  .page.active { display: block; }
+
+  /* ===== 页面一：导航 ===== */
+  #pageNav { overflow-y: auto; padding: 30px 40px 60px; }
+  .search-wrap { max-width: 640px; margin: 10px auto 40px; }
+  .search-engine { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
+  .eng {
+    padding: 5px 14px; border-radius: 20px; cursor: pointer; font-size: 13px;
+    border: 1px solid rgba(255,255,255,0.12); color: var(--muted); background: var(--panel);
+  }
+  .eng.active { color: #fff; border-color: var(--accent); background: rgba(79,140,255,0.2); }
+  .search-box {
+    display: flex; gap: 10px;
+    background: var(--panel);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 6px;
+  }
+  .search-box input {
+    flex: 1; border: none; outline: none; background: transparent;
+    color: var(--text); padding: 12px 16px; font-size: 15px;
+  }
+  .search-box button {
+    border: none; cursor: pointer; color: #fff; font-weight: 600;
+    padding: 0 24px; border-radius: 10px; white-space: nowrap;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .cat-title { font-size: 15px; color: var(--muted); margin: 26px 4px 14px; font-weight: 600; letter-spacing: 1px; }
+  .grid {
+    display: grid; gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 18px 16px;
+    cursor: pointer;
+    transition: .2s;
+    display: flex; align-items: center; gap: 12px;
+    text-decoration: none; color: var(--text);
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent);
+    box-shadow: 0 10px 26px rgba(0,0,0,0.35);
+    background: rgba(79,140,255,0.12);
+  }
+  .card .ico {
+    width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 700; color: #fff;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+  }
+  .card .info { overflow: hidden; }
+  .card .name { font-size: 14px; font-weight: 600; }
+  .card .desc { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ===== 页面二：分屏浮窗桌面 ===== */
+  #pageDesk { position: relative; }
+  .desktop {
+    position: absolute; inset: 0 0 48px 0;
+    overflow: hidden;
+    touch-action: none;
+  }
+  .desk-hint {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    text-align: center; color: var(--muted); pointer-events: none; width: 90%;
+  }
+  .desk-hint h2 { font-size: 22px; margin-bottom: 8px; color: var(--text); }
+
+  /* 浮窗 */
+  .win {
+    position: absolute;
+    min-width: 220px; min-height: 160px;
+    background: #12151f;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.5);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    resize: both;
+  }
+  .win.maximized { border-radius: 0; }
+  /* 最小化：移出屏幕而不是 display:none，里面的音/视频继续播放 */
+  .win.minimized { left: -300vw !important; }
+  .win-head {
+    height: 40px; flex-shrink: 0;
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 10px;
+    background: rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    cursor: move; user-select: none; touch-action: none;
+  }
+  .win-dots { display: flex; gap: 7px; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; cursor: pointer; border: none; }
+  .dot.close { background: #ff5f57; }
+  .dot.min { background: #febc2e; }
+  .dot.max { background: #28c840; }
+  .win-title {
+    flex: 1; font-size: 13px; color: var(--muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .win-addr {
+    display: flex; gap: 6px; padding: 8px 10px;
+    background: rgba(0,0,0,0.2); flex-shrink: 0;
+  }
+  .win-addr input {
+    flex: 1; border: none; outline: none; border-radius: 8px;
+    padding: 7px 12px; font-size: 13px;
+    background: rgba(255,255,255,0.08); color: var(--text); min-width: 0;
+  }
+  .win-addr button {
+    border: none; cursor: pointer; border-radius: 8px; padding: 0 14px;
+    background: var(--accent); color: #fff; font-size: 13px;
+  }
+  .win-body { flex: 1; position: relative; background: #fff; }
+  .win-body iframe { width: 100%; height: 100%; border: none; }
+  .frame-mask { position: absolute; inset: 0; display: none; z-index: 10; }
+  .dragging .frame-mask { display: block; }
+
+  /* 任务栏 */
+  .taskbar {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 48px;
+    display: flex; align-items: center; gap: 8px; padding: 0 12px;
+    background: rgba(10,12,22,0.75);
+    backdrop-filter: blur(14px);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    z-index: 4000;
+  }
+  .start-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px; border-radius: 10px; cursor: pointer;
+    border: none; color: #fff; font-size: 13px; font-weight: 600; white-space: nowrap;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .layout-btns { display: flex; gap: 6px; }
+  .layout-btns button {
+    border: 1px solid rgba(255,255,255,0.15); background: var(--panel);
+    color: var(--muted); border-radius: 8px; padding: 7px 12px;
+    cursor: pointer; font-size: 12px; white-space: nowrap;
+  }
+  .layout-btns button:hover { color: #fff; border-color: var(--accent); }
+  .task-items { display: flex; gap: 6px; flex: 1; overflow-x: auto; }
+  .task-items::-webkit-scrollbar { display: none; }
+  .task-item {
+    padding: 7px 14px; border-radius: 8px; cursor: pointer;
+    background: var(--panel); border: 1px solid rgba(255,255,255,0.1);
+    color: var(--muted); font-size: 12px; white-space: nowrap;
+    max-width: 160px; overflow: hidden; text-overflow: ellipsis;
+  }
+  .task-item.active { color: #fff; border-color: var(--accent); background: rgba(79,140,255,0.15); }
+
+  /* 应用菜单 */
+  .app-menu {
+    position: absolute; bottom: 56px; left: 12px; width: 260px;
+    background: rgba(20,24,38,0.96);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px; padding: 12px;
+    display: none; z-index: 4500;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  }
+  .app-menu.show { display: block; }
+  .app-menu .m-title { font-size: 12px; color: var(--muted); margin: 4px 6px 10px; }
+  .app-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+  .app-grid button {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    background: var(--panel); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px; padding: 12px 6px; cursor: pointer;
+    color: var(--text); font-size: 11px;
+  }
+  .app-grid button:hover { border-color: var(--accent); background: rgba(79,140,255,0.12); }
+  .app-grid .aico { font-size: 22px; }
+
+  /* ===== 页面三：聊天 ===== */
+  #pageChat { display: none; height: calc(100vh - 56px); }
+  #pageChat.active { display: flex; }
+  .chat-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  /* 设置界面 */
+  .chat-setup {
+    width: 100%; max-width: 400px;
+    background: var(--panel); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 18px; padding: 28px 26px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+  }
+  .chat-setup h2 { font-size: 20px; margin-bottom: 6px; }
+  .chat-setup p { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+  .chat-setup label { display: block; font-size: 12px; color: var(--muted); margin: 14px 0 6px; }
+  .chat-setup input {
+    width: 100%; border: 1px solid rgba(255,255,255,0.12); outline: none;
+    background: rgba(255,255,255,0.06); color: var(--text);
+    padding: 12px 14px; border-radius: 10px; font-size: 14px;
+  }
+  .chat-setup input:focus { border-color: var(--accent); }
+  .chat-setup .join {
+    width: 100%; margin-top: 22px; border: none; cursor: pointer;
+    padding: 13px; border-radius: 10px; font-size: 15px; font-weight: 600; color: #fff;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  /* 聊天主界面 */
+  .chat-main {
+    display: none; flex-direction: column;
+    width: 100%; max-width: 760px; height: 100%;
+    background: var(--panel); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px; overflow: hidden;
+  }
+  .chat-head {
+    display: flex; align-items: center; gap: 10px; padding: 14px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.08); flex-shrink: 0;
+  }
+  .chat-head .room { font-weight: 600; }
+  .chat-head .me { font-size: 12px; color: var(--muted); }
+  .status-dot { width: 9px; height: 9px; border-radius: 50%; background: #febc2e; }
+  .status-dot.online { background: #28c840; }
+  .status-dot.off { background: #ff5f57; }
+  .chat-head .leave {
+    margin-left: auto; border: 1px solid rgba(255,255,255,0.15); background: transparent;
+    color: var(--muted); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 12px;
+  }
+  .chat-msgs { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+  .msg { max-width: 76%; display: flex; flex-direction: column; gap: 3px; }
+  .msg .meta { font-size: 11px; color: var(--muted); padding: 0 4px; }
+  .msg .bubble {
+    padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.5;
+    background: rgba(255,255,255,0.08); word-break: break-word;
+  }
+  .msg.mine { align-self: flex-end; align-items: flex-end; }
+  .msg.mine .bubble { background: linear-gradient(90deg, var(--accent), var(--accent2)); color: #fff; }
+  .msg.sys { align-self: center; }
+  .msg.sys .bubble { background: transparent; color: var(--muted); font-size: 12px; padding: 2px; }
+  .chat-input { display: flex; gap: 10px; padding: 14px; border-top: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; }
+  .chat-input input {
+    flex: 1; border: 1px solid rgba(255,255,255,0.12); outline: none;
+    background: rgba(255,255,255,0.06); color: var(--text);
+    padding: 12px 16px; border-radius: 12px; font-size: 14px; min-width: 0;
+  }
+  .chat-input input:focus { border-color: var(--accent); }
+  .chat-input button {
+    border: none; cursor: pointer; color: #fff; font-weight: 600;
+    padding: 0 22px; border-radius: 12px; white-space: nowrap;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+
+  /* ===== 背景层 / 自动隐藏导航栏 ===== */
+  #bgLayer { position: fixed; inset: 0; z-index: -1; background-size: cover; background-position: center; }
+  body.hasbg #bgLayer::after { content: ""; position: absolute; inset: 0; background: rgba(8,10,18,0.4); }
+  #topHotzone { display: none; position: fixed; top: 0; left: 0; right: 0; height: 12px; z-index: 5900; }
+  body.hidebar #topHotzone { display: block; }
+  body.hidebar .topbar { position: fixed; top: 0; left: 0; right: 0; transform: translateY(-100%); transition: transform .25s; }
+  body.hidebar .topbar.peek, body.hidebar .topbar:hover { transform: translateY(0); }
+  body.hidebar .page, body.hidebar #pageChat { height: 100vh; }
+
+  /* 分屏页切走时离屏隐藏（不用 display:none），保证窗口里的音/视频继续播放 */
+  #pageDesk.page { display: block; position: fixed; top: 56px; left: 0; width: 100vw; height: calc(100vh - 56px); }
+  #pageDesk.page:not(.active) { left: -200vw; }
+  body.hidebar #pageDesk.page { top: 0; height: 100vh; }
+
+  /* ===== 主界面（桌面） ===== */
+  #pageHome { position: relative; overflow: hidden; }
+  .desk-icons {
+    position: absolute; top: 22px; left: 18px; bottom: 20px;
+    display: flex; flex-direction: column; flex-wrap: wrap; gap: 6px;
+    align-content: flex-start; width: 45%;
+  }
+  .dicon {
+    width: 84px; padding: 10px 4px; border-radius: 10px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    border: 1px solid transparent; background: transparent; color: var(--text);
+  }
+  .dicon:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.18); }
+  .dicon .di { font-size: 30px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4)); }
+  .dicon .dn { font-size: 12px; text-shadow: 0 1px 4px rgba(0,0,0,0.8); white-space: nowrap; }
+  .home-clock { position: absolute; top: 34px; right: 44px; text-align: right; pointer-events: none; }
+  .home-clock .hc-time { font-size: 64px; font-weight: 700; letter-spacing: 2px; line-height: 1.1; text-shadow: 0 4px 24px rgba(0,0,0,0.55); }
+  .home-clock .hc-date { font-size: 16px; opacity: .9; margin-top: 4px; text-shadow: 0 2px 10px rgba(0,0,0,0.6); }
+  .home-widgets {
+    position: absolute; right: 24px; bottom: 20px; left: 24px;
+    display: flex; gap: 14px; justify-content: flex-end; align-items: flex-end;
+    pointer-events: none;
+  }
+  .widget {
+    pointer-events: auto;
+    width: 250px; border-radius: 14px; padding: 14px;
+    background: rgba(16,19,32,0.74); backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 14px 40px rgba(0,0,0,0.4);
+  }
+  .widget h4 { font-size: 13px; color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .widget h4 .q-refresh { margin-left: auto; border: none; background: none; color: var(--muted); cursor: pointer; font-size: 14px; }
+  .widget h4 .q-refresh:hover { color: #fff; }
+  .quote-text { font-size: 13px; line-height: 1.7; }
+  .quote-from { font-size: 11px; color: var(--muted); text-align: right; margin-top: 8px; }
+  .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .cal-head b { font-size: 13px; }
+  .cal-head button { border: none; background: rgba(255,255,255,0.08); color: var(--muted); border-radius: 6px; width: 24px; height: 24px; cursor: pointer; }
+  .cal-head button:hover { color: #fff; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; text-align: center; font-size: 11px; }
+  .cal-grid .wd { color: var(--muted); padding: 3px 0; }
+  .cal-grid .cd { padding: 5px 0; border-radius: 6px; }
+  .cal-grid .cd.dim { color: #5a6377; }
+  .cal-grid .cd.today { background: linear-gradient(90deg, var(--accent), var(--accent2)); color: #fff; font-weight: 700; }
+  .todo-add { display: flex; gap: 6px; margin-bottom: 8px; }
+  .todo-add input { flex: 1; min-width: 0; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.06); color: var(--text); border-radius: 8px; padding: 7px 10px; font-size: 12px; outline: none; }
+  .todo-add button { border: none; border-radius: 8px; padding: 0 12px; cursor: pointer; color: #fff; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .todo-list { max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+  .todo-item { display: flex; align-items: center; gap: 8px; font-size: 12px; padding: 5px 6px; border-radius: 6px; background: rgba(255,255,255,.04); }
+  .todo-item.done span { text-decoration: line-through; color: var(--muted); }
+  .todo-item span { flex: 1; word-break: break-all; }
+  .todo-item .del { cursor: pointer; color: var(--muted); border: none; background: none; font-size: 13px; }
+  .todo-item .del:hover { color: #ff5f57; }
+
+  /* ===== 游戏页 ===== */
+  #pageGame { overflow-y: auto; padding: 26px 30px 50px; }
+  .game-lobby { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); max-width: 900px; margin: 0 auto; }
+  .gcard { background: var(--panel); border: 1px solid rgba(255,255,255,.1); border-radius: 16px; padding: 22px; cursor: pointer; text-align: center; transition: .2s; }
+  .gcard:hover { transform: translateY(-4px); border-color: var(--accent); background: rgba(79,140,255,.12); }
+  .gcard .gi { font-size: 42px; }
+  .gcard h3 { margin: 10px 0 6px; font-size: 16px; }
+  .gcard p { font-size: 12px; color: var(--muted); }
+  .game-stage { max-width: 520px; margin: 0 auto; }
+  .gs-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .gs-head button { border: 1px solid rgba(255,255,255,.15); background: var(--panel); color: var(--text); border-radius: 8px; padding: 7px 14px; cursor: pointer; }
+  .gs-head b { font-size: 17px; }
+  .gs-head .sc { margin-left: auto; color: var(--muted); font-size: 14px; }
+  #gsBody { background: var(--panel); border: 1px solid rgba(255,255,255,.1); border-radius: 16px; padding: 16px; }
+  .g-btns { display: flex; gap: 8px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+  .g-btns button { border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.06); color: var(--text); border-radius: 10px; padding: 10px 20px; cursor: pointer; font-size: 16px; }
+  .g-btns button:active { background: rgba(79,140,255,.3); }
+  .b2048 { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+  .t2048 { aspect-ratio: 1; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; background: rgba(255,255,255,.06); color: #fff; }
+  #snakeCv { width: 100%; display: block; border-radius: 10px; background: #12141f; touch-action: none; }
+  .mem-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+  .mem-card { aspect-ratio: 1; border: none; border-radius: 10px; font-size: 26px; cursor: pointer; background: rgba(255,255,255,.08); color: transparent; transition: .15s; }
+  .mem-card.open { background: rgba(79,140,255,.25); color: #fff; }
+  .mem-card.ok { background: rgba(40,200,64,.25); color: #fff; cursor: default; }
+
+  /* ===== 设置页 ===== */
+  #pageSet { overflow-y: auto; padding: 26px 20px 60px; }
+  .set-wrap { max-width: 660px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+  .set-sec { background: var(--panel); border: 1px solid rgba(255,255,255,.1); border-radius: 16px; padding: 18px 20px; }
+  .set-sec h3 { font-size: 15px; margin-bottom: 4px; }
+  .set-sec .tip { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .set-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+  .set-row label { font-size: 13px; min-width: 110px; }
+  .set-row input[type=text], .set-row select {
+    flex: 1; min-width: 160px; border: 1px solid rgba(255,255,255,.12); outline: none;
+    background: rgba(255,255,255,.06); color: var(--text); padding: 9px 12px; border-radius: 9px; font-size: 13px;
+  }
+  .set-row select option { background: #1a1e2e; }
+  .set-row input[type=color] { width: 44px; height: 32px; border: none; background: none; cursor: pointer; padding: 0; }
+  .sbtn { border: none; cursor: pointer; color: #fff; padding: 9px 16px; border-radius: 9px; font-size: 13px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .gbtn { border: 1px solid rgba(255,255,255,.15); background: var(--panel); color: var(--muted); padding: 9px 16px; border-radius: 9px; cursor: pointer; font-size: 13px; }
+  .gbtn:hover { color: #fff; border-color: var(--accent); }
+  .switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; display: inline-block; }
+  .switch input { opacity: 0; width: 100%; height: 100%; position: absolute; cursor: pointer; z-index: 2; margin: 0; }
+  .switch i { position: absolute; inset: 0; border-radius: 20px; background: rgba(255,255,255,.15); transition: .2s; }
+  .switch i::after { content: ""; position: absolute; width: 18px; height: 18px; border-radius: 50%; background: #fff; top: 3px; left: 3px; transition: .2s; }
+  .switch input:checked + i { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .switch input:checked + i::after { left: 23px; }
+  .theme-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tchip { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,.25); }
+  .tchip:hover { border-color: #fff; }
+
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 8px; }
+
+  /* ===================== 移动端适配 ===================== */
+  @media (max-width: 640px) {
+    .topbar { height: 52px; padding: 0 12px; gap: 10px; }
+    .brand { font-size: 15px; }
+    .brand span.long { display: none; }
+    .tab { padding: 6px 12px; font-size: 13px; }
+    .page, #pageChat { height: calc(100vh - 52px); }
+
+    #pageNav { padding: 18px 14px 60px; }
+    .search-wrap { margin: 4px auto 24px; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+    .card { padding: 14px 12px; gap: 10px; }
+    .card .ico { width: 34px; height: 34px; font-size: 16px; }
+
+    .desktop { inset: 0 0 46px 0; }
+    .taskbar { height: 46px; padding: 0 8px; gap: 6px; }
+    .start-btn { padding: 8px 10px; font-size: 12px; }
+    .layout-btns button { padding: 7px 8px; font-size: 11px; }
+    .app-menu { left: 8px; right: 8px; width: auto; }
+    .win-addr input { font-size: 16px; } /* 防止 iOS 聚焦缩放 */
+
+    .chat-wrap { padding: 0; }
+    .chat-main { max-width: 100%; border-radius: 0; border: none; }
+    .chat-input input { font-size: 16px; }
+    .msg { max-width: 86%; }
+
+    #pageDesk.page { top: 52px; height: calc(100vh - 52px); }
+    .home-clock { top: 14px; right: 14px; }
+    .home-clock .hc-time { font-size: 38px; }
+    .home-clock .hc-date { font-size: 12px; }
+    .desk-icons { top: 12px; left: 8px; right: 150px; bottom: 42%; flex-direction: row; flex-wrap: wrap; align-content: flex-start; width: auto; }
+    .dicon { width: 62px; padding: 8px 2px; }
+    .dicon .di { font-size: 24px; }
+    .dicon .dn { font-size: 11px; }
+    .home-widgets { left: 10px; right: 10px; bottom: 12px; overflow-x: auto; justify-content: flex-start; }
+    .widget { flex-shrink: 0; width: 230px; }
+    #pageGame { padding: 16px 12px 50px; }
+    #pageSet { padding: 16px 10px 60px; }
+    .set-row label { min-width: 96px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- 全局背景层 -->
+  <div id="bgLayer"></div>
+  <!-- 自动隐藏导航栏时的顶部感应区 -->
+  <div id="topHotzone"></div>
+
+  <!-- 顶部导航 -->
+  <div class="topbar" id="topbar">
+    <div class="brand">🚀 <span class="long">我的工作台</span></div>
+    <div class="tabs">
+      <div class="tab active" data-page="pageHome">🏠 主界面</div>
+      <div class="tab" data-page="pageNav">📚 导航</div>
+      <div class="tab" data-page="pageDesk">🖥️ 分屏浮窗</div>
+      <div class="tab" data-page="pageChat">💬 聊天</div>
+      <div class="tab" data-page="pageGame">🎮 游戏</div>
+      <div class="tab" data-page="pageSet">⚙️ 设置</div>
+    </div>
+  </div>
+
+  <!-- ================= 页面零：主界面（桌面） ================= -->
+  <div id="pageHome" class="page active">
+    <div class="desk-icons" id="deskIcons"></div>
+
+    <div class="home-clock">
+      <div class="hc-time" id="hcTime">--:--</div>
+      <div class="hc-date" id="hcDate"></div>
+    </div>
+
+    <div class="home-widgets">
+      <div class="widget">
+        <h4>✅ 待办清单</h4>
+        <div class="todo-add">
+          <input id="todoInput" maxlength="40" placeholder="添加待办…" />
+          <button onclick="addTodo()">+</button>
+        </div>
+        <div class="todo-list" id="todoList"></div>
+      </div>
+      <div class="widget">
+        <h4>📅 日历</h4>
+        <div class="cal-head">
+          <button onclick="calMove(-1)">‹</button>
+          <b id="calTitle"></b>
+          <button onclick="calMove(1)">›</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+      <div class="widget">
+        <h4>💬 每日一言 <button class="q-refresh" onclick="nextQuote()" title="换一句">↻</button></h4>
+        <div class="quote-text" id="quoteText"></div>
+        <div class="quote-from" id="quoteFrom"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 页面一：导航 ================= -->
+  <div id="pageNav" class="page">
+    <div class="search-wrap">
+      <div class="search-engine" id="searchEngine">
+        <div class="eng active" data-e="baidu">百度</div>
+        <div class="eng" data-e="bing">必应</div>
+        <div class="eng" data-e="google">谷歌</div>
+      </div>
+      <div class="search-box">
+        <input id="searchInput" placeholder="输入关键词，回车搜索…" />
+        <button onclick="doSearch()">搜索</button>
+      </div>
+    </div>
+
+    <div class="cat-title">🔥 常用</div>
+    <div class="grid" id="grid-common"></div>
+
+    <div class="cat-title">🤖 AI 工具</div>
+    <div class="grid" id="grid-ai"></div>
+
+    <div class="cat-title">💻 开发</div>
+    <div class="grid" id="grid-dev"></div>
+
+    <div class="cat-title">📖 学习教育</div>
+    <div class="grid" id="grid-study"></div>
+
+    <div class="cat-title">🎬 影音娱乐</div>
+    <div class="grid" id="grid-fun"></div>
+
+    <div class="cat-title">🎮 游戏</div>
+    <div class="grid" id="grid-game"></div>
+
+    <div class="cat-title">🎨 设计素材</div>
+    <div class="grid" id="grid-design"></div>
+
+    <div class="cat-title">🛒 购物生活</div>
+    <div class="grid" id="grid-life"></div>
+
+    <div class="cat-title">💬 社交资讯</div>
+    <div class="grid" id="grid-social"></div>
+
+    <div class="cat-title">🧰 实用工具</div>
+    <div class="grid" id="grid-tools"></div>
+  </div>
+
+  <!-- ================= 页面二：分屏浮窗桌面 ================= -->
+  <div id="pageDesk" class="page">
+    <div class="desktop" id="desktop">
+      <div class="desk-hint" id="deskHint">
+        <h2>🖥️ 分屏浮窗工作台</h2>
+        <p>点击左下角「应用」打开窗口，可自由拖动、缩放、并排分屏（支持触摸）</p>
+      </div>
+    </div>
+
+    <!-- 应用菜单 -->
+    <div class="app-menu" id="appMenu">
+      <div class="m-title">打开一个窗口</div>
+      <div class="app-grid" id="appGrid"></div>
+    </div>
+
+    <!-- 任务栏 -->
+    <div class="taskbar">
+      <button class="start-btn" onclick="toggleMenu()">☰ 应用</button>
+      <div class="layout-btns">
+        <button onclick="tileWindows(2)">▥ 双分屏</button>
+        <button onclick="tileWindows(3)">▤ 三分屏</button>
+        <button onclick="cascadeWindows()">🗂 层叠</button>
+      </div>
+      <div class="task-items" id="taskItems"></div>
+    </div>
+  </div>
+
+  <!-- ================= 页面三：聊天 ================= -->
+  <div id="pageChat" class="page">
+    <div class="chat-wrap">
+      <!-- 设置界面 -->
+      <div class="chat-setup" id="chatSetup">
+        <h2>💬 加入聊天室</h2>
+        <p>输入用户名和房间名，同一房间的人即可实时聊天。<br>
+        🌍 默认走公共 MQTT 服务器，<b>广域网可用</b>：全世界任何联网设备输入相同房间名即可互聊。</p>
+        <label>用户名（必填）</label>
+        <input id="cfgUser" maxlength="16" placeholder="例如：小明" />
+        <label>房间名（同名才能互相看到）</label>
+        <input id="cfgRoom" maxlength="24" placeholder="默认 lobby" value="lobby" />
+        <label>服务器地址（默认公共服务器，局域网可改）</label>
+        <input id="cfgServer" placeholder="wss://..." value="wss://broker.emqx.io:8084/mqtt" />
+        <button class="join" onclick="joinChat()">进入聊天室</button>
+      </div>
+
+      <!-- 聊天主界面 -->
+      <div class="chat-main" id="chatMain">
+        <div class="chat-head">
+          <span class="status-dot" id="statusDot"></span>
+          <span class="room" id="roomName">房间</span>
+          <span class="me" id="meName"></span>
+          <button class="leave" onclick="leaveChat()">退出</button>
+        </div>
+        <div class="chat-msgs" id="chatMsgs"></div>
+        <div class="chat-input">
+          <input id="chatText" placeholder="输入消息，回车发送…" />
+          <button onclick="sendChat()">发送</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 页面四：游戏 ================= -->
+  <div id="pageGame" class="page">
+    <div class="game-lobby" id="gameLobby">
+      <div class="gcard" onclick="openGame('g2048')"><div class="gi">🔢</div><h3>2048</h3><p>方向键 / 按钮合并数字</p></div>
+      <div class="gcard" onclick="openGame('snake')"><div class="gi">🐍</div><h3>贪吃蛇</h3><p>方向键 / 滑动控制</p></div>
+      <div class="gcard" onclick="openGame('memory')"><div class="gi">🎴</div><h3>翻牌配对</h3><p>考验记忆力</p></div>
+      <div class="gcard" onclick="openGame('guess')"><div class="gi">🎯</div><h3>猜数字</h3><p>1~100 看谁猜得快</p></div>
+    </div>
+    <div class="game-stage" id="gameStage" style="display:none;">
+      <div class="gs-head">
+        <button onclick="closeGame()">‹ 返回</button>
+        <b id="gsTitle"></b>
+        <span class="sc" id="gsScore"></span>
+      </div>
+      <div id="gsBody"></div>
+    </div>
+  </div>
+
+  <!-- ================= 页面五：设置 ================= -->
+  <div id="pageSet" class="page">
+    <div class="set-wrap">
+
+      <div class="set-sec">
+        <h3>🖼️ 背景壁纸</h3>
+        <div class="tip">支持网络图片地址和本地图片（本地图会保存在浏览器里，刷新不丢）</div>
+        <div class="set-row">
+          <label>网络图片地址</label>
+          <input type="text" id="setBgUrl" placeholder="https://….jpg" />
+          <button class="sbtn" onclick="applyBgUrl()">应用</button>
+        </div>
+        <div class="set-row">
+          <label>本地图片</label>
+          <input type="file" id="setBgFile" accept="image/*" style="display:none" onchange="applyBgFile(this)" />
+          <button class="gbtn" onclick="document.getElementById('setBgFile').click()">选择图片…</button>
+          <button class="gbtn" onclick="clearBg()">恢复默认背景</button>
+        </div>
+      </div>
+
+      <div class="set-sec">
+        <h3>🎨 主题色</h3>
+        <div class="tip">改变全站按钮、选中标签等强调色</div>
+        <div class="set-row">
+          <div class="theme-chips" id="themeChips"></div>
+          <input type="color" id="setAccent" value="#4f8cff" title="自定义主色" onchange="setTheme(this.value, null)" />
+          <input type="color" id="setAccent2" value="#7c5cff" title="自定义副色" onchange="setTheme(null, this.value)" />
+        </div>
+      </div>
+
+      <div class="set-sec">
+        <h3>🧭 界面与启动</h3>
+        <div class="set-row">
+          <label>自动隐藏导航栏</label>
+          <span class="switch"><input type="checkbox" id="setHideBar" onchange="saveOpt('hidebar', this.checked); applyHidebar()" /><i></i></span>
+          <span class="tip" style="margin:0">鼠标移到屏幕顶部时弹出</span>
+        </div>
+        <div class="set-row">
+          <label>时钟 24 小时制</label>
+          <span class="switch"><input type="checkbox" id="setH24" checked onchange="saveOpt('h24', this.checked); tickClock()" /><i></i></span>
+          <label style="min-width:auto;margin-left:16px">显示秒</label>
+          <span class="switch"><input type="checkbox" id="setSec" checked onchange="saveOpt('sec', this.checked); tickClock()" /><i></i></span>
+        </div>
+        <div class="set-row">
+          <label>启动时进入</label>
+          <select id="setStartPage" onchange="saveOpt('start', this.value)">
+            <option value="pageHome">🏠 主界面</option>
+            <option value="pageNav">📚 导航</option>
+            <option value="pageDesk">🖥️ 分屏浮窗</option>
+            <option value="pageChat">💬 聊天</option>
+            <option value="pageGame">🎮 游戏</option>
+            <option value="pageSet">⚙️ 设置</option>
+          </select>
+        </div>
+        <div class="set-row">
+          <label>页面标题</label>
+          <input type="text" id="setTitle" maxlength="30" placeholder="浏览器标签页显示的名字" />
+          <button class="sbtn" onclick="applyTitle()">应用</button>
+        </div>
+      </div>
+
+      <div class="set-sec">
+        <h3>📦 数据管理</h3>
+        <div class="tip">所有设置、待办都保存在本浏览器（localStorage），不会上传</div>
+        <div class="set-row">
+          <button class="gbtn" onclick="exportSettings()">导出设置</button>
+          <input type="file" id="setImport" accept=".json" style="display:none" onchange="importSettings(this)" />
+          <button class="gbtn" onclick="document.getElementById('setImport').click()">导入设置</button>
+          <button class="gbtn" style="color:#ff8f88;border-color:rgba(255,95,87,.4)" onclick="resetAll()">恢复默认设置</button>
+        </div>
+      </div>
+
+      <div class="set-sec">
+        <h3>ℹ️ 关于聊天的广域网说明</h3>
+        <div class="tip" style="margin-bottom:0; line-height:1.8">
+          聊天功能默认使用公共 MQTT 服务器（broker.emqx.io）中转消息，<b>天生就是广域网的</b>：
+          只要双方能上网，无论在不在同一个网络、相隔多远，输入相同房间名即可互聊。
+          注意：公共服务器上的消息不加密，别发隐私/密码；想更私密可自建 MQTT 服务器后在聊天页换掉服务器地址。
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+/* ===================== 页面一 导航数据 ===================== */
+const NAV = {
+  common: [
+    { n: "百度",   d: "搜索引擎", u: "https://www.baidu.com" },
+    { n: "必应",   d: "Bing 搜索", u: "https://cn.bing.com" },
+    { n: "谷歌",   d: "Google 搜索", u: "https://www.google.com" },
+    { n: "知乎",   d: "有问题上知乎", u: "https://www.zhihu.com" },
+    { n: "微博",   d: "热点资讯", u: "https://weibo.com" },
+    { n: "淘宝",   d: "购物", u: "https://www.taobao.com" },
+    { n: "百度翻译", d: "在线翻译", u: "https://fanyi.baidu.com" },
+    { n: "百度网盘", d: "云存储", u: "https://pan.baidu.com" },
+    { n: "12306",  d: "火车票", u: "https://www.12306.cn" },
+    { n: "高德地图", d: "地图导航", u: "https://www.amap.com" },
+    { n: "腾讯视频", d: "在线视频", u: "https://v.qq.com" },
+    { n: "QQ邮箱",  d: "电子邮箱", u: "https://mail.qq.com" },
+  ],
+  ai: [
+    { n: "ChatGPT", d: "OpenAI 对话", u: "https://chat.openai.com" },
+    { n: "文心一言", d: "百度 AI", u: "https://yiyan.baidu.com" },
+    { n: "通义千问", d: "阿里 AI", u: "https://tongyi.aliyun.com" },
+    { n: "Kimi",    d: "月之暗面", u: "https://kimi.moonshot.cn" },
+    { n: "豆包",    d: "字节 AI", u: "https://www.doubao.com" },
+    { n: "DeepSeek", d: "深度求索", u: "https://chat.deepseek.com" },
+    { n: "腾讯元宝", d: "腾讯 AI", u: "https://yuanbao.tencent.com" },
+    { n: "Gemini",  d: "谷歌 AI", u: "https://gemini.google.com" },
+    { n: "Claude",  d: "Anthropic", u: "https://claude.ai" },
+    { n: "秘塔搜索", d: "AI 搜索", u: "https://metaso.cn" },
+  ],
+  dev: [
+    { n: "GitHub",  d: "代码托管", u: "https://github.com" },
+    { n: "Gitee",   d: "码云", u: "https://gitee.com" },
+    { n: "MDN",     d: "Web 文档", u: "https://developer.mozilla.org/zh-CN/" },
+    { n: "掘金",    d: "技术社区", u: "https://juejin.cn" },
+    { n: "CSDN",    d: "技术博客", u: "https://www.csdn.net" },
+    { n: "菜鸟教程", d: "编程教程", u: "https://www.runoob.com" },
+    { n: "Stack Overflow", d: "问答社区", u: "https://stackoverflow.com" },
+    { n: "CodePen", d: "在线演示", u: "https://codepen.io" },
+    { n: "npm",     d: "包管理", u: "https://www.npmjs.com" },
+    { n: "Vue",     d: "前端框架", u: "https://cn.vuejs.org" },
+    { n: "React",   d: "前端框架", u: "https://react.dev" },
+    { n: "力扣",    d: "刷题", u: "https://leetcode.cn" },
+  ],
+  study: [
+    { n: "中国大学MOOC", d: "在线课程", u: "https://www.icourse163.org" },
+    { n: "网易公开课", d: "公开课", u: "https://open.163.com" },
+    { n: "学习强国", d: "学习平台", u: "https://www.xuexi.cn" },
+    { n: "百度文库", d: "文档资料", u: "https://wenku.baidu.com" },
+    { n: "知网",    d: "学术文献", u: "https://www.cnki.net" },
+    { n: "有道词典", d: "在线词典", u: "https://dict.youdao.com" },
+    { n: "可汗学院", d: "免费课程", u: "https://zh.khanacademy.org" },
+    { n: "维基百科", d: "百科全书", u: "https://zh.wikipedia.org" },
+  ],
+  fun: [
+    { n: "哔哩哔哩", d: "视频弹幕", u: "https://www.bilibili.com" },
+    { n: "爱奇艺",  d: "影视剧", u: "https://www.iqiyi.com" },
+    { n: "优酷",    d: "在线视频", u: "https://www.youku.com" },
+    { n: "网易云",  d: "听音乐", u: "https://music.163.com" },
+    { n: "QQ音乐",  d: "听音乐", u: "https://y.qq.com" },
+    { n: "豆瓣",    d: "书影音", u: "https://www.douban.com" },
+    { n: "YouTube", d: "视频", u: "https://www.youtube.com" },
+    { n: "斗鱼",    d: "游戏直播", u: "https://www.douyu.com" },
+    { n: "虎牙",    d: "游戏直播", u: "https://www.huya.com" },
+    { n: "抖音",    d: "短视频", u: "https://www.douyin.com" },
+  ],
+  game: [
+    { n: "Steam",   d: "游戏平台", u: "https://store.steampowered.com" },
+    { n: "Epic",    d: "喜加一", u: "https://store.epicgames.com/zh-CN/" },
+    { n: "WeGame",  d: "腾讯游戏", u: "https://www.wegame.com.cn" },
+    { n: "TapTap",  d: "手游社区", u: "https://www.taptap.cn" },
+    { n: "4399",    d: "小游戏", u: "https://www.4399.com" },
+    { n: "IGN",     d: "游戏资讯", u: "https://www.ign.com.cn" },
+    { n: "米哈游",  d: "原神/星铁", u: "https://www.mihoyo.com" },
+    { n: "游民星空", d: "游戏门户", u: "https://www.gamersky.com" },
+  ],
+  design: [
+    { n: "站酷",    d: "设计社区", u: "https://www.zcool.com.cn" },
+    { n: "Behance", d: "作品展示", u: "https://www.behance.net" },
+    { n: "Dribbble", d: "灵感设计", u: "https://dribbble.com" },
+    { n: "花瓣",    d: "灵感采集", u: "https://huaban.com" },
+    { n: "Unsplash", d: "免费图库", u: "https://unsplash.com" },
+    { n: "Pexels",  d: "免费图库", u: "https://www.pexels.com" },
+    { n: "iconfont", d: "图标库", u: "https://www.iconfont.cn" },
+    { n: "Figma",   d: "在线设计", u: "https://www.figma.com" },
+  ],
+  life: [
+    { n: "淘宝",    d: "综合购物", u: "https://www.taobao.com" },
+    { n: "京东",    d: "自营电商", u: "https://www.jd.com" },
+    { n: "天猫",    d: "品牌商城", u: "https://www.tmall.com" },
+    { n: "拼多多",  d: "低价拼团", u: "https://www.pinduoduo.com" },
+    { n: "美团",    d: "本地生活", u: "https://www.meituan.com" },
+    { n: "大众点评", d: "美食点评", u: "https://www.dianping.com" },
+    { n: "闲鱼",    d: "二手交易", u: "https://www.goofish.com" },
+    { n: "携程",    d: "旅行订票", u: "https://www.ctrip.com" },
+  ],
+  social: [
+    { n: "微博",    d: "社交热点", u: "https://weibo.com" },
+    { n: "知乎",    d: "问答社区", u: "https://www.zhihu.com" },
+    { n: "小红书",  d: "生活分享", u: "https://www.xiaohongshu.com" },
+    { n: "贴吧",    d: "兴趣社区", u: "https://tieba.baidu.com" },
+    { n: "今日头条", d: "资讯", u: "https://www.toutiao.com" },
+    { n: "腾讯新闻", d: "新闻", u: "https://news.qq.com" },
+    { n: "网易新闻", d: "新闻", u: "https://news.163.com" },
+    { n: "36氪",    d: "科技资讯", u: "https://36kr.com" },
+  ],
+  tools: [
+    { n: "百度翻译", d: "在线翻译", u: "https://fanyi.baidu.com" },
+    { n: "DeepL",   d: "翻译神器", u: "https://www.deepl.com/translator" },
+    { n: "TinyPNG", d: "图片压缩", u: "https://tinypng.com" },
+    { n: "草料二维码", d: "二维码", u: "https://cli.im" },
+    { n: "在线PS",  d: "图片编辑", u: "https://www.photopea.com" },
+    { n: "iLovePDF", d: "PDF 工具", u: "https://www.ilovepdf.com/zh-cn" },
+    { n: "格式工厂", d: "格式转换", u: "https://convertio.co/zh/" },
+    { n: "全国天气", d: "天气预报", u: "https://www.weather.com.cn" },
+  ]
+};
+
+function renderNav() {
+  const map = {
+    "grid-common": NAV.common, "grid-ai": NAV.ai, "grid-dev": NAV.dev,
+    "grid-study": NAV.study, "grid-fun": NAV.fun, "grid-game": NAV.game,
+    "grid-design": NAV.design, "grid-life": NAV.life,
+    "grid-social": NAV.social, "grid-tools": NAV.tools,
+  };
+  for (const id in map) {
+    const box = document.getElementById(id);
+    box.innerHTML = map[id].map(item => `
+      <a class="card" href="${item.u}" target="_blank" rel="noopener">
+        <div class="ico">${item.n[0]}</div>
+        <div class="info">
+          <div class="name">${item.n}</div>
+          <div class="desc">${item.d}</div>
+        </div>
+      </a>`).join("");
+  }
+}
+
+/* 搜索引擎切换 */
+let curEngine = "baidu";
+const ENGINES = {
+  baidu:  "https://www.baidu.com/s?wd=",
+  bing:   "https://cn.bing.com/search?q=",
+  google: "https://www.google.com/search?q=",
+};
+document.getElementById("searchEngine").addEventListener("click", e => {
+  const el = e.target.closest(".eng");
+  if (!el) return;
+  document.querySelectorAll(".eng").forEach(x => x.classList.remove("active"));
+  el.classList.add("active");
+  curEngine = el.dataset.e;
+});
+function doSearch() {
+  const v = document.getElementById("searchInput").value.trim();
+  if (v) window.open(ENGINES[curEngine] + encodeURIComponent(v), "_blank");
+}
+document.getElementById("searchInput").addEventListener("keydown", e => { if (e.key === "Enter") doSearch(); });
+
+/* ===================== 页面切换 ===================== */
+function goPage(id) {
+  if (!document.getElementById(id)) id = "pageHome";
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.page === id));
+  document.querySelectorAll(".page").forEach(p => p.classList.toggle("active", p.id === id));
+  document.getElementById("topbar").classList.remove("peek");
+}
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => goPage(tab.dataset.page));
+});
+/* 自动隐藏导航栏：碰顶部感应区弹出 */
+const topbarEl = document.getElementById("topbar");
+document.getElementById("topHotzone").addEventListener("pointerenter", () => topbarEl.classList.add("peek"));
+document.getElementById("topHotzone").addEventListener("click", () => topbarEl.classList.add("peek"));
+topbarEl.addEventListener("pointerleave", () => topbarEl.classList.remove("peek"));
+
+/* ===================== 页面二 分屏浮窗 ===================== */
+const APPS = [
+  { icon: "🌐", name: "浏览器", url: "" },
+  { icon: "🔍", name: "百度",   url: "https://www.baidu.com" },
+  { icon: "🅱️", name: "必应",   url: "https://cn.bing.com" },
+  { icon: "🐙", name: "GitHub", url: "https://github.com" },
+  { icon: "📘", name: "MDN",    url: "https://developer.mozilla.org/zh-CN/" },
+  { icon: "🎬", name: "B站",    url: "https://www.bilibili.com" },
+  { icon: "🗺️", name: "地图",   url: "https://map.baidu.com" },
+  { icon: "📝", name: "记事本", url: "notepad" },
+  { icon: "🧮", name: "计算器", url: "calc" },
+];
+
+const desktop = document.getElementById("desktop");
+const taskItems = document.getElementById("taskItems");
+let zIndex = 100, winId = 0;
+const windows = {};
+
+function renderApps() {
+  document.getElementById("appGrid").innerHTML = APPS.map((a, i) => `
+    <button onclick="launchApp(${i})">
+      <span class="aico">${a.icon}</span>${a.name}
+    </button>`).join("");
+}
+function toggleMenu() { document.getElementById("appMenu").classList.toggle("show"); }
+document.addEventListener("click", e => {
+  const menu = document.getElementById("appMenu");
+  if (!menu.contains(e.target) && !e.target.closest(".start-btn")) menu.classList.remove("show");
+});
+
+function launchApp(i) {
+  document.getElementById("appMenu").classList.remove("show");
+  const app = APPS[i];
+  if (app.url === "notepad") return openNotepad();
+  if (app.url === "calc") return openCalc();
+  createWindow(app.name, app.url, app.icon);
+}
+
+function createWindow(title, url, icon = "🌐", innerHTML = null) {
+  document.getElementById("deskHint").style.display = "none";
+  const id = ++winId;
+  const w = document.createElement("div");
+  w.className = "win";
+  const small = window.innerWidth < 640;
+  const offset = (Object.keys(windows).length % 6) * 30;
+  w.style.left = small ? "3vw" : (60 + offset) + "px";
+  w.style.top  = small ? "2vh" : (30 + offset) + "px";
+  w.style.width  = small ? "94vw" : "560px";
+  w.style.height = small ? "68vh" : "400px";
+  w.style.zIndex = ++zIndex;
+
+  const addrBar = innerHTML ? "" : `
+    <div class="win-addr">
+      <input value="${url}" placeholder="输入网址后回车…" />
+      <button>前往</button>
+    </div>`;
+  const bodyContent = innerHTML
+    ? `<div style="width:100%;height:100%;">${innerHTML}</div>`
+    : `<iframe src="${url}" referrerpolicy="no-referrer"></iframe>`;
+
+  w.innerHTML = `
+    <div class="win-head">
+      <div class="win-dots">
+        <button class="dot close" title="关闭"></button>
+        <button class="dot min" title="最小化"></button>
+        <button class="dot max" title="最大化"></button>
+      </div>
+      <div class="win-title">${icon} ${title}</div>
+    </div>
+    ${addrBar}
+    <div class="win-body">
+      <div class="frame-mask"></div>
+      ${bodyContent}
+    </div>`;
+  desktop.appendChild(w);
+
+  const task = document.createElement("div");
+  task.className = "task-item active";
+  task.textContent = icon + " " + title;
+  task.onclick = () => focusWindow(id);
+  taskItems.appendChild(task);
+  setActiveTask(task);
+
+  windows[id] = { el: w, taskEl: task, title };
+
+  w.querySelector(".close").onclick = e => { e.stopPropagation(); closeWindow(id); };
+  w.querySelector(".min").onclick   = e => { e.stopPropagation(); w._minLeft = w.style.left; w.classList.add("minimized"); task.classList.remove("active"); };
+  w.querySelector(".max").onclick   = e => { e.stopPropagation(); toggleMax(w); };
+
+  if (!innerHTML) {
+    const input = w.querySelector(".win-addr input");
+    const go = () => {
+      let v = input.value.trim();
+      if (!v) return;
+      if (!/^https?:\/\//i.test(v)) v = "https://" + v;
+      w.querySelector("iframe").src = v;
+    };
+    w.querySelector(".win-addr button").onclick = go;
+    input.addEventListener("keydown", e => { if (e.key === "Enter") go(); });
+  }
+
+  w.addEventListener("pointerdown", () => focusWindow(id));
+  makeDraggable(w, id);
+  return id;
+}
+
+function toggleMax(w) {
+  if (w.classList.contains("maximized")) {
+    w.classList.remove("maximized");
+    Object.assign(w.style, w._prev);
+  } else {
+    w._prev = { left: w.style.left, top: w.style.top, width: w.style.width, height: w.style.height };
+    w.classList.add("maximized");
+    Object.assign(w.style, { left: "0px", top: "0px", width: "100%", height: "100%" });
+  }
+}
+function closeWindow(id) {
+  windows[id].el.remove();
+  windows[id].taskEl.remove();
+  delete windows[id];
+  if (Object.keys(windows).length === 0) document.getElementById("deskHint").style.display = "block";
+}
+function focusWindow(id) {
+  const win = windows[id];
+  if (!win) return;
+  if (win.el.classList.contains("minimized")) {
+    win.el.classList.remove("minimized");
+    if (win.el._minLeft) win.el.style.left = win.el._minLeft;
+  }
+  win.el.style.zIndex = ++zIndex;
+  setActiveTask(win.taskEl);
+}
+function setActiveTask(task) {
+  document.querySelectorAll(".task-item").forEach(t => t.classList.remove("active"));
+  task.classList.add("active");
+}
+
+/* 拖动逻辑：Pointer 事件，同时支持鼠标 + 触摸 */
+function makeDraggable(w) {
+  const head = w.querySelector(".win-head");
+  let sx, sy, ox, oy, moving = false;
+  head.addEventListener("pointerdown", e => {
+    if (e.target.classList.contains("dot")) return;
+    if (w.classList.contains("maximized")) return;
+    moving = true;
+    w.classList.add("dragging");
+    sx = e.clientX; sy = e.clientY;
+    ox = w.offsetLeft; oy = w.offsetTop;
+    try { head.setPointerCapture(e.pointerId); } catch (_) {}
+  });
+  head.addEventListener("pointermove", e => {
+    if (!moving) return;
+    let nx = ox + e.clientX - sx;
+    let ny = oy + e.clientY - sy;
+    nx = Math.max(0, Math.min(nx, desktop.clientWidth - 80));
+    ny = Math.max(0, Math.min(ny, desktop.clientHeight - 40));
+    w.style.left = nx + "px";
+    w.style.top  = ny + "px";
+  });
+  const end = e => {
+    moving = false;
+    w.classList.remove("dragging");
+    try { head.releasePointerCapture(e.pointerId); } catch (_) {}
+  };
+  head.addEventListener("pointerup", end);
+  head.addEventListener("pointercancel", end);
+}
+
+/* 分屏布局 */
+function tileWindows(cols) {
+  const list = Object.values(windows).filter(w => !w.el.classList.contains("minimized"));
+  if (!list.length) return;
+  const W = desktop.clientWidth, H = desktop.clientHeight;
+  const n = Math.min(list.length, cols);
+  list.forEach((win, i) => {
+    win.el.classList.remove("maximized");
+    if (i < n) {
+      win.el.style.left  = (i * W / n) + "px";
+      win.el.style.top   = "0px";
+      win.el.style.width = (W / n) + "px";
+      win.el.style.height = H + "px";
+    }
+  });
+}
+function cascadeWindows() {
+  Object.values(windows).forEach((win, i) => {
+    win.el.classList.remove("maximized");
+    win.el.style.left = (40 + i * 34) + "px";
+    win.el.style.top  = (20 + i * 34) + "px";
+    win.el.style.width = "560px";
+    win.el.style.height = "400px";
+    win.el.style.zIndex = ++zIndex;
+  });
+}
+
+/* 内置小应用 */
+function openNotepad() {
+  createWindow("记事本", "", "📝",
+    `<textarea style="width:100%;height:100%;border:none;outline:none;padding:14px;
+      font-size:14px;font-family:Consolas,monospace;resize:none;"
+      placeholder="在这里记点什么…"></textarea>`);
+}
+function openCalc() {
+  const html = `
+    <div style="display:flex;flex-direction:column;height:100%;background:#1b1e2b;color:#fff;">
+      <input class="calcScr" readonly style="font-size:26px;text-align:right;padding:16px;
+        border:none;background:#12141f;color:#fff;" value="0">
+      <div style="flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#2a2e42;">
+        ${["C","←","%","/","7","8","9","*","4","5","6","-","1","2","3","+","0",".","="].map(k=>
+          `<button onclick="calcKey(this,'${k}')" style="border:none;font-size:18px;cursor:pointer;
+           background:${"=/*-+".includes(k)?'#4f8cff':k==='C'||k==='←'?'#333750':'#232739'};
+           color:#fff;">${k}</button>`).join("")}
+      </div>
+    </div>`;
+  createWindow("计算器", "", "🧮", html);
+}
+window.calcKey = function(btn, k) {
+  const s = btn.closest(".win-body").querySelector(".calcScr");
+  let v = s.value;
+  if (k === "C") v = "0";
+  else if (k === "←") v = v.length > 1 ? v.slice(0, -1) : "0";
+  else if (k === "=") { try { v = String(eval(v.replace(/%/g,"/100"))); } catch { v = "错误"; } }
+  else v = (v === "0" && !"/*-+.".includes(k)) ? k : v + k;
+  s.value = v;
+};
+
+/* ===================== 页面三 聊天（MQTT / 局域网） ===================== */
+let mqttClient = null, bc = null;
+let chatUser = "", chatRoom = "", chatTopic = "";
+const clientId = "web_" + Math.random().toString(16).slice(2, 10);
+const val = id => document.getElementById(id).value.trim();
+
+function setStatus(state, text) {
+  const dot = document.getElementById("statusDot");
+  dot.className = "status-dot " + (state || "");
+  document.getElementById("roomName").textContent = "房间：" + chatRoom + (text ? "（" + text + "）" : "");
+}
+
+function joinChat() {
+  const u = val("cfgUser");
+  if (!u) { alert("请先输入用户名"); return; }
+  chatUser = u;
+  chatRoom = val("cfgRoom") || "lobby";
+  chatTopic = "navchat/" + chatRoom;
+  const server = val("cfgServer");
+
+  document.getElementById("chatSetup").style.display = "none";
+  document.getElementById("chatMain").style.display = "flex";
+  document.getElementById("meName").textContent = "· 我：" + chatUser;
+  document.getElementById("chatMsgs").innerHTML = "";
+
+  if (typeof mqtt === "undefined" || !server) {
+    startBroadcastFallback();
+    return;
+  }
+
+  setStatus("", "连接中");
+  try {
+    mqttClient = mqtt.connect(server, { clientId, clean: true, connectTimeout: 8000, reconnectPeriod: 4000 });
+  } catch (e) {
+    startBroadcastFallback();
+    return;
+  }
+
+  mqttClient.on("connect", () => {
+    setStatus("online", "已连接");
+    mqttClient.subscribe(chatTopic);
+    addSysMsg("你已加入房间「" + chatRoom + "」");
+  });
+  mqttClient.on("message", (t, payload) => {
+    try { renderMsg(JSON.parse(payload.toString())); } catch (_) {}
+  });
+  mqttClient.on("reconnect", () => setStatus("", "重连中"));
+  mqttClient.on("close",     () => setStatus("off", "已断开"));
+  mqttClient.on("error", () => {
+    setStatus("off", "连接失败");
+    addSysMsg("公共服务器连接失败，已切换为本机模式");
+    try { mqttClient.end(true); } catch (_) {}
+    mqttClient = null;
+    startBroadcastFallback();
+  });
+}
+
+/* 无外网 / 无库时：同一浏览器多标签互聊 */
+function startBroadcastFallback() {
+  bc = new BroadcastChannel("navchat_" + chatRoom);
+  bc.onmessage = e => renderMsg(e.data);
+  setStatus("online", "本机模式");
+  addSysMsg("本机多标签模式：同一浏览器多个标签页可互聊");
+}
+
+function sendChat() {
+  const box = document.getElementById("chatText");
+  const text = box.value.trim();
+  if (!text) return;
+  if (!chatUser) { alert("请先设置用户名"); return; }
+  const msg = { user: chatUser, text, time: Date.now(), cid: clientId };
+  if (mqttClient && mqttClient.connected) {
+    mqttClient.publish(chatTopic, JSON.stringify(msg));
+  } else if (bc) {
+    bc.postMessage(msg);
+    renderMsg(msg); // 本机模式自己也要显示
+  }
+  box.value = "";
+}
+document.getElementById("chatText").addEventListener("keydown", e => { if (e.key === "Enter") sendChat(); });
+
+function renderMsg(msg) {
+  const box = document.getElementById("chatMsgs");
+  const mine = msg.cid === clientId;
+  const div = document.createElement("div");
+  div.className = "msg" + (mine ? " mine" : "");
+  const t = new Date(msg.time || Date.now());
+  const hh = String(t.getHours()).padStart(2, "0");
+  const mm = String(t.getMinutes()).padStart(2, "0");
+  div.innerHTML = `
+    <div class="meta">${escapeHtml(msg.user)} · ${hh}:${mm}</div>
+    <div class="bubble">${escapeHtml(msg.text)}</div>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+function addSysMsg(text) {
+  const box = document.getElementById("chatMsgs");
+  const div = document.createElement("div");
+  div.className = "msg sys";
+  div.innerHTML = `<div class="bubble">— ${escapeHtml(text)} —</div>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c =>
+    ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+}
+function leaveChat() {
+  if (mqttClient) { try { mqttClient.end(true); } catch (_) {} mqttClient = null; }
+  if (bc) { bc.close(); bc = null; }
+  document.getElementById("chatMain").style.display = "none";
+  document.getElementById("chatSetup").style.display = "block";
+}
+
+/* ===================== 主界面：桌面图标 ===================== */
+const HOME_ICONS = [
+  { i: "📚", n: "网址导航", act: () => goPage("pageNav") },
+  { i: "🖥️", n: "分屏浮窗", act: () => goPage("pageDesk") },
+  { i: "💬", n: "聊天室",   act: () => goPage("pageChat") },
+  { i: "🎮", n: "游戏厅",   act: () => goPage("pageGame") },
+  { i: "⚙️", n: "设置",     act: () => goPage("pageSet") },
+  { i: "📝", n: "记事本",   act: () => { goPage("pageDesk"); openNotepad(); } },
+  { i: "🧮", n: "计算器",   act: () => { goPage("pageDesk"); openCalc(); } },
+  { i: "🐙", n: "GitHub",   act: () => window.open("https://github.com", "_blank") },
+  { i: "🎬", n: "B站",      act: () => window.open("https://www.bilibili.com", "_blank") },
+  { i: "🔍", n: "百度",     act: () => window.open("https://www.baidu.com", "_blank") },
+];
+function renderHomeIcons() {
+  const box = document.getElementById("deskIcons");
+  box.innerHTML = "";
+  HOME_ICONS.forEach(it => {
+    const b = document.createElement("button");
+    b.className = "dicon";
+    b.innerHTML = `<span class="di">${it.i}</span><span class="dn">${it.n}</span>`;
+    b.onclick = it.act; // 单击即可打开，手机友好
+    box.appendChild(b);
+  });
+}
+
+/* ===================== 主界面：时钟 ===================== */
+function tickClock() {
+  const d = new Date();
+  const h24 = OPT.h24 !== false, showSec = OPT.sec !== false;
+  let h = d.getHours(), suffix = "";
+  if (!h24) { suffix = h < 12 ? " AM" : " PM"; h = h % 12 || 12; }
+  const p = n => String(n).padStart(2, "0");
+  let t = p(h) + ":" + p(d.getMinutes());
+  if (showSec) t += ":" + p(d.getSeconds());
+  document.getElementById("hcTime").textContent = t + suffix;
+  const wd = ["日","一","二","三","四","五","六"][d.getDay()];
+  document.getElementById("hcDate").textContent =
+    `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 星期${wd}`;
+}
+setInterval(tickClock, 1000);
+
+/* ===================== 主界面：日历 ===================== */
+let calY = new Date().getFullYear(), calM = new Date().getMonth();
+function renderCal() {
+  document.getElementById("calTitle").textContent = calY + "年 " + (calM + 1) + "月";
+  const g = document.getElementById("calGrid");
+  let html = ["日","一","二","三","四","五","六"].map(w => `<div class="wd">${w}</div>`).join("");
+  const first = new Date(calY, calM, 1).getDay();
+  const days = new Date(calY, calM + 1, 0).getDate();
+  const prevDays = new Date(calY, calM, 0).getDate();
+  const now = new Date();
+  for (let i = first - 1; i >= 0; i--) html += `<div class="cd dim">${prevDays - i}</div>`;
+  for (let d = 1; d <= days; d++) {
+    const isToday = d === now.getDate() && calM === now.getMonth() && calY === now.getFullYear();
+    html += `<div class="cd${isToday ? " today" : ""}">${d}</div>`;
+  }
+  const total = first + days, tail = (7 - total % 7) % 7;
+  for (let d = 1; d <= tail; d++) html += `<div class="cd dim">${d}</div>`;
+  g.innerHTML = html;
+}
+function calMove(dir) {
+  calM += dir;
+  if (calM < 0) { calM = 11; calY--; }
+  if (calM > 11) { calM = 0; calY++; }
+  renderCal();
+}
+
+/* ===================== 主界面：待办 ===================== */
+let todos = [];
+try { todos = JSON.parse(localStorage.getItem("deskTodos") || "[]"); } catch (_) {}
+function saveTodos() { localStorage.setItem("deskTodos", JSON.stringify(todos)); }
+function renderTodos() {
+  const box = document.getElementById("todoList");
+  if (!todos.length) { box.innerHTML = `<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px">暂无待办，休息一下吧 ☕</div>`; return; }
+  box.innerHTML = "";
+  todos.forEach((t, i) => {
+    const div = document.createElement("div");
+    div.className = "todo-item" + (t.done ? " done" : "");
+    div.innerHTML = `<input type="checkbox" ${t.done ? "checked" : ""}><span></span><button class="del">✕</button>`;
+    div.querySelector("span").textContent = t.text;
+    div.querySelector("input").onchange = () => { t.done = !t.done; saveTodos(); renderTodos(); };
+    div.querySelector(".del").onclick = () => { todos.splice(i, 1); saveTodos(); renderTodos(); };
+    box.appendChild(div);
+  });
+}
+function addTodo() {
+  const inp = document.getElementById("todoInput");
+  const v = inp.value.trim();
+  if (!v) return;
+  todos.push({ text: v, done: false });
+  inp.value = "";
+  saveTodos(); renderTodos();
+}
+document.getElementById("todoInput").addEventListener("keydown", e => { if (e.key === "Enter") addTodo(); });
+
+/* ===================== 主界面：每日一言 ===================== */
+const QUOTES = [
+  ["海内存知己，天涯若比邻。", "王勃"],
+  ["长风破浪会有时，直挂云帆济沧海。", "李白"],
+  ["会当凌绝顶，一览众山小。", "杜甫"],
+  ["不积跬步，无以至千里。", "荀子"],
+  ["学而不思则罔，思而不学则殆。", "孔子"],
+  ["少壮不努力，老大徒伤悲。", "《长歌行》"],
+  ["黑发不知勤学早，白首方悔读书迟。", "颜真卿"],
+  ["宝剑锋从磨砺出，梅花香自苦寒来。", "《警世贤文》"],
+  ["纸上得来终觉浅，绝知此事要躬行。", "陆游"],
+  ["千磨万击还坚劲，任尔东西南北风。", "郑板桥"],
+  ["落红不是无情物，化作春泥更护花。", "龚自珍"],
+  ["问渠那得清如许？为有源头活水来。", "朱熹"],
+];
+let quoteIdx = new Date().getDate() % QUOTES.length;
+function showQuote() {
+  document.getElementById("quoteText").textContent = QUOTES[quoteIdx][0];
+  document.getElementById("quoteFrom").textContent = "—— " + QUOTES[quoteIdx][1];
+}
+function nextQuote() { quoteIdx = (quoteIdx + 1) % QUOTES.length; showQuote(); }
+
+/* ===================== 游戏 ===================== */
+let gameCleanup = null;
+function openGame(name) {
+  closeGame();
+  document.getElementById("gameLobby").style.display = "none";
+  document.getElementById("gameStage").style.display = "block";
+  document.getElementById("gsScore").textContent = "";
+  ({ g2048: initG2048, snake: initSnake, memory: initMemory, guess: initGuess })[name]();
+}
+function closeGame() {
+  if (gameCleanup) { gameCleanup(); gameCleanup = null; }
+  document.getElementById("gsBody").innerHTML = "";
+  document.getElementById("gameStage").style.display = "none";
+  document.getElementById("gameLobby").style.display = "grid";
+}
+const gsBody = () => document.getElementById("gsBody");
+const gsScore = t => document.getElementById("gsScore").textContent = t;
+
+/* ---- 2048 ---- */
+function initG2048() {
+  document.getElementById("gsTitle").textContent = "🔢 2048";
+  let board, score;
+  const COLORS = { 2:"#3a4266",4:"#44507e",8:"#4f8cff",16:"#5f7bff",32:"#7c5cff",64:"#9a4fe0",128:"#c748b8",256:"#e0508a",512:"#ff5f57",1024:"#ff9f43",2048:"#ffd32a" };
+  gsBody().innerHTML = `<div class="b2048" id="b2048"></div>
+    <div class="g-btns">
+      <button onclick="g2048Move(3)">⬆️</button><button onclick="g2048Move(2)">⬇️</button>
+      <button onclick="g2048Move(0)">⬅️</button><button onclick="g2048Move(1)">➡️</button>
+      <button onclick="g2048Reset()">🔄 重开</button>
+    </div>`;
+  function reset() { board = Array(16).fill(0); score = 0; add(); add(); draw(); }
+  function add() {
+    const empty = board.map((v,i)=>v?-1:i).filter(i=>i>=0);
+    if (empty.length) board[empty[Math.random()*empty.length|0]] = Math.random() < 0.9 ? 2 : 4;
+  }
+  function draw() {
+    document.getElementById("b2048").innerHTML = board.map(v =>
+      `<div class="t2048" style="background:${v?COLORS[v]||'#ffd32a':'rgba(255,255,255,.06)'};font-size:${v>=1024?16:v>=128?18:22}px">${v||''}</div>`).join("");
+    gsScore("得分：" + score);
+  }
+  function slide(row) {
+    let a = row.filter(v=>v);
+    for (let i = 0; i < a.length - 1; i++)
+      if (a[i] === a[i+1]) { a[i] *= 2; score += a[i]; a.splice(i+1,1); }
+    while (a.length < 4) a.push(0);
+    return a;
+  }
+  function move(dir) { // 0左 1右 2下 3上
+    const old = board.join();
+    for (let r = 0; r < 4; r++) {
+      let idx = [];
+      for (let c = 0; c < 4; c++)
+        idx.push(dir < 2 ? r*4 + (dir===0?c:3-c) : (dir===2?3-c:c)*4 + r);
+      const line = slide(idx.map(i=>board[i]));
+      idx.forEach((bi,i)=>board[bi]=line[i]);
+    }
+    if (board.join() !== old) { add(); draw(); }
+    if (!board.includes(0) && !canMove()) setTimeout(()=>alert("游戏结束！得分："+score), 60);
+  }
+  function canMove() {
+    for (let r=0;r<4;r++) for (let c=0;c<4;c++) {
+      const v = board[r*4+c];
+      if (c<3 && v===board[r*4+c+1]) return true;
+      if (r<3 && v===board[(r+1)*4+c]) return true;
+    }
+    return false;
+  }
+  window.g2048Move = d => move(d);
+  window.g2048Reset = reset;
+  const onKey = e => {
+    const map = { ArrowLeft:0, ArrowRight:1, ArrowDown:2, ArrowUp:3 };
+    if (map[e.key] !== undefined && document.getElementById("pageGame").classList.contains("active")) {
+      e.preventDefault(); move(map[e.key]);
+    }
+  };
+  document.addEventListener("keydown", onKey);
+  gameCleanup = () => document.removeEventListener("keydown", onKey);
+  reset();
+}
+
+/* ---- 贪吃蛇 ---- */
+function initSnake() {
+  document.getElementById("gsTitle").textContent = "🐍 贪吃蛇";
+  gsBody().innerHTML = `<canvas id="snakeCv" width="400" height="400"></canvas>
+    <div class="g-btns">
+      <button onclick="snakeDir(0,-1)">⬆️</button><button onclick="snakeDir(0,1)">⬇️</button>
+      <button onclick="snakeDir(-1,0)">⬅️</button><button onclick="snakeDir(1,0)">➡️</button>
+      <button onclick="snakeReset()">🔄 重开</button>
+    </div>`;
+  const cv = document.getElementById("snakeCv"), ctx = cv.getContext("2d");
+  const N = 20, S = 400 / N;
+  let snake, dir, nextDir, food, score, dead, timer;
+  function reset() {
+    snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
+    dir = {x:1,y:0}; nextDir = dir; score = 0; dead = false;
+    placeFood();
+    clearInterval(timer);
+    timer = setInterval(step, 140);
+    gsScore("得分：0");
+  }
+  function placeFood() {
+    do { food = { x: Math.random()*N|0, y: Math.random()*N|0 }; }
+    while (snake.some(s => s.x===food.x && s.y===food.y));
+  }
+  function step() {
+    if (dead) return;
+    dir = nextDir;
+    const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+    if (head.x<0||head.y<0||head.x>=N||head.y>=N||snake.some(s=>s.x===head.x&&s.y===head.y)) {
+      dead = true; clearInterval(timer);
+      ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillRect(0,0,400,400);
+      ctx.fillStyle = "#fff"; ctx.font = "bold 26px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText("游戏结束！得分："+score, 200, 200);
+      return;
+    }
+    snake.unshift(head);
+    if (head.x===food.x && head.y===food.y) { score += 10; gsScore("得分："+score); placeFood(); }
+    else snake.pop();
+    draw();
+  }
+  function draw() {
+    ctx.fillStyle = "#12141f"; ctx.fillRect(0,0,400,400);
+    ctx.fillStyle = "#ff5f57";
+    ctx.beginPath(); ctx.arc(food.x*S+S/2, food.y*S+S/2, S/2-2, 0, 7); ctx.fill();
+    snake.forEach((s,i) => {
+      ctx.fillStyle = i ? "#4f8cff" : "#7c5cff";
+      ctx.fillRect(s.x*S+1, s.y*S+1, S-2, S-2);
+    });
+  }
+  window.snakeDir = (x, y) => { if (x !== -dir.x || y !== -dir.y) nextDir = {x,y}; };
+  window.snakeReset = reset;
+  const onKey = e => {
+    const map = { ArrowUp:[0,-1], ArrowDown:[0,1], ArrowLeft:[-1,0], ArrowRight:[1,0] };
+    if (map[e.key] && document.getElementById("pageGame").classList.contains("active")) {
+      e.preventDefault(); window.snakeDir(...map[e.key]);
+    }
+  };
+  document.addEventListener("keydown", onKey);
+  let ts = null;
+  cv.addEventListener("pointerdown", e => ts = { x: e.clientX, y: e.clientY });
+  cv.addEventListener("pointerup", e => {
+    if (!ts) return;
+    const dx = e.clientX - ts.x, dy = e.clientY - ts.y; ts = null;
+    if (Math.abs(dx) < 16 && Math.abs(dy) < 16) return;
+    Math.abs(dx) > Math.abs(dy) ? window.snakeDir(Math.sign(dx), 0) : window.snakeDir(0, Math.sign(dy));
+  });
+  gameCleanup = () => { clearInterval(timer); document.removeEventListener("keydown", onKey); };
+  reset(); draw();
+}
+
+/* ---- 翻牌配对 ---- */
+function initMemory() {
+  document.getElementById("gsTitle").textContent = "🎴 翻牌配对";
+  const emojis = ["🍎","🍌","🍇","🍉","🍒","🍑","🥝","🍍"];
+  const cards = [...emojis, ...emojis].sort(() => Math.random() - 0.5);
+  let first = null, lock = false, matched = 0, steps = 0;
+  gsBody().innerHTML = `<div class="mem-grid" id="memGrid"></div>`;
+  const grid = document.getElementById("memGrid");
+  cards.forEach(e => {
+    const b = document.createElement("button");
+    b.className = "mem-card";
+    b.textContent = e;
+    b.onclick = () => {
+      if (lock || b.classList.contains("open") || b.classList.contains("ok")) return;
+      b.classList.add("open");
+      steps++; gsScore("步数：" + steps);
+      if (!first) { first = b; return; }
+      if (first.textContent === b.textContent) {
+        first.classList.replace("open","ok"); b.classList.replace("open","ok");
+        first = null; matched += 2;
+        if (matched === cards.length) setTimeout(()=>alert("🎉 完成！共用 "+steps+" 步"), 200);
+      } else {
+        lock = true;
+        const a = first; first = null;
+        setTimeout(() => { a.classList.remove("open"); b.classList.remove("open"); lock = false; }, 700);
+      }
+    };
+    grid.appendChild(b);
+  });
+  gsScore("步数：0");
+}
+
+/* ---- 猜数字 ---- */
+function initGuess() {
+  document.getElementById("gsTitle").textContent = "🎯 猜数字";
+  let target = Math.floor(Math.random()*100) + 1, tries = 0;
+  gsBody().innerHTML = `
+    <p style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:12px">我想了一个 1~100 的数字，猜猜看？</p>
+    <div style="display:flex;gap:8px;max-width:280px;margin:0 auto">
+      <input id="guessInp" type="number" min="1" max="100" placeholder="1~100"
+        style="flex:1;min-width:0;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:var(--text);border-radius:10px;padding:10px 14px;font-size:15px;outline:none">
+      <button class="sbtn" onclick="doGuess()">猜！</button>
+    </div>
+    <p id="guessMsg" style="text-align:center;margin-top:16px;font-size:15px">🤔 等你出手…</p>`;
+  window.doGuess = () => {
+    const inp = document.getElementById("guessInp");
+    const v = parseInt(inp.value);
+    const msg = document.getElementById("guessMsg");
+    if (!v || v < 1 || v > 100) { msg.textContent = "请输入 1~100 的数字"; return; }
+    tries++; gsScore("已猜：" + tries + " 次");
+    if (v === target) {
+      msg.textContent = "🎉 猜对了！就是 " + target + "，共用 " + tries + " 次！";
+      target = Math.floor(Math.random()*100) + 1; tries = 0;
+      setTimeout(()=>{ msg.textContent += "（已开新局，继续猜！）"; }, 50);
+    }
+    else msg.textContent = v < target ? "📈 小了，再大一点" : "📉 大了，再小一点";
+    inp.value = ""; inp.focus();
+  };
+  document.getElementById("guessInp").addEventListener("keydown", e => { if (e.key === "Enter") window.doGuess(); });
+}
+
+/* ===================== 设置 ===================== */
+let OPT = {};
+try { OPT = JSON.parse(localStorage.getItem("deskOpts") || "{}"); } catch (_) {}
+function saveOpt(k, v) { OPT[k] = v; localStorage.setItem("deskOpts", JSON.stringify(OPT)); }
+
+/* 背景 */
+function setBg(src) {
+  const bg = document.getElementById("bgLayer");
+  if (src) { bg.style.backgroundImage = `url("${src}")`; document.body.classList.add("hasbg"); }
+  else { bg.style.backgroundImage = ""; document.body.classList.remove("hasbg"); }
+}
+function applyBgUrl() {
+  const u = document.getElementById("setBgUrl").value.trim();
+  if (!u) { alert("请先填入图片地址"); return; }
+  setBg(u); saveOpt("bg", u);
+}
+function applyBgFile(inp) {
+  const f = inp.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    setBg(reader.result);
+    try { saveOpt("bg", reader.result); }
+    catch (_) { alert("图片较大，无法永久保存（本次打开期间有效），建议换小一点的图") ; }
+  };
+  reader.readAsDataURL(f);
+  inp.value = "";
+}
+function clearBg() { setBg(null); saveOpt("bg", ""); document.getElementById("setBgUrl").value = ""; }
+
+/* 主题色 */
+const THEMES = [["#4f8cff","#7c5cff"],["#ff5f57","#ff9f43"],["#28c840","#12b8a5"],["#e0508a","#c748b8"],["#ffd32a","#ff9f43"],["#00c2ff","#4f8cff"]];
+function setTheme(a, b) {
+  const root = document.documentElement.style;
+  if (a) { root.setProperty("--accent", a); saveOpt("accent", a); document.getElementById("setAccent").value = a; }
+  if (b) { root.setProperty("--accent2", b); saveOpt("accent2", b); document.getElementById("setAccent2").value = b; }
+}
+function renderThemeChips() {
+  document.getElementById("themeChips").innerHTML = THEMES.map(([a,b]) =>
+    `<div class="tchip" style="background:linear-gradient(135deg,${a},${b})" onclick="setTheme('${a}','${b}')" title="${a}"></div>`).join("");
+}
+
+/* 自动隐藏导航栏 */
+function applyHidebar() {
+  document.body.classList.toggle("hidebar", !!OPT.hidebar);
+}
+
+/* 页面标题 */
+function applyTitle() {
+  const t = document.getElementById("setTitle").value.trim();
+  document.title = t || "我的导航 · 分屏浮窗 · 聊天";
+  saveOpt("title", t);
+}
+
+/* 导出 / 导入 / 重置 */
+function exportSettings() {
+  const data = JSON.stringify({ opts: OPT, todos }, null, 2);
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([data], { type: "application/json" }));
+  a.download = "工作台设置备份.json";
+  a.click();
+}
+function importSettings(inp) {
+  const f = inp.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (data.opts) { OPT = data.opts; localStorage.setItem("deskOpts", JSON.stringify(OPT)); }
+      if (data.todos) { todos = data.todos; saveTodos(); }
+      applyAllOpts(); renderTodos();
+      alert("导入成功！");
+    } catch (_) { alert("文件格式不对，导入失败"); }
+  };
+  reader.readAsText(f);
+  inp.value = "";
+}
+function resetAll() {
+  if (!confirm("确定恢复默认设置？（待办不会删除）")) return;
+  OPT = {};
+  localStorage.removeItem("deskOpts");
+  document.documentElement.style.removeProperty("--accent");
+  document.documentElement.style.removeProperty("--accent2");
+  applyAllOpts();
+}
+
+/* 把已存设置应用到界面 */
+function applyAllOpts() {
+  setBg(OPT.bg || null);
+  if (OPT.bg && !OPT.bg.startsWith("data:")) document.getElementById("setBgUrl").value = OPT.bg;
+  if (OPT.accent)  { document.documentElement.style.setProperty("--accent", OPT.accent);  document.getElementById("setAccent").value = OPT.accent; }
+  if (OPT.accent2) { document.documentElement.style.setProperty("--accent2", OPT.accent2); document.getElementById("setAccent2").value = OPT.accent2; }
+  document.getElementById("setHideBar").checked = !!OPT.hidebar;
+  document.getElementById("setH24").checked = OPT.h24 !== false;
+  document.getElementById("setSec").checked = OPT.sec !== false;
+  document.getElementById("setStartPage").value = OPT.start || "pageHome";
+  document.getElementById("setTitle").value = OPT.title || "";
+  if (OPT.title) document.title = OPT.title;
+  applyHidebar();
+  tickClock();
+}
+
+/* ===================== 初始化 ===================== */
+renderNav();
+renderApps();
+renderHomeIcons();
+renderCal();
+renderTodos();
+showQuote();
+renderThemeChips();
+applyAllOpts();
+goPage(OPT.start || "pageHome");
+</script>
+</body>
+</html>
