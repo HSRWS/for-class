@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌐 广播机器人 · 浏览器版</title>
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: #0f1220;
+  color: #e8ecf5;
+  font-family: 'Segoe UI', sans-serif;
+  padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.container {
+  max-width: 800px;
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border-radius: 18px;
+  padding: 28px 24px;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+h1 {
+  font-size: 24px;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sub {
+  color: #9aa3b5;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+.status-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #2a2e42;
+  color: #9aa3b5;
+}
+.status-badge.online { background: #1a4d2e; color: #4ade80; }
+.status-badge.paused { background: #4d3a1a; color: #fbbf24; }
+.status-badge.offline { background: #4d1a1a; color: #f87171; }
+
+.section {
+  margin: 18px 0 14px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 14px;
+}
+.section-title {
+  font-size: 13px;
+  color: #9aa3b5;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+.row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.btn {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all .2s;
+  background: rgba(255,255,255,0.08);
+  color: #e8ecf5;
+}
+.btn:hover { background: rgba(255,255,255,0.16); transform: translateY(-1px); }
+.btn-primary { background: #4f8cff; color: #fff; }
+.btn-primary:hover { background: #3a7aff; }
+.btn-success { background: #28c840; color: #fff; }
+.btn-success:hover { background: #1fb83a; }
+.btn-warning { background: #fbbf24; color: #1a1e2e; }
+.btn-warning:hover { background: #f5b00e; }
+.btn-danger { background: #ff5f57; color: #fff; }
+.btn-danger:hover { background: #f54a42; }
+.btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.15); }
+input {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  padding: 8px 14px;
+  color: #e8ecf5;
+  font-size: 14px;
+  outline: none;
+  flex: 1;
+  min-width: 120px;
+}
+input:focus { border-color: #4f8cff; }
+.msg-input { display: flex; gap: 8px; }
+.msg-input input { flex: 1; }
+.user-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+.user-tag {
+  background: rgba(79,140,255,0.15);
+  border: 1px solid rgba(79,140,255,0.2);
+  border-radius: 16px;
+  padding: 4px 14px;
+  font-size: 12px;
+  color: #93bbfc;
+}
+.log-area {
+  background: rgba(0,0,0,0.3);
+  border-radius: 10px;
+  padding: 10px 14px;
+  max-height: 200px;
+  overflow-y: auto;
+  font-size: 12px;
+  font-family: 'Consolas', monospace;
+  color: #9aa3b5;
+  line-height: 1.7;
+  margin-top: 6px;
+}
+.log-time { color: #6b7a8f; }
+.log-ok { color: #4ade80; }
+.log-warn { color: #fbbf24; }
+.log-err { color: #f87171; }
+.config-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.config-row label { color: #9aa3b5; font-size: 13px; min-width: 60px; }
+.config-row input { flex: 1; min-width: 100px; }
+</style>
+</head>
+<body>
+<div class="container" id="app">
+  <h1>🤖 广播机器人 <span style="font-size:16px;color:#9aa3b5;">浏览器版</span></h1>
+  <div class="sub">无需 Python，直接在浏览器中运行 · 打开即用</div>
+
+  <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+    <span id="statusBadge" class="status-badge">离线</span>
+    <span id="roomDisplay" style="color:#9aa3b5; font-size:13px;">房间: lobby</span>
+    <span id="userCount" style="color:#9aa3b5; font-size:13px;">在线: 0</span>
+    <span id="timerDisplay" style="color:#9aa3b5; font-size:13px;">⏱️ 间隔: 2s</span>
+  </div>
+
+  <div class="section">
+    <div class="section-title">⚙️ 配置</div>
+    <div class="config-row">
+      <label>房间名</label>
+      <input id="cfgRoom" value="lobby" style="flex:1;" />
+      <label style="min-width:40px;">间隔</label>
+      <input id="cfgInterval" type="number" value="2" min="1" max="60" style="width:70px;" />
+      <button class="btn btn-primary" onclick="applyConfig()">应用</button>
+    </div>
+    <div class="config-row" style="margin-top:6px;">
+      <label>机器人名</label>
+      <input id="cfgName" value="广播机器人" style="flex:1;" />
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🎮 控制</div>
+    <div class="row">
+      <button class="btn btn-success" onclick="cmd('resume')">▶ 启动广播</button>
+      <button class="btn btn-warning" onclick="cmd('pause')">⏸ 暂停广播</button>
+      <button class="btn btn-danger" onclick="cmd('stop')">⏹ 停止广播</button>
+      <button class="btn btn-outline" onclick="connectMqtt()">🔄 重连</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">💬 发送消息</div>
+    <div class="msg-input">
+      <input type="text" id="msgInput" placeholder="输入要广播的消息…" />
+      <button class="btn btn-primary" onclick="sendManual()">发送</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">👥 在线用户</div>
+    <div id="userList" class="user-list"><span style="color:#6b7a8f;">等待连接…</span></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">📋 日志</div>
+    <div id="logArea" class="log-area"></div>
+  </div>
+</div>
+
+<script>
+// ===== 状态 =====
+let client = null;
+let connected = false;
+let running = false;
+let paused = false;
+let intervalId = null;
+let count = 0;
+let seenUsers = {};
+let botName = "广播机器人";
+let room = "lobby";
+let intervalSec = 2;
+let ADMIN_TOPIC = "navchat/admin";
+let STATUS_TOPIC = "navchat/status";
+let CHAT_TOPIC = "navchat/lobby";
+
+// ===== DOM =====
+const $ = id => document.getElementById(id);
+const statusBadge = $('statusBadge');
+const roomDisplay = $('roomDisplay');
+const userCount = $('userCount');
+const timerDisplay = $('timerDisplay');
+const userList = $('userList');
+const logArea = $('logArea');
+
+// ===== 日志 =====
+function addLog(msg, type = '') {
+  const time = new Date().toLocaleTimeString();
+  const entry = document.createElement('div');
+  entry.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-${type}">${msg}</span>`;
+  logArea.appendChild(entry);
+  logArea.scrollTop = logArea.scrollHeight;
+  if (logArea.children.length > 200) logArea.removeChild(logArea.firstChild);
+}
+
+// ===== 状态更新 =====
+function setStatus(state) {
+  const map = {
+    'online': ['🟢 运行中', 'online'],
+    'paused': ['🟡 已暂停', 'paused'],
+    'offline': ['🔴 离线', 'offline'],
+    'stopped': ['⏹ 已停止', 'offline']
+  };
+  const [label, cls] = map[state] || map.offline;
+  statusBadge.textContent = label;
+  statusBadge.className = 'status-badge ' + cls;
+}
+
+// ===== MQTT 连接 =====
+function connectMqtt() {
+  if (client) {
+    try { client.end(); } catch(e) {}
+    client = null;
+  }
+  connected = false;
+  setStatus('offline');
+  addLog('🔗 正在连接 MQTT...', 'warn');
+
+  const broker = "wss://broker.emqx.io:8084/mqtt";
+  client = mqtt.connect(broker);
+
+  client.on('connect', () => {
+    connected = true;
+    addLog('✅ 已连接到 MQTT 服务器', 'ok');
+    setStatus('online');
+    client.subscribe(CHAT_TOPIC);
+    client.subscribe(STATUS_TOPIC);
+    client.subscribe(ADMIN_TOPIC);
+    // 发一条上线消息
+    sendChat('🤖 广播机器人已上线！');
+    // 开始广播
+    if (!intervalId) startBroadcast();
+  });
+
+  client.on('message', (topic, payload) => {
+    try {
+      const msg = JSON.parse(payload.toString());
+      if (topic === CHAT_TOPIC) {
+        handleChat(msg);
+      } else if (topic === STATUS_TOPIC) {
+        updateStatusDisplay(msg);
+      } else if (topic === ADMIN_TOPIC) {
+        addLog(`📨 收到指令: ${msg.action}`, 'warn');
+      }
+    } catch(e) {}
+  });
+
+  client.on('close', () => {
+    connected = false;
+    setStatus('offline');
+    addLog('❌ MQTT 断开', 'err');
+    if (intervalId) { clearInterval(intervalId); intervalId = null; }
+  });
+
+  client.on('error', (e) => {
+    addLog(`⚠️ MQTT 错误: ${e.message}`, 'err');
+  });
+}
+
+// ===== 聊天消息处理 =====
+function handleChat(msg) {
+  const user = msg.user;
+  const text = msg.text || '';
+  if (user === botName) return;
+
+  const now = Date.now();
+  seenUsers[user] = now;
+
+  // 移除超时用户（60秒）
+  const timeout = 60000;
+  for (let u in seenUsers) {
+    if (now - seenUsers[u] > timeout) delete seenUsers[u];
+  }
+
+  const onlineCount = Object.keys(seenUsers).length;
+  updateUserList();
+
+  // 欢迎新用户（第一次出现）
+  if (!seenUsers[user] || seenUsers[user] === now) {
+    addLog(`👋 新用户: ${user}`, 'ok');
+    sendChat(`👋 欢迎 ${user} 来到聊天室！当前在线：${onlineCount} 人`);
+    // 暂停广播3秒
+    if (intervalId) {
+      paused = true;
+      setTimeout(() => { paused = false; }, 3000);
+    }
+  }
+
+  // 关键词回复
+  const replies = {
+    '天气': () => { sendChat('🌤️ 天气查询：浏览器版暂不支持实时天气，请使用 Python 版或访问 wttr.in'); },
+    '你好': () => { sendChat(`👋 你好呀 ${user}！有什么我可以帮你的？`); },
+    '帮助': () => { sendChat('🤖 我能：自动广播、欢迎新人、回复关键词（你好/帮助/时间/天气）。定时早安暂不支持。'); },
+    '时间': () => { sendChat(`🕐 当前时间：${new Date().toLocaleString()}`); },
+  };
+  for (let key in replies) {
+    if (text.includes(key)) {
+      replies[key]();
+      break;
+    }
+  }
+}
+
+// ===== 发送聊天消息 =====
+function sendChat(text) {
+  if (!client || !connected) {
+    addLog('⚠️ 未连接，消息未发送', 'err');
+    return;
+  }
+  const msg = {
+    user: botName,
+    text: text,
+    time: Date.now(),
+    cid: 'web_bot_' + Math.random().toString(36).slice(2, 8)
+  };
+  client.publish(CHAT_TOPIC, JSON.stringify(msg));
+  addLog(`📤 ${text}`, 'ok');
+}
+
+// ===== 管理指令 =====
+function cmd(action) {
+  if (!client || !connected) {
+    addLog('⚠️ 未连接', 'err');
+    return;
+  }
+  const msg = { action };
+  client.publish(ADMIN_TOPIC, JSON.stringify(msg));
+  addLog(`📤 指令: ${action}`, 'warn');
+
+  if (action === 'stop') {
+    if (intervalId) { clearInterval(intervalId); intervalId = null; }
+    running = false;
+    setStatus('stopped');
+    addLog('⏹ 广播已停止', 'warn');
+  } else if (action === 'pause') {
+    paused = true;
+    setStatus('paused');
+    addLog('⏸ 广播已暂停', 'warn');
+  } else if (action === 'resume') {
+    paused = false;
+    setStatus('online');
+    addLog('▶️ 广播已恢复', 'ok');
+  }
+}
+
+// ===== 广播循环 =====
+function startBroadcast() {
+  if (intervalId) clearInterval(intervalId);
+  running = true;
+  paused = false;
+  count = 0;
+
+  const msgs = [
+    () => `🎉 大家好！我是自动广播机器人`,
+    () => `📢 欢迎使用 for-class 聊天室`,
+    () => `💡 本消息由浏览器机器人发送`,
+    () => `🕒 当前时间：${new Date().toLocaleTimeString()}`,
+    () => `🌐 广域网 MQTT 实时通信`,
+    () => `🚀 每 ${intervalSec} 秒广播一次`,
+    () => `✨ 祝你今天愉快！`,
+    () => `🔁 这是自动循环消息 #${count}`,
+  ];
+
+  intervalId = setInterval(() => {
+    if (!connected || !running || paused) return;
+    count++;
+    const idx = count % msgs.length;
+    let msg = msgs[idx]();
+    if (idx === 7) msg = `🔁 这是自动循环消息 #${count}`;
+    sendChat(msg);
+    timerDisplay.textContent = `⏱️ 间隔: ${intervalSec}s · 已发: ${count}`;
+  }, intervalSec * 1000);
+
+  addLog(`▶️ 广播已启动，间隔 ${intervalSec}s`, 'ok');
+}
+
+// ===== 更新 UI =====
+function updateUserList() {
+  const users = Object.keys(seenUsers);
+  userCount.textContent = `在线: ${users.length}`;
+  if (users.length) {
+    userList.innerHTML = users.map(u => `<span class="user-tag">${u}</span>`).join('');
+  } else {
+    userList.innerHTML = '<span style="color:#6b7a8f;">暂无在线用户</span>';
+  }
+}
+
+function updateStatusDisplay(data) {
+  const users = data.online || [];
+  const interval = data.interval || intervalSec;
+  const roomName = data.room || room;
+  roomDisplay.textContent = `房间: ${roomName}`;
+  timerDisplay.textContent = `⏱️ 间隔: ${interval}s`;
+  if (users.length) {
+    userList.innerHTML = users.map(u => `<span class="user-tag">${u}</span>`).join('');
+    userCount.textContent = `在线: ${users.length}`;
+  }
+}
+
+// ===== 手动发送 =====
+function sendManual() {
+  const inp = $('msgInput');
+  const text = inp.value.trim();
+  if (!text) return;
+  sendChat(text);
+  inp.value = '';
+}
+
+// ===== 应用配置 =====
+function applyConfig() {
+  const newRoom = $('cfgRoom').value.trim() || 'lobby';
+  const newInterval = parseInt($('cfgInterval').value) || 2;
+  const newName = $('cfgName').value.trim() || '广播机器人';
+
+  if (newRoom !== room || newName !== botName) {
+    room = newRoom;
+    botName = newName;
+    CHAT_TOPIC = `navchat/${room}`;
+    roomDisplay.textContent = `房间: ${room}`;
+    addLog(`🔄 房间切换为: ${room}，机器人名: ${botName}`, 'warn');
+    // 重连
+    connectMqtt();
+  }
+
+  if (newInterval !== intervalSec) {
+    intervalSec = newInterval;
+    timerDisplay.textContent = `⏱️ 间隔: ${intervalSec}s`;
+    if (intervalId) {
+      clearInterval(intervalId);
+      startBroadcast();
+    }
+    addLog(`⏱️ 间隔更新为 ${intervalSec}s`, 'ok');
+  }
+}
+
+// ===== 键盘快捷键 =====
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && document.activeElement === $('msgInput')) {
+    sendManual();
+  }
+});
+
+// ===== 初始化 =====
+addLog('🚀 浏览器版广播机器人已加载', 'ok');
+addLog('💡 点击「重连」或等待自动连接', 'warn');
+connectMqtt();
+</script>
+</body>
+</html>
