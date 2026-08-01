@@ -495,7 +495,7 @@
   .lk-item span { font-size: 22px; }
   .lk-item i { font-style: normal; font-size: 11px; }
   /* ===== 毛玻璃对话框（替代 prompt/alert，可拖动，点外部不关闭） ===== */
-  .wdlg { position: absolute; z-index: 7000; width: min(340px, 92vw); border-radius: 14px; padding-bottom: 14px; animation: popIn .18s ease; }
+  .wdlg { position: fixed; z-index: 12000; width: min(340px, 92vw); border-radius: 14px; padding-bottom: 14px; animation: popIn .18s ease; }
   .wdlg-bar { cursor: move; padding: 14px 16px 6px; font-weight: 700; font-size: 14px; touch-action: none; user-select: none; }
   .wdlg-body { padding: 4px 16px; display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
   .wdlg-body label { color: #aab3c7; font-size: 12px; }
@@ -541,6 +541,96 @@
   .game-stage { max-width: 520px; margin: 0 auto; }
   .gs-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
   .gs-head button { border: 1px solid rgba(255,255,255,.15); background: var(--panel); color: var(--text); border-radius: 8px; padding: 7px 14px; cursor: pointer; }
+
+  /* ===== 积分栏 / 主题商店 / 卡池 ===== */
+  .pts-bar { max-width: 900px; margin: 0 auto 14px; padding: 10px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,.1); font-weight: 700; font-size: 15px; }
+  .skin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 10px; width: 100%; }
+  .skin-card { border: 1px solid rgba(255,255,255,.12); border-radius: 12px; overflow: hidden; background: rgba(255,255,255,.04); transition: .2s; }
+  .skin-card:hover { transform: translateY(-2px); }
+  .skin-card.cur { border-color: var(--accent); box-shadow: 0 0 10px rgba(79,140,255,.3); }
+  .skin-prev { height: 58px; }
+  .skin-info { padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; }
+  .skin-info b { font-size: 13px; }
+  .skin-info .sp { font-size: 11px; color: var(--muted); min-height: 28px; }
+  .skin-btns { display: flex; gap: 6px; }
+  .skin-btns button { flex: 1; border: none; border-radius: 8px; padding: 5px 0; font-size: 12px; cursor: pointer; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
+  .skin-btns button.ghost { background: rgba(255,255,255,.08); color: var(--text); border: 1px solid rgba(255,255,255,.15); }
+  .skin-btns button:disabled { opacity: .55; cursor: default; }
+  .gacha-top { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; margin-bottom: 14px; font-size: 15px; }
+  .gacha-res { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px,1fr)); gap: 10px; margin-bottom: 16px; min-height: 40px; }
+  .gacha-card { border-radius: 12px; padding: 16px 8px; text-align: center; font-size: 12.5px; background: rgba(255,255,255,.05); border: 2px solid rgba(255,255,255,.18); animation: gpop .45s backwards; }
+  .gacha-card .big { font-size: 26px; display: block; margin-bottom: 6px; }
+  .gr-ssr { border-color: #ffd32a; box-shadow: 0 0 16px rgba(255,211,42,.35); }
+  .gr-sr { border-color: #b06cff; box-shadow: 0 0 10px rgba(176,108,255,.3); }
+  .gr-r { border-color: #4f8cff; }
+  @keyframes gpop { from { opacity: 0; transform: scale(.4) rotate(8deg); } }
+  .gacha-bag { border-top: 1px dashed rgba(255,255,255,.15); padding-top: 12px; font-size: 13px; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: center; }
+  /* 新游戏通用：自适应画布 + 格子盘 */
+  #gsBody canvas { max-width: 100%; height: auto; display: block; margin: 0 auto; touch-action: none; border-radius: 10px; }
+  .cellgrid { display: grid; gap: 3px; justify-content: center; user-select: none; }
+  .cellgrid button { border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.07); color: var(--text); border-radius: 6px; font-size: 15px; display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; }
+  /* ===== AI 助手（DeepSeek 风格） ===== */
+  #pageAI { --aiu-bub: var(--accent); --aia-bub: rgba(255,255,255,.07); --ai-fs: 14.5px; }
+  .ai-wrap { display: flex; height: 100%; max-width: 1180px; margin: 0 auto; position: relative; overflow: hidden; }
+  .ai-side { width: 232px; flex-shrink: 0; border-right: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.03); display: flex; flex-direction: column; padding: 12px 10px; }
+  .ai-new { border: none; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border-radius: 12px; padding: 10px; cursor: pointer; font-size: 14px; font-weight: 600; }
+  .ai-convs { flex: 1; overflow-y: auto; margin: 12px 0; display: flex; flex-direction: column; gap: 4px; }
+  .ai-conv { display: flex; align-items: center; gap: 6px; padding: 9px 10px; border-radius: 10px; cursor: pointer; color: var(--muted); font-size: 13px; }
+  .ai-conv span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ai-conv:hover { background: rgba(255,255,255,.06); }
+  .ai-conv.cur { background: rgba(255,255,255,.1); color: var(--text); }
+  .ai-conv i { font-style: normal; opacity: .5; }
+  .ai-conv i:hover { opacity: 1; color: #ff5f57; }
+  .ai-side-btns { display: flex; flex-direction: column; gap: 6px; }
+  .ai-side-btns button { border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); color: var(--text); border-radius: 10px; padding: 8px 10px; cursor: pointer; font-size: 13px; text-align: left; }
+  .ai-main { flex: 1; min-width: 0; display: flex; flex-direction: column; background-size: cover; background-position: center; }
+  .ai-head { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,.07); }
+  .ai-head .mdl { color: var(--muted); font-size: 12px; margin-left: auto; }
+  #aiSideBtn { display: none; border: none; background: none; color: var(--text); font-size: 18px; cursor: pointer; }
+  .ai-msgs { flex: 1; overflow-y: auto; padding: 18px 16px; font-size: var(--ai-fs); }
+  .ai-hello { text-align: center; margin-top: 14vh; color: var(--muted); font-size: 13.5px; line-height: 1.9; }
+  .ai-hello .big { font-size: 38px; }
+  .ai-hello h2 { color: var(--text); margin: 10px 0 6px; }
+  .ai-msg { display: flex; gap: 10px; margin-bottom: 16px; }
+  .ai-msg .av { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,.1); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+  .ai-msg .bub { max-width: 82%; padding: 10px 14px; border-radius: 14px; background: var(--aia-bub); line-height: 1.65; overflow-wrap: break-word; min-width: 0; }
+  .ai-msg.user { flex-direction: row-reverse; }
+  .ai-msg.user .bub { background: var(--aiu-bub); color: #fff; border-top-right-radius: 4px; white-space: pre-wrap; }
+  .ai-msg.bot .bub { border-top-left-radius: 4px; }
+  .ai-msg .bub pre { background: rgba(0,0,0,.4); border-radius: 8px; padding: 10px; overflow-x: auto; margin: 8px 0; font-size: 13px; }
+  .ai-msg .bub code { background: rgba(0,0,0,.3); border-radius: 4px; padding: 1px 5px; font-size: 13px; }
+  .ai-msg .bub pre code { background: none; padding: 0; }
+  .ai-msg .bub img { max-width: 200px; border-radius: 8px; display: block; margin-top: 6px; }
+  .ai-input { padding: 8px 14px 14px; }
+  .ai-files { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .ai-files .chip { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); border-radius: 8px; padding: 4px 8px; font-size: 12px; display: flex; gap: 6px; align-items: center; }
+  .ai-files .chip i { font-style: normal; cursor: pointer; opacity: .6; }
+  .ai-files .chip i:hover { opacity: 1; color: #ff5f57; }
+  .ai-box { border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.05); border-radius: 16px; padding: 10px 12px 8px; }
+  .ai-box:focus-within { border-color: var(--accent); }
+  .ai-box textarea { width: 100%; border: none; background: none; color: var(--text); outline: none; resize: none; font-size: 14.5px; font-family: inherit; max-height: 130px; line-height: 1.5; }
+  .ai-tools { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+  .ai-tools button { border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.05); color: var(--text); border-radius: 50%; width: 34px; height: 34px; cursor: pointer; font-size: 15px; }
+  .ai-tools .send { margin-left: auto; border: none; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
+  .ai-tools .mic.rec { background: #c0392b; border-color: #e74c3c; animation: micpulse 1s infinite; }
+  @keyframes micpulse { 50% { box-shadow: 0 0 0 6px rgba(231,76,60,.25); } }
+  .ai-modal { position: fixed; inset: 0; z-index: 11000; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .ai-modal .aic { display: block; width: 100%; max-width: 430px; max-height: 84vh; overflow-y: auto; overflow-x: hidden; background: var(--panel); border: 1px solid rgba(255,255,255,.14); border-radius: 16px; padding: 18px; }
+  .ai-modal h3 { margin-bottom: 6px; }
+  .ai-modal label { display: block; font-size: 13px; color: var(--muted); margin: 10px 0 4px; }
+  .ai-modal input[type=text], .ai-modal input[type=password], .ai-modal textarea { width: 100%; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.05); color: var(--text); border-radius: 10px; padding: 8px 10px; font-size: 13.5px; outline: none; font-family: inherit; }
+  .ai-modal .btns { display: flex; gap: 8px; margin-top: 16px; justify-content: flex-end; }
+  .ai-modal .btns button { border: none; border-radius: 10px; padding: 8px 18px; cursor: pointer; font-size: 13.5px; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
+  .ai-modal .btns button.ghost { background: rgba(255,255,255,.08); color: var(--text); border: 1px solid rgba(255,255,255,.15); }
+  @media (max-width: 760px) {
+    .ai-side { position: absolute; left: 0; top: 0; bottom: 0; z-index: 30; background: #171a26; transform: translateX(-105%); transition: .25s; }
+    .ai-side.open { transform: none; box-shadow: 8px 0 24px rgba(0,0,0,.4); }
+    #aiSideBtn { display: block; }
+  }
+  /* 主题壁纸层 + 黑客风扫描线 */
+  #themeWp { background-size: cover; background-position: center; }
+  body.hacker-mode::after { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 9999; background: repeating-linear-gradient(0deg, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0,255,0,.03) 2px, rgba(0,255,0,.03) 4px); animation: scanlines .4s linear infinite; }
+  @keyframes scanlines { 0% { background-position: 0 0; } 100% { background-position: 0 4px; } }
   .gs-head b { font-size: 17px; }
   .gs-head .sc { margin-left: auto; color: var(--muted); font-size: 14px; }
   #gsBody { background: var(--panel); border: 1px solid rgba(255,255,255,.1); border-radius: 16px; padding: 16px; }
@@ -561,6 +651,16 @@
   .set-sec { background: var(--panel); border: 1px solid rgba(255,255,255,.1); border-radius: 16px; padding: 18px 20px; }
   .set-sec h3 { font-size: 15px; margin-bottom: 4px; }
   .set-sec .tip { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .guide details { border: 1px solid rgba(255,255,255,.1); border-radius: 10px; margin-top: 8px; padding: 2px 14px; background: rgba(255,255,255,.02); }
+  .guide summary { cursor: pointer; font-size: 14px; font-weight: 600; padding: 10px 0; list-style: none; }
+  .guide summary::-webkit-details-marker { display: none; }
+  .guide summary::before { content: "\25B8"; display: inline-block; margin-right: 8px; color: var(--accent); transition: .2s; }
+  .guide details[open] summary::before { transform: rotate(90deg); }
+  .guide .gd-body { font-size: 13px; line-height: 1.85; color: var(--muted); padding: 2px 0 12px; }
+  .guide .gd-body b { color: var(--text); }
+  .guide .gd-body code { background: rgba(255,255,255,.08); border-radius: 5px; padding: 1px 6px; font-size: 12px; color: var(--accent); }
+  .guide .gd-body ol { margin: 4px 0 4px 20px; }
+  .guide .gd-body li { margin: 3px 0; }
   .set-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
   .set-row label { font-size: 13px; min-width: 110px; }
   .set-row input[type=text], .set-row select {
@@ -636,6 +736,7 @@
       <div class="tab" data-page="pageDesk">🖥️ 分屏浮窗</div>
       <div class="tab" data-page="pageChat">💬 聊天</div>
       <div class="tab" data-page="pageGame">🎮 游戏</div>
+      <div class="tab" data-page="pageAI">🤖 AI</div>
       <div class="tab" data-page="pageSet">⚙️ 设置</div>
     </div>
   </div>
@@ -643,6 +744,7 @@
   <!-- ================= 页面零：主界面（Win11 桌面） ================= -->
   <div id="pageHome" class="page active">
     <!-- 动态壁纸层 -->
+    <div id="themeWp" class="wp-layer" style="display:none"></div>
     <canvas id="wpCanvas" class="wp-layer"></canvas>
     <video id="wpVideo" class="wp-layer" muted loop playsinline style="display:none"></video>
     <img id="wpGif" class="wp-layer" style="display:none" alt="" />
@@ -875,6 +977,7 @@
 
   <!-- ================= 页面四：游戏 ================= -->
   <div id="pageGame" class="page">
+    <div class="pts-bar acrylic" id="ptsBar">🪙 总积分 0</div>
     <div class="game-lobby" id="gameLobby">
       <div class="gcard" onclick="openGame('g2048')"><div class="gi">🔢</div><h3>2048</h3><p>方向键 / 按钮合并数字</p></div>
       <div class="gcard" onclick="openGame('snake')"><div class="gi">🐍</div><h3>贪吃蛇</h3><p>方向键 / 滑动控制</p></div>
@@ -882,6 +985,38 @@
       <div class="gcard" onclick="openGame('guess')"><div class="gi">🎯</div><h3>猜数字</h3><p>1~100 看谁猜得快</p></div>
       <div class="gcard" onclick="openGame('tank')"><div class="gi">🪖</div><h3>坦克大战</h3><p>经典版 V1.1.2 · 已内置</p></div>
       <div class="gcard" onclick="openGame('tanknet')"><div class="gi">📡</div><h3>坦克联机对战</h3><p>广域网 1v1 · 房间号相同即开战</p></div>
+      <div class="gcard" onclick="openGame('tetris')"><div class="gi">🧱</div><h3>俄罗斯方块</h3><p>方向键 / 按钮操作 · 消行得分</p></div>
+      <div class="gcard" onclick="openGame('flappy')"><div class="gi">🐤</div><h3>Flappy Bird</h3><p>点击飞行 · 穿越管道</p></div>
+      <div class="gcard" onclick="openGame('breakout')"><div class="gi">🧨</div><h3>打砖块</h3><p>拖拽挡板 · 弹球碎砖</p></div>
+      <div class="gcard" onclick="openGame('jump')"><div class="gi">🦘</div><h3>跳一跳</h3><p>长按蓄力 · 松手起跳</p></div>
+      <div class="gcard" onclick="openGame('reversi')"><div class="gi">⚫</div><h3>黑白棋</h3><p>人机对战 · 翻转吃子</p></div>
+      <div class="gcard" onclick="openGame('mine')"><div class="gi">💣</div><h3>扫雷</h3><p>点击揭开 · 长按插旗</p></div>
+      <div class="gcard" onclick="openGame('sudoku')"><div class="gi">9️⃣</div><h3>数独</h3><p>点击填数 · 自动校验</p></div>
+      <div class="gcard" onclick="openGame('link')"><div class="gi">🀄</div><h3>连连看</h3><p>两下点击 · 消除同款</p></div>
+      <div class="gcard" onclick="openGame('match3')"><div class="gi">💎</div><h3>宝石迷阵</h3><p>滑动交换 · 三消得分</p></div>
+      <div class="gcard" onclick="openGame('dino')"><div class="gi">🦖</div><h3>跑酷恐龙</h3><p>点击跳跃 · 躲避仙人掌</p></div>
+      <div class="gcard" onclick="openGame('mole')"><div class="gi">🔨</div><h3>打地鼠</h3><p>手快点击 · 60 秒计分</p></div>
+      <div class="gcard" onclick="openGame('stack')"><div class="gi">🏗️</div><h3>堆叠 Stack</h3><p>点击放置 · 越叠越高</p></div>
+      <div class="gcard" onclick="openGame('react')"><div class="gi">⚡</div><h3>反应测试</h3><p>变绿就点 · 测毫秒反应</p></div>
+      <div class="gcard" onclick="openGame('simon')"><div class="gi">🎨</div><h3>颜色记忆</h3><p>记住顺序 · 依次复现</p></div>
+      <div class="gcard" onclick="openGame('rhythm')"><div class="gi">🎹</div><h3>节奏点击</h3><p>音符落线 · 按对得分</p></div>
+      <div class="gcard" onclick="openGame('dodge')"><div class="gi">🚀</div><h3>躲避陨石</h3><p>滑动飞船 · 生存计时</p></div>
+      <div class="gcard" onclick="openGame('fruit')"><div class="gi">🍎</div><h3>接水果</h3><p>左右滑动 · 接住不掉</p></div>
+      <div class="gcard" onclick="openGame('archer')"><div class="gi">🏹</div><h3>射箭</h3><p>长按蓄力 · 松开射靶</p></div>
+      <div class="gcard" onclick="openGame('pong')"><div class="gi">🏓</div><h3>弹弹球</h3><p>滑动挡板 · 对战电脑</p></div>
+      <div class="gcard" onclick="openGame('bubble')"><div class="gi">🫧</div><h3>泡泡龙</h3><p>点击瞄准 · 三连消泡</p></div>
+      <div class="gcard" onclick="openGame('solitaire')"><div class="gi">🃏</div><h3>纸牌接龙</h3><p>经典扑克 · 按花色归位</p></div>
+      <div class="gcard" onclick="openGame('tower')"><div class="gi">🗼</div><h3>塔防</h3><p>造塔防怪 · 多波进攻</p></div>
+      <div class="gcard" onclick="openGame('chess')"><div class="gi">♟️</div><h3>国际象棋</h3><p>经典棋类 · 人机对战</p></div>
+      <div class="gcard" onclick="openGame('xiangqi')"><div class="gi">🏯</div><h3>中国象棋</h3><p>马走日象走田 · 吃掉将军</p></div>
+      <div class="gcard" onclick="openGame('go')"><div class="gi">⚫</div><h3>围棋</h3><p>黑白对弈 · 围地吃子</p></div>
+      <div class="gcard" onclick="openGame('gomoku')"><div class="gi">⚪</div><h3>五子棋</h3><p>五子连珠 · 先手必胜</p></div>
+      <div class="gcard" onclick="openGame('drawguess')"><div class="gi">🎨</div><h3>你画我猜（联机）</h3><p>一人画 · 全员猜 · 房间号相同</p></div>
+      <div class="gcard" onclick="openGame('spy')"><div class="gi">🕵️</div><h3>谁是卧底（联机）</h3><p>找出卧底 · 描述词不同</p></div>
+      <div class="gcard" onclick="openGame('aerplane')"><div class="gi">✈️</div><h3>飞行棋（联机）</h3><p>掷骰子 · 掷出六起飞 · 四人对战</p></div>
+      <div class="gcard" onclick="openGame('uno')"><div class="gi">🎴</div><h3>UNO（联机）</h3><p>颜色数字相配 · 先出完赢</p></div>
+      <div class="gcard" onclick="openGame('poker')"><div class="gi">🃏</div><h3>斗地主（联机）</h3><p>三打一 · 炸弹加倍 · 房间号对战</p></div>
+      <div class="gcard" onclick="openGame('gacha')"><div class="gi">🎰</div><h3>主题卡池</h3><p>50 积分单抽 · 抽主题 / 体验卡 / 道具</p></div>
     </div>
     <div class="game-stage" id="gameStage" style="display:none;">
       <div class="gs-head">
@@ -893,9 +1028,125 @@
     </div>
   </div>
 
+  <!-- ================= 页面六：AI 助手 ================= -->
+  <div id="pageAI" class="page">
+    <div class="ai-wrap">
+      <div class="ai-side" id="aiSide">
+        <button class="ai-new" onclick="aiNewConv()">＋ 开启新对话</button>
+        <div class="ai-convs" id="aiConvs"></div>
+        <div class="ai-side-btns">
+          <button onclick="aiCfgDlg()">⚙️ API 设置</button>
+          <button onclick="aiUiDlg()">🎨 界面自定义</button>
+        </div>
+      </div>
+      <div class="ai-main" id="aiMain">
+        <div class="ai-head">
+          <button id="aiSideBtn" onclick="document.getElementById('aiSide').classList.toggle('open')">☰</button>
+          <b id="aiName">🤖 AI 助手</b><span class="mdl" id="aiMdl"></span>
+        </div>
+        <div class="ai-msgs" id="aiMsgs"></div>
+        <div class="ai-input">
+          <div class="ai-files" id="aiFiles"></div>
+          <div class="ai-box">
+            <textarea id="aiText" rows="1" placeholder="给 AI 发消息…（Enter 发送，Shift+Enter 换行）"></textarea>
+            <div class="ai-tools">
+              <button title="上传文件" onclick="document.getElementById('aiFileInp').click()">📎</button>
+              <button class="mic" id="aiMic" title="语音输入" onclick="aiMicToggle()">🎤</button>
+              <button class="send" id="aiSend" title="发送" onclick="aiSend()">➤</button>
+            </div>
+          </div>
+        </div>
+        <input type="file" id="aiFileInp" multiple style="display:none">
+      </div>
+    </div>
+  </div>
+
   <!-- ================= 页面五：设置 ================= -->
   <div id="pageSet" class="page">
     <div class="set-wrap">
+
+      <div class="set-sec guide">
+        <h3>📖 使用说明</h3>
+        <div class="tip">这是一个全能工作台，共 7 个栏目。点顶部导航切换，下面逐个展开看怎么用。所有数据都存在你自己的浏览器里，不会上传。</div>
+
+        <details open>
+          <summary>🏠 主界面（桌面）</summary>
+          <div class="gd-body">
+            仿 Win11 桌面，有动态壁纸和桌面小组件（时钟、天气、待办、音乐等）。<br>
+            • 小组件可拖动，在「设置」里开关。<br>
+            • 壁纸、主题色在「设置」里换。<br>
+            • 卡顿的话把「设置→性能模式」调到中或低。
+          </div>
+        </details>
+
+        <details>
+          <summary>📚 导航</summary>
+          <div class="gd-body">
+            常用网站导航，按 AI / 开发 / 学习 / 影音 等分类。点卡片在新标签页打开网站，顶部搜索框可直接搜。
+          </div>
+        </details>
+
+        <details>
+          <summary>🖥️ 分屏浮窗</summary>
+          <div class="gd-body">
+            像电脑一样多窗口并排工作。<br>
+            • 点左下角「☰ 应用」打开窗口。<br>
+            • 窗口可拖动、缩放（支持触屏）。<br>
+            • 用顶部「双分屏 / 三分屏 / 层叠」一键排版。
+          </div>
+        </details>
+
+        <details>
+          <summary>💬 聊天（广域网可用）</summary>
+          <div class="gd-body">
+            基于公共服务器的实时聊天，<b>全世界联网设备都能互通</b>。<br>
+            <ol><li>填用户名。</li><li>填一个房间名（告诉对方相同房间名）。</li><li>点「进入聊天室」，同房间的人即可实时聊天。</li></ol>
+          </div>
+        </details>
+
+        <details>
+          <summary>🎮 游戏（能赚积分）</summary>
+          <div class="gd-body">
+            内置十几款小游戏（2048 / 贪吃蛇 / 坦克大战 / 扫雷 等），玩游戏会攻积分。<br>
+            • 积分能在「主题卡池」抽奖，也能在设置里兑换整套主题。<br>
+            • 手机上可触屏 / 滑动操作。<br>
+            • 坦克、聊天式游戏支持房间号联机对战。
+          </div>
+        </details>
+
+        <details>
+          <summary>🤖 AI 助手（重点）</summary>
+          <div class="gd-body">
+            DeepSeek 风格的 AI 聊天，需要你自己的 API 密钥才能用：<br>
+            <ol>
+              <li>点顶部「🤖 AI」栏目。</li>
+              <li>点左下角「⚙️ API 设置」，填入 <b>API Key</b>（地址默认已填好 DeepSeek，也可改成 OpenAI / 通义 / Kimi 等兼容接口）。</li>
+              <li>保存后就能对话。<code>Enter</code> 发送，<code>Shift+Enter</code> 换行。</li>
+            </ol>
+            • <b>🎤 语音</b>：点麦克风说话，自动转文字（建议 Chrome / Edge）。<br>
+            • <b>📎 文件</b>：可传文本 / 代码 / 图片一起问。<br>
+            • <b>🎨 界面自定义</b>：改 AI 名称 / 头像 / 气泡颜色 / 字号 / 聊天背景。<br>
+            • 左侧可建多个会话，自动保存。<br>
+            <b>密钥只存在本机浏览器，不会上传。</b>
+          </div>
+        </details>
+
+        <details>
+          <summary>⚙️ 设置（当前页）</summary>
+          <div class="gd-body">
+            • <b>主题</b>：用积分兑换整套主题（壁纸+配色+文案）。<br>
+            • <b>主题色</b>：自定义全站强调色。<br>
+            • <b>背景音乐</b>：上传音乐或贴网址，切页不断播。<br>
+            • <b>界面与启动</b>：自动隐藏导航 / 任务栏、性能档位、启动页面等。
+          </div>
+        </details>
+      </div>
+
+      <div class="set-sec">
+        <h3>🎭 主题（积分兑换）</h3>
+        <div class="tip">玩游戏攒积分，兑换整套主题：壁纸 + 配色 + 界面文案一起换。异环 / 鸣潮 / 三角洲的壁纸放在 themes 文件夹里（和本 HTML 一起上传 GitHub），没放也有内置壁纸兜底。你自己改主题色或壁纸时会自动切到「自定义」。</div>
+        <div class="skin-grid" id="skinGrid"></div>
+      </div>
 
       <div class="set-sec">
         <h3>🎨 主题色</h3>
@@ -1804,7 +2055,7 @@ function openDlg(title, fields, onOk) {
   if (cc) cc.onclick = () => w.remove();
   inputs.forEach(i => i.addEventListener("keydown", e => { if (e.key === "Enter") ok(); }));
   w.append(bar, body, btns);
-  $id("pageHome").appendChild(w);
+  document.body.appendChild(w); // 挂 body：任何页面都能看见，永远在最顶层
   w.style.left = Math.max(8, (innerWidth - w.offsetWidth) / 2) + "px";
   w.style.top = Math.max(20, innerHeight * 0.26) + "px";
   let sx, sy, ox, oy, pid = null; // 标题栏拖动
@@ -2178,6 +2429,7 @@ function startWp() {
   const fx = OPT.wpfx || "stars";
   const vid = $id("wpVideo"), gif = $id("wpGif");
   vid.style.display = gif.style.display = wpCv.style.display = "none";
+  if (applyThemeWp()) return; // 兑换主题的壁纸生效中，接管壁纸层
   if (fx === "media" && wpMedia) { // 自定义壁纸：视频 / GIF / 图片 / 网络图
     const isVideo = wpMedia.slice(0, 10) === "data:video";
     if (OPT.lowperf) { // 低性能：视频暂停不解码；GIF/图片画成静态一帧
@@ -2219,6 +2471,7 @@ function stopWp() {
 function setWpFx(name) {
   saveOpt("wpfx", name);
   closeAllPops();
+  themeToCustom(); // 自己换壁纸 → 主题切到「自定义」
   startWp();
 }
 /* 网络图片壁纸：贴网址即用 */
@@ -2227,6 +2480,7 @@ function applyWpUrl(u) {
   if (!u) { alert("请先填入图片网址"); return; }
   $id("wpUrl").value = u;
   wpMedia = u;
+  themeToCustom();
   try { localStorage.setItem("wpMedia", u); } catch (_) {}
   saveOpt("wpfx", "media");
   startWp();
@@ -2302,7 +2556,10 @@ function openGame(name) {
   document.getElementById("gameLobby").style.display = "none";
   document.getElementById("gameStage").style.display = "block";
   document.getElementById("gsScore").textContent = "";
-  ({ g2048: initG2048, snake: initSnake, memory: initMemory, guess: initGuess, tank: initTank, tanknet: initTanknet })[name]();
+  ({ g2048: initG2048, snake: initSnake, memory: initMemory, guess: initGuess, tank: initTank, tanknet: initTanknet, gacha: initGacha,
+     tetris: initTetris, flappy: initFlappy, breakout: initBreakout, jump: initJump, reversi: initReversi, mine: initMine, sudoku: initSudoku, link: initLink, match3: initMatch3, dino: initDino, mole: initMole, stack: initStack,
+     react: initReact, simon: initSimon, rhythm: initRhythm, dodge: initDodge, fruit: initFruit, archer: initArcher, pong: initPong, bubble: initBubble,
+     solitaire: initSolitaire, tower: initTower, chess: initChess, xiangqi: initXiangqi, go: initGo, gomoku: initGomoku, drawguess: initDrawguess, spy: initSpy, aerplane: initAerplane, uno: initUno, poker: initPoker })[name]();
 }
 function closeGame() {
   if (gameCleanup) { gameCleanup(); gameCleanup = null; }
@@ -2313,10 +2570,271 @@ function closeGame() {
 const gsBody = () => document.getElementById("gsBody");
 const gsScore = t => document.getElementById("gsScore").textContent = t;
 
+/* ===================== 全局积分（所有游戏共用一个总分） ===================== */
+let PTS = 0;
+try { PTS = parseInt(localStorage.getItem("gPts"), 10) || 0; } catch (_) {}
+let INV = {};
+try { INV = JSON.parse(localStorage.getItem("gachaInv")) || {}; } catch (_) {}
+INV = Object.assign({ trials: 0, dbl: 0, boostUntil: 0 }, INV);
+let OWNED = ["default", "custom"];
+try { OWNED = JSON.parse(localStorage.getItem("ownedThemes")) || OWNED; } catch (_) {}
+const saveInv = () => { try { localStorage.setItem("gachaInv", JSON.stringify(INV)); } catch (_) {} };
+const saveOwned = () => { try { localStorage.setItem("ownedThemes", JSON.stringify(OWNED)); } catch (_) {} };
+function ptsUI() {
+  const b = $id("ptsBar");
+  if (b) b.textContent = "🪙 总积分 " + PTS + (Date.now() < INV.boostUntil ? "（✨ 翻倍中）" : "");
+  const g = $id("gachaPts"); if (g) g.textContent = "🪙 " + PTS;
+  renderThemeShop();
+}
+function savePts() { try { localStorage.setItem("gPts", String(PTS)); } catch (_) {} ptsUI(); }
+function addPts(n) {
+  if (!(n > 0)) return;
+  if (Date.now() < INV.boostUntil) n *= 2; // 翻倍卡生效中
+  PTS += Math.round(n);
+  savePts();
+}
+function spendPts(n) {
+  if (PTS < n) { openDlg("🪙 积分不足", `需要 <b>${n}</b> 积分，当前只有 <b>${PTS}</b>。去玩游戏攒积分吧！`, () => {}); return false; }
+  PTS -= n; savePts(); return true;
+}
+
+/* ===================== 游戏主题系统（积分兑换，文案按用户指定） ===================== */
+const GAME_THEMES = {
+  default: { label: '默认', price: 0, desc: '现在的样子', wallpaper: '' },
+  custom:  { label: '自定义', price: 0, desc: '跟随你自己的配色和壁纸', wallpaper: '' },
+  real: {
+    label: '全球实景', price: 100, desc: '自然色调实景风',
+    wallpaper: 'linear-gradient(135deg, #1a3a2a, #2a5a4a, #3a7a6a)',
+    accent: '#60a5fa', accent2: '#34d399',
+    texts: { brand: '✦ 全球实景', tabs: { pageHome: '实景·桌面', pageNav: '实景·导航', pageDesk: '实景·窗口', pageChat: '实景·通讯', pageGame: '实景·探险', pageSet: '实景·设置', pageAI: '实景·智询' } }
+  },
+  hacker: {
+    label: '黑客风', price: 150, desc: '黑绿配色 + 扫描线',
+    wallpaper: '#0a0a0a',
+    accent: '#39ff14', accent2: '#00ff00',
+    texts: { brand: '✦ 黑客', tabs: { pageHome: '黑客·控制台', pageNav: '黑客·破解', pageDesk: '黑客·多屏', pageChat: '黑客·暗网信使', pageGame: '黑客·攻防', pageSet: '黑客·终端', pageAI: '黑客·AI核心' } }
+  },
+  cyber: {
+    label: '赛博朋克', price: 200, desc: '霓虹紫青赛博风',
+    wallpaper: 'linear-gradient(135deg, #0a0a1a, #1a0a2a, #2a0a3a)',
+    accent: '#ff00ff', accent2: '#00ffff',
+    texts: { brand: '✦ 赛博朋克', tabs: { pageHome: '赛博·桌面', pageNav: '赛博·导航', pageDesk: '赛博·浮窗', pageChat: '赛博·信息流', pageGame: '赛博·虚拟竞技', pageSet: '赛博·终端', pageAI: '赛博·义体AI' } }
+  },
+  delta: {
+    label: '三角洲', price: 300, desc: '军事风 · 壁纸可放 themes/sanjiaozhou.mp4', media: 'sanjiaozhou',
+    wallpaper: 'linear-gradient(135deg, #1a2a1a, #2a3a2a, #3a4a3a)',
+    accent: '#4ade80', accent2: '#16a34a',
+    texts: { brand: '✦ 三角洲', tabs: { pageHome: '三角洲·作战室', pageNav: '三角洲·情报', pageDesk: '三角洲·多窗口', pageChat: '三角洲·战术通讯', pageGame: '三角洲·射击场', pageSet: '三角洲·装备库', pageAI: '三角洲·AI参谋' } }
+  },
+  ete: {
+    label: '异环', price: 300, desc: '壁纸可放 themes/yihuan.mp4', media: 'yihuan',
+    wallpaper: 'linear-gradient(135deg, #0b1120, #1a2f4a, #2a4b6a)',
+    accent: '#00d4ff', accent2: '#7b2ffc',
+    texts: { brand: '✦ 异环', tabs: { pageHome: '异环·首页', pageNav: '异环·导航', pageDesk: '异环·浮窗', pageChat: '异环·消息', pageGame: '异环·游戏', pageSet: '异环·终端', pageAI: '异环·智脑' } }
+  },
+  ww: {
+    label: '鸣潮', price: 400, desc: '壁纸可放 themes/mingchao.mp4', media: 'mingchao',
+    wallpaper: 'linear-gradient(135deg, #0a0a0a, #1a1a1a, #2a1f1a)',
+    accent: '#a78bfa', accent2: '#7c3aed',
+    texts: { brand: '✦ 鸣潮', tabs: { pageHome: '鸣潮·共鸣', pageNav: '鸣潮·地图', pageDesk: '鸣潮·分镜', pageChat: '鸣潮·回声', pageGame: '鸣潮·战局', pageSet: '鸣潮·调律', pageAI: '鸣潮·回声AI' } }
+  }
+};
+let GTHEME = 'default';
+try { GTHEME = localStorage.getItem('deskTheme') || 'default'; } catch (_) {}
+let TRIALS = {}; // 体验卡：key → 到期时间戳
+try { TRIALS = JSON.parse(localStorage.getItem('themeTrials')) || {}; } catch (_) {}
+const saveTrials = () => { try { localStorage.setItem('themeTrials', JSON.stringify(TRIALS)); } catch (_) {} };
+/* 记住原版文案（图标 + 文字），切回默认/自定义时还原 */
+const TAB_TEXTS = {}, TAB_ICONS = {};
+document.querySelectorAll('.tabs .tab').forEach(tab => {
+  TAB_TEXTS[tab.dataset.page] = tab.textContent;
+  TAB_ICONS[tab.dataset.page] = tab.textContent.trim().split(' ')[0];
+});
+const BRAND_TEXT = (document.querySelector('.brand .long') || { textContent: '我的工作台' }).textContent;
+function restoreUiTexts() {
+  const long = document.querySelector('.brand .long');
+  if (long) long.textContent = BRAND_TEXT;
+  document.querySelectorAll('.tabs .tab').forEach(tab => {
+    if (TAB_TEXTS[tab.dataset.page]) tab.textContent = TAB_TEXTS[tab.dataset.page];
+  });
+}
+function canUseTheme(k) {
+  const t = GAME_THEMES[k];
+  return !!t && (t.price === 0 || OWNED.includes(k) || TRIALS[k] > Date.now());
+}
+function applyGameTheme(key) {
+  if (!canUseTheme(key)) key = 'default';
+  GTHEME = key;
+  try { localStorage.setItem('deskTheme', key); } catch (_) {}
+  const t = GAME_THEMES[key];
+  // 文案：左上角「我的工作台」+ 导航标签整套改名（保留小图标）
+  if (t.texts) {
+    const long = document.querySelector('.brand .long');
+    if (long) long.textContent = t.texts.brand;
+    document.querySelectorAll('.tabs .tab').forEach(tab => {
+      const nm = t.texts.tabs[tab.dataset.page];
+      if (nm) tab.textContent = (TAB_ICONS[tab.dataset.page] || '') + ' ' + nm;
+    });
+  } else restoreUiTexts();
+  // 配色：主题自带强调色；切回默认/自定义时恢复用户自己存的配色
+  const root = document.documentElement.style;
+  if (t.accent) { root.setProperty('--accent', t.accent); root.setProperty('--accent2', t.accent2); }
+  else {
+    if (OPT.accent) root.setProperty('--accent', OPT.accent); else root.removeProperty('--accent');
+    if (OPT.accent2) root.setProperty('--accent2', OPT.accent2); else root.removeProperty('--accent2');
+  }
+  document.body.classList.toggle('hacker-mode', key === 'hacker');
+  if (document.body.classList.contains('homeon')) startWp(); // 壁纸层按主题重建
+  renderThemeShop();
+}
+/* 主题壁纸接管：同人主题优先 themes/ 里的视频→图片，都没有就用内置渐变兑底 */
+function applyThemeWp() {
+  const tw = $id('themeWp'), vid = $id('wpVideo'), gif = $id('wpGif');
+  const t = GAME_THEMES[GTHEME];
+  if (!t || !t.wallpaper) { tw.style.display = 'none'; vid.onerror = gif.onerror = null; return false; }
+  tw.style.display = 'block';
+  tw.style.background = t.wallpaper;
+  if (t.media) {
+    const tryImg = ext => {
+      gif.onerror = ext === 'jpg' ? () => tryImg('png') : () => { gif.style.display = 'none'; };
+      gif.src = 'themes/' + t.media + '.' + ext;
+      gif.style.display = 'block';
+    };
+    if (OPT.lowperf) tryImg('jpg'); // 低性能不解码视频
+    else {
+      vid.onerror = () => { vid.style.display = 'none'; tryImg('jpg'); };
+      vid.src = 'themes/' + t.media + '.mp4';
+      vid.style.display = 'block';
+      vid.play().catch(() => {});
+    }
+  }
+  return true;
+}
+/* 用户自己改主题色/壁纸 → 自动切到「自定义」，不动他刚改的设置 */
+function themeToCustom() {
+  if (GTHEME === 'custom') return;
+  GTHEME = 'custom';
+  try { localStorage.setItem('deskTheme', 'custom'); } catch (_) {}
+  restoreUiTexts();
+  document.body.classList.remove('hacker-mode');
+  $id('themeWp').style.display = 'none';
+  renderThemeShop();
+}
+/* 设置页主题商店 */
+function renderThemeShop() {
+  const grid = $id('skinGrid');
+  if (!grid) return;
+  const now = Date.now();
+  grid.innerHTML = Object.keys(GAME_THEMES).map(k => {
+    const t = GAME_THEMES[k];
+    const owned = t.price === 0 || OWNED.includes(k);
+    const trialLeft = !owned && TRIALS[k] > now ? Math.ceil((TRIALS[k] - now) / 60000) : 0;
+    let state, btns;
+    if (GTHEME === k) {
+      state = trialLeft ? '体验中 · 剩 ' + trialLeft + ' 分钟' : '使用中';
+      btns = '<button disabled>✔ 当前主题</button>';
+    } else if (owned || trialLeft) {
+      state = owned ? (t.price ? '已拥有' : '免费') : '体验剩 ' + trialLeft + ' 分钟';
+      btns = `<button onclick="applyGameTheme('${k}')">应用</button>`;
+    } else {
+      state = '🪙 ' + t.price + ' 积分';
+      btns = `<button onclick="buyTheme('${k}')">兑换</button>` +
+        (INV.trials > 0 ? `<button class="ghost" onclick="trialTheme('${k}')">🎟 体验1小时</button>` : '');
+    }
+    return `<div class="skin-card${GTHEME === k ? ' cur' : ''}">
+      <div class="skin-prev" style="background:${t.wallpaper || 'linear-gradient(135deg,#1b2340,#2a3558)'}"></div>
+      <div class="skin-info"><b>${t.label}</b><span class="sp">${state} · ${t.desc}</span><div class="skin-btns">${btns}</div></div>
+    </div>`;
+  }).join('');
+}
+function buyTheme(k) {
+  const t = GAME_THEMES[k];
+  if (!t || OWNED.includes(k)) return;
+  if (!spendPts(t.price)) return;
+  OWNED.push(k); saveOwned();
+  applyGameTheme(k);
+  openDlg('🎭 兑换成功', `「${t.label}」主题已永久解锁并应用！剩余 <b>${PTS}</b> 积分`, () => {});
+}
+function trialTheme(k) {
+  if (INV.trials <= 0) { openDlg('🎟 没有体验卡', '去游戏页的「主题卡池」抽体验卡吧！', () => {}); return; }
+  INV.trials--; saveInv();
+  TRIALS[k] = Date.now() + 3600e3; saveTrials();
+  applyGameTheme(k);
+}
+/* 体验卡 / 翻倍卡到期检查 */
+setInterval(() => {
+  let dirty = false;
+  Object.keys(TRIALS).forEach(k => { if (TRIALS[k] <= Date.now()) { delete TRIALS[k]; dirty = true; } });
+  if (dirty) saveTrials();
+  if (!canUseTheme(GTHEME)) {
+    applyGameTheme('default');
+    openDlg('⏰ 体验到期', '主题体验时间到啦，已切回默认主题。喜欢就用积分兑换吧！', () => {});
+  }
+  if (dirty || INV.boostUntil) ptsUI();
+}, 30000);
+
+/* ===================== 主题卡池 ===================== */
+function initGacha() {
+  document.getElementById('gsTitle').textContent = '🎰 主题卡池';
+  document.querySelector('.game-stage').style.maxWidth = '760px';
+  gsBody().innerHTML = `
+    <div class="gacha-top">
+      <b id="gachaPts">🪙 ${PTS}</b>
+      <button class="sbtn" onclick="doGacha(1)">单抽 50🪙</button>
+      <button class="sbtn" onclick="doGacha(10)">十连 450🪙</button>
+    </div>
+    <div class="tip" style="text-align:center;margin-bottom:12px">概率：永久主题 2% · 体验卡(1小时) 10% · 积分翻倍卡(30分钟) 15% · +20积分 25% · +5积分 48%</div>
+    <div class="gacha-res" id="gachaRes"></div>
+    <div class="gacha-bag" id="gachaBag"></div>`;
+  renderBag();
+  gameCleanup = () => { document.querySelector('.game-stage').style.maxWidth = ''; };
+}
+function gachaOne() {
+  const r = Math.random() * 100;
+  if (r < 2) { // 永久主题（未拥有里随机一款，全集齐则转体验卡）
+    const locked = Object.keys(GAME_THEMES).filter(k => GAME_THEMES[k].price > 0 && !OWNED.includes(k));
+    if (locked.length) {
+      const k = locked[Math.random() * locked.length | 0];
+      OWNED.push(k); saveOwned();
+      return { cls: 'gr-ssr', icon: '🎭', txt: '永久主题：' + GAME_THEMES[k].label };
+    }
+    INV.trials++;
+    return { cls: 'gr-ssr', icon: '🎟', txt: '主题已集齐 → 体验卡×1' };
+  }
+  if (r < 12) { INV.trials++; return { cls: 'gr-sr', icon: '🎟', txt: '主题体验卡 1小时' }; }
+  if (r < 27) { INV.dbl++; return { cls: 'gr-sr', icon: '✨', txt: '积分翻倍卡 30分钟' }; }
+  if (r < 52) { addPts(20); return { cls: 'gr-r', icon: '🪙', txt: '+20 积分' }; }
+  addPts(5); return { cls: '', icon: '🪙', txt: '+5 积分' };
+}
+function doGacha(n) {
+  if (!spendPts(n === 10 ? 450 : 50)) return;
+  const res = [];
+  for (let i = 0; i < n; i++) res.push(gachaOne());
+  saveInv(); savePts();
+  $id('gachaRes').innerHTML = res.map((o, i) =>
+    `<div class="gacha-card ${o.cls}" style="animation-delay:${i * 0.08}s"><span class="big">${o.icon}</span>${o.txt}</div>`).join('');
+  renderBag();
+}
+function renderBag() {
+  const bag = $id('gachaBag');
+  if (!bag) return;
+  const left = INV.boostUntil - Date.now();
+  bag.innerHTML = `🎒 背包：<span>🎟 体验卡 ×${INV.trials}（去设置页主题区使用）</span>
+    <span>✨ 翻倍卡 ×${INV.dbl}</span>
+    ${INV.dbl > 0 ? '<button class="sbtn" onclick="useDbl()">使用翻倍卡</button>' : ''}
+    ${left > 0 ? '<span>✨ 翻倍生效中，剩 ' + Math.ceil(left / 60000) + ' 分钟</span>' : ''}`;
+}
+function useDbl() {
+  if (INV.dbl <= 0) return;
+  INV.dbl--;
+  INV.boostUntil = Math.max(Date.now(), INV.boostUntil || 0) + 30 * 60000;
+  saveInv(); ptsUI(); renderBag();
+}
+
 /* ---- 2048 ---- */
 function initG2048() {
   document.getElementById("gsTitle").textContent = "🔢 2048";
-  let board, score;
+  let board, score, over;
   const COLORS = { 2:"#3a4266",4:"#44507e",8:"#4f8cff",16:"#5f7bff",32:"#7c5cff",64:"#9a4fe0",128:"#c748b8",256:"#e0508a",512:"#ff5f57",1024:"#ff9f43",2048:"#ffd32a" };
   gsBody().innerHTML = `<div class="b2048" id="b2048"></div>
     <div class="g-btns">
@@ -2324,7 +2842,7 @@ function initG2048() {
       <button onclick="g2048Move(0)">⬅️</button><button onclick="g2048Move(1)">➡️</button>
       <button onclick="g2048Reset()">🔄 重开</button>
     </div>`;
-  function reset() { board = Array(16).fill(0); score = 0; add(); add(); draw(); }
+  function reset() { board = Array(16).fill(0); score = 0; over = false; add(); add(); draw(); }
   function add() {
     const empty = board.map((v,i)=>v?-1:i).filter(i=>i>=0);
     if (empty.length) board[empty[Math.random()*empty.length|0]] = Math.random() < 0.9 ? 2 : 4;
@@ -2337,11 +2855,15 @@ function initG2048() {
   function slide(row) {
     let a = row.filter(v=>v);
     for (let i = 0; i < a.length - 1; i++)
-      if (a[i] === a[i+1]) { a[i] *= 2; score += a[i]; a.splice(i+1,1); }
+      if (a[i] === a[i+1]) {
+        a[i] *= 2; score += a[i]; a.splice(i+1,1);
+        if (a[i] >= 128) addPts({ 128:2, 256:5, 512:12, 1024:30, 2048:80 }[a[i]] || 2); // 大数字合并给积分
+      }
     while (a.length < 4) a.push(0);
     return a;
   }
   function move(dir) { // 0左 1右 2下 3上
+    if (over) return; // 局已结束：锁盘，不结算不加分
     const old = board.join();
     for (let r = 0; r < 4; r++) {
       let idx = [];
@@ -2351,7 +2873,13 @@ function initG2048() {
       idx.forEach((bi,i)=>board[bi]=line[i]);
     }
     if (board.join() !== old) { add(); draw(); }
-    if (!board.includes(0) && !canMove()) setTimeout(()=>alert("游戏结束！得分："+score), 60);
+    if (!board.includes(0) && !canMove()) {
+      over = true; // 只结算一次
+      setTimeout(() => {
+        const p = Math.min(30, Math.floor(score / 100)); addPts(p);
+        openDlg("🔢 游戏结束", `得分 <b>${score}</b>，获得 <b>${p}</b> 积分！点确定再来一局`, reset);
+      }, 60);
+    }
   }
   function canMove() {
     for (let r=0;r<4;r++) for (let c=0;c<4;c++) {
@@ -2404,13 +2932,16 @@ function initSnake() {
     const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
     if (head.x<0||head.y<0||head.x>=N||head.y>=N||snake.some(s=>s.x===head.x&&s.y===head.y)) {
       dead = true; clearInterval(timer);
+      const p = Math.min(15, Math.floor(score / 30)); addPts(p);
       ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillRect(0,0,400,400);
       ctx.fillStyle = "#fff"; ctx.font = "bold 26px sans-serif"; ctx.textAlign = "center";
-      ctx.fillText("游戏结束！得分："+score, 200, 200);
+      ctx.fillText("游戏结束！得分："+score, 200, 190);
+      ctx.font = "bold 16px sans-serif";
+      ctx.fillText("额外奖励 +" + p + " 积分 · 点「重开」再来", 200, 226);
       return;
     }
     snake.unshift(head);
-    if (head.x===food.x && head.y===food.y) { score += 10; gsScore("得分："+score); placeFood(); }
+    if (head.x===food.x && head.y===food.y) { score += 10; addPts(2); gsScore("得分："+score); placeFood(); }
     else snake.pop();
     draw();
   }
@@ -2464,7 +2995,7 @@ function initMemory() {
       if (first.textContent === b.textContent) {
         first.classList.replace("open","ok"); b.classList.replace("open","ok");
         first = null; matched += 2;
-        if (matched === cards.length) setTimeout(()=>alert("🎉 完成！共用 "+steps+" 步"), 200);
+        if (matched === cards.length) setTimeout(() => { addPts(20); openDlg("🎴 完成！", `共用 <b>${steps}</b> 步，获得 <b>20</b> 积分！`, () => {}); }, 200);
       } else {
         lock = true;
         const a = first; first = null;
@@ -2495,6 +3026,7 @@ function initGuess() {
     if (!v || v < 1 || v > 100) { msg.textContent = "请输入 1~100 的数字"; return; }
     tries++; gsScore("已猜：" + tries + " 次");
     if (v === target) {
+      addPts(10); // 猜中 +10 积分
       msg.textContent = "🎉 猜对了！就是 " + target + "，共用 " + tries + " 次！";
       target = Math.floor(Math.random()*100) + 1; tries = 0;
       setTimeout(()=>{ msg.textContent += "（已开新局，继续猜！）"; }, 50);
@@ -2504,6 +3036,2387 @@ function initGuess() {
   };
   document.getElementById("guessInp").addEventListener("keydown", e => { if (e.key === "Enter") window.doGuess(); });
 }
+
+/* ---- 俄罗斯方块 ---- */
+function initTetris() {
+  document.getElementById("gsTitle").textContent = "🧱 俄罗斯方块";
+  gsBody().innerHTML = `<canvas id="ttCv" width="250" height="500" style="max-width:250px"></canvas>
+    <div class="g-btns">
+      <button onclick="ttAct('L')">◀</button><button onclick="ttAct('T')">🔄</button>
+      <button onclick="ttAct('R')">▶</button><button onclick="ttAct('D')">⬇</button>
+      <button onclick="ttAct('N')">重开</button>
+    </div>`;
+  const cv = document.getElementById("ttCv"), ctx = cv.getContext("2d"), S = 25, W = 10, H = 20;
+  const SHAPES = [[[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],[[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]]];
+  const COLORS = ["#4fc3f7","#ffd54f","#b06cff","#ff8a65","#4f8cff","#66bb6a","#ef5350"];
+  let grid, cur, cx, cy, ci, score, over, timer;
+  function reset() { grid = Array.from({length:H},()=>Array(W).fill(0)); score = 0; over = false; gsScore("得分：0"); spawn(); clearInterval(timer); timer = setInterval(tick, 550); draw(); }
+  function spawn() { ci = Math.floor(Math.random()*7); cur = SHAPES[ci].map(r=>r.slice()); cx = 3; cy = 0; if (hit(cur,cx,cy)) end(); }
+  function hit(m,x,y) { return m.some((r,i)=>r.some((v,j)=>v && (x+j<0||x+j>=W||y+i>=H||(y+i>=0&&grid[y+i][x+j])))); }
+  function lock() {
+    cur.forEach((r,i)=>r.forEach((v,j)=>{ if(v&&cy+i>=0) grid[cy+i][cx+j]=ci+1; }));
+    let n = 0;
+    for (let i=H-1;i>=0;i--) if (grid[i].every(v=>v)) { grid.splice(i,1); grid.unshift(Array(W).fill(0)); n++; i++; }
+    if (n) { score += [0,100,300,500,800][n]; gsScore("得分："+score); }
+    spawn();
+  }
+  function tick() { if (over) return; if (!hit(cur,cx,cy+1)) cy++; else lock(); draw(); }
+  function end() {
+    if (over) return;
+    over = true; clearInterval(timer); // 结束锁盘，只结算一次，封顶 30
+    const p = Math.min(30, Math.floor(score/100)); addPts(p);
+    openDlg("🧱 游戏结束", `得分 <b>${score}</b>，获得 <b>${p}</b> 积分！点确定再来一局`, reset);
+  }
+  window.ttAct = a => {
+    if (a==="N") return reset();
+    if (over) return; // 结束后按键无效，防刷分
+    if (a==="L"&&!hit(cur,cx-1,cy)) cx--;
+    if (a==="R"&&!hit(cur,cx+1,cy)) cx++;
+    if (a==="D") { while(!hit(cur,cx,cy+1)) cy++; lock(); }
+    if (a==="T") { const r = cur[0].map((_,j)=>cur.map(row=>row[j]).reverse()); if(!hit(r,cx,cy)) cur = r; }
+    draw();
+  };
+  function draw() {
+    ctx.fillStyle = "#12141f"; ctx.fillRect(0,0,250,500);
+    const cell = (x,y,c) => { ctx.fillStyle = c; ctx.fillRect(x*S+1,y*S+1,S-2,S-2); };
+    grid.forEach((r,i)=>r.forEach((v,j)=>{ if(v) cell(j,i,COLORS[v-1]); }));
+    cur.forEach((r,i)=>r.forEach((v,j)=>{ if(v&&cy+i>=0) cell(cx+j,cy+i,COLORS[ci]); }));
+  }
+  const onKey = e => {
+    if (!document.getElementById("pageGame").classList.contains("active")) return;
+    const m = { ArrowLeft:"L", ArrowRight:"R", ArrowDown:"D", ArrowUp:"T", " ":"T" };
+    if (m[e.key]) { e.preventDefault(); window.ttAct(m[e.key]); }
+  };
+  document.addEventListener("keydown", onKey);
+  gameCleanup = () => { clearInterval(timer); document.removeEventListener("keydown", onKey); };
+  reset();
+}
+
+/* ---- Flappy Bird ---- */
+function initFlappy() {
+  document.getElementById("gsTitle").textContent = "🐤 Flappy Bird";
+  gsBody().innerHTML = `<canvas id="fbCv" width="360" height="480"></canvas><p class="tip" style="text-align:center">点击画布飞行，穿过管道 +1 分</p>`;
+  const cv = document.getElementById("fbCv"), ctx = cv.getContext("2d");
+  let y, vy, pipes, score, over, started, raf;
+  function reset() { y = 220; vy = 0; pipes = [{ x: 380, gap: 200 + Math.random()*120 }]; score = 0; over = false; started = false; loop(); gsScore("得分：0"); }
+  function loop() {
+    cancelAnimationFrame(raf);
+    ctx.fillStyle = "#12141f"; ctx.fillRect(0,0,360,480);
+    if (started && !over) {
+      vy += 0.45; y += vy;
+      pipes.forEach(p => p.x -= 2.4);
+      if (pipes[0].x < -60) pipes.shift();
+      if (pipes[pipes.length-1].x < 180) pipes.push({ x: 380, gap: 100 + Math.random()*270 });
+      pipes.forEach(p => { if (!p.ok && p.x + 50 < 56) { p.ok = 1; score++; gsScore("得分："+score); } });
+      if (y > 466 || y < 0 || pipes.some(p => 84 > p.x && 56 < p.x+50 && (y-12 < p.gap-75 || y+12 > p.gap+75))) return end();
+    }
+    ctx.fillStyle = "#66bb6a";
+    pipes.forEach(p => { ctx.fillRect(p.x, 0, 50, p.gap-75); ctx.fillRect(p.x, p.gap+75, 50, 480-p.gap-75); });
+    ctx.font = "26px sans-serif"; ctx.textAlign = "center"; ctx.fillText("🐤", 70, y+9);
+    if (!started) { ctx.fillStyle = "#fff"; ctx.font = "bold 18px sans-serif"; ctx.fillText("点击开始", 180, 240); }
+    raf = requestAnimationFrame(loop);
+  }
+  function end() {
+    if (over) return;
+    over = true; // 只结算一次，封顶 15
+    const p = Math.min(15, Math.floor(score/2)); addPts(p);
+    ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillRect(0,0,360,480);
+    ctx.fillStyle = "#fff"; ctx.font = "bold 22px sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("游戏结束！得分 "+score, 180, 220);
+    ctx.font = "15px sans-serif"; ctx.fillText("奖励 +"+p+" 积分 · 点击画布重开", 180, 254);
+  }
+  cv.addEventListener("pointerdown", () => { if (over) return reset(); started = true; vy = -7.2; });
+  gameCleanup = () => cancelAnimationFrame(raf);
+  reset();
+}
+
+/* ---- 打砖块 ---- */
+function initBreakout() {
+  document.getElementById("gsTitle").textContent = "🧨 打砖块";
+  gsBody().innerHTML = `<canvas id="bkCv" width="360" height="440"></canvas><p class="tip" style="text-align:center">在画布上左右拖动控制挡板</p>`;
+  const cv = document.getElementById("bkCv"), ctx = cv.getContext("2d");
+  let px, bx, by, vx, vy, bricks, score, over, raf;
+  function reset() {
+    px = 145; bx = 180; by = 300; vx = 2.6; vy = -3.2; score = 0; over = false;
+    bricks = [];
+    for (let r=0;r<5;r++) for (let c=0;c<8;c++) bricks.push({ x: c*44+4, y: r*20+30, on: 1 });
+    gsScore("得分：0"); loop();
+  }
+  function loop() {
+    cancelAnimationFrame(raf);
+    if (!over) {
+      bx += vx; by += vy;
+      if (bx<7||bx>353) vx = -vx;
+      if (by<7) vy = Math.abs(vy);
+      if (by>418 && by<436 && bx>px-6 && bx<px+76 && vy>0) { vy = -Math.abs(vy); vx += (bx-px-35)/22; }
+      if (by>446) return end(false);
+      bricks.forEach(b => {
+        if (b.on && bx>b.x-7 && bx<b.x+47 && by>b.y-7 && by<b.y+22) { b.on = 0; vy = -vy; score += 10; gsScore("得分："+score); }
+      });
+      if (bricks.every(b=>!b.on)) return end(true);
+    }
+    ctx.fillStyle = "#12141f"; ctx.fillRect(0,0,360,440);
+    ctx.fillStyle = "#ff8a65"; bricks.forEach(b=>{ if(b.on) ctx.fillRect(b.x,b.y,40,15); });
+    ctx.fillStyle = "#4f8cff"; ctx.fillRect(px,424,70,10);
+    ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(bx,by,7,0,7); ctx.fill();
+    raf = requestAnimationFrame(loop);
+  }
+  function end(win) {
+    if (over) return;
+    over = true; // 只结算一次，封顶 20
+    const p = win ? 20 : Math.min(20, Math.floor(score/40)); addPts(p);
+    openDlg(win ? "🎉 通关！" : "🧨 游戏结束", `得分 <b>${score}</b>，获得 <b>${p}</b> 积分！点确定再来一局`, reset);
+  }
+  const mv = e => { const r = cv.getBoundingClientRect(); px = Math.max(0, Math.min(290, (e.clientX-r.left)*(360/r.width)-35)); };
+  cv.addEventListener("pointerdown", mv); cv.addEventListener("pointermove", mv);
+  gameCleanup = () => cancelAnimationFrame(raf);
+  reset();
+}
+
+/* ---- 跳一跳 ---- */
+function initJump() {
+  document.getElementById("gsTitle").textContent = "🦘 跳一跳";
+  gsBody().innerHTML = `<canvas id="jpCv" width="360" height="300"></canvas><p class="tip" style="text-align:center">按住画布蓄力，松手起跳，落到右边平台上</p>`;
+  const cv = document.getElementById("jpCv"), ctx = cv.getContext("2d");
+  let plats, me, power, holding, jumping, score, over, raf;
+  function reset() { plats = [{ x: 30, w: 60 }, { x: 170, w: 56 }]; me = 60; power = 0; holding = false; jumping = null; score = 0; over = false; gsScore("得分：0"); draw(); }
+  function draw() {
+    ctx.fillStyle = "#12141f"; ctx.fillRect(0,0,360,300);
+    ctx.fillStyle = "#4f8cff"; plats.forEach(pl => ctx.fillRect(pl.x, 240, pl.w, 14));
+    ctx.font = "30px sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("🦘", jumping ? jumping.x : me, jumping ? jumping.y : 232);
+    if (holding) { ctx.fillStyle = "#ffd54f"; ctx.fillRect(20, 282, power * 3.2, 8); }
+  }
+  function charge() { if (!holding) return; power = Math.min(100, power + 1.5); draw(); raf = requestAnimationFrame(charge); }
+  function release() {
+    if (!holding) return;
+    holding = false; cancelAnimationFrame(raf);
+    if (over || jumping) return;
+    const x0 = me, x1 = me + power * 2.6; let t = 0;
+    (function anim() {
+      t += 0.045;
+      jumping = { x: x0 + (x1 - x0) * Math.min(1, t), y: 232 - Math.sin(Math.PI * Math.min(1, t)) * 85 };
+      draw();
+      if (t < 1) { raf = requestAnimationFrame(anim); return; }
+      jumping = null; me = x1; power = 0;
+      const pl = plats[1];
+      if (me >= pl.x && me <= pl.x + pl.w) { // 稳稳落上
+        score++; gsScore("得分：" + score);
+        me = 30 + (me - pl.x); plats = [{ x: 30, w: pl.w }, { x: 120 + Math.random() * 120, w: Math.max(34, 60 - score * 1.5) }];
+        draw();
+      } else end();
+    })();
+  }
+  function end() {
+    if (over) return;
+    over = true; // 只结算一次，封顶 20
+    const p = Math.min(20, score); addPts(p);
+    openDlg("🦘 掉下去啦", `连跳 <b>${score}</b> 块，获得 <b>${p}</b> 积分！点确定再来一局`, reset);
+  }
+  cv.addEventListener("pointerdown", () => { if (over || jumping) return; holding = true; power = 0; charge(); });
+  cv.addEventListener("pointerup", release);
+  cv.addEventListener("pointerleave", release);
+  gameCleanup = () => cancelAnimationFrame(raf);
+  reset();
+}
+
+/* ---- 跑酷恐龙 ---- */
+function initDino() {
+  document.getElementById("gsTitle").textContent = "🦖 跑酷恐龙";
+  gsBody().innerHTML = `<canvas id="dnCv" width="400" height="180"></canvas><p class="tip" style="text-align:center">点击画布 / 空格键跳跃，躲开仙人掌</p>`;
+  const cv = document.getElementById("dnCv"), ctx = cv.getContext("2d");
+  let y, vy, obs, dist, speed, over, raf;
+  function reset() { y = 0; vy = 0; obs = [{ x: 420 }]; dist = 0; speed = 4.5; over = false; gsScore("得分：0"); loop(); }
+  function loop() {
+    cancelAnimationFrame(raf);
+    if (!over) {
+      vy -= 0.55; y = Math.max(0, y + vy); if (y === 0) vy = 0;
+      speed += 0.0015; dist += speed * 0.06; gsScore("得分：" + Math.floor(dist));
+      obs.forEach(o => o.x -= speed);
+      if (obs[0].x < -20) obs.shift();
+      if (obs[obs.length-1].x < 240 - Math.random()*120) obs.push({ x: 420 });
+      if (obs.some(o => o.x < 74 && o.x > 26 && y < 28)) return end();
+    }
+    ctx.fillStyle = "#12141f"; ctx.fillRect(0,0,400,180);
+    ctx.strokeStyle = "rgba(255,255,255,.3)"; ctx.beginPath(); ctx.moveTo(0,152); ctx.lineTo(400,152); ctx.stroke();
+    ctx.font = "28px sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("🦖", 50, 148 - y);
+    obs.forEach(o => ctx.fillText("🌵", o.x, 148));
+    raf = requestAnimationFrame(loop);
+  }
+  function end() {
+    if (over) return;
+    over = true; // 只结算一次，封顶 15
+    const p = Math.min(15, Math.floor(dist / 100)); addPts(p);
+    ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillRect(0,0,400,180);
+    ctx.fillStyle = "#fff"; ctx.font = "bold 20px sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("撞上啦！得分 " + Math.floor(dist) + " · 奖励 +" + p + " 积分", 200, 84);
+    ctx.font = "14px sans-serif"; ctx.fillText("点击画布重新开始", 200, 114);
+  }
+  const jump = () => { if (over) return reset(); if (y === 0) vy = 9.5; };
+  cv.addEventListener("pointerdown", jump);
+  const onKey = e => { if (e.key === " " && document.getElementById("pageGame").classList.contains("active")) { e.preventDefault(); jump(); } };
+  document.addEventListener("keydown", onKey);
+  gameCleanup = () => { cancelAnimationFrame(raf); document.removeEventListener("keydown", onKey); };
+  reset();
+}
+
+/* ---- 黑白棋（人机） ---- */
+function initReversi() {
+  document.getElementById("gsTitle").textContent = "⚫ 黑白棋";
+  gsBody().innerHTML = `<div class="cellgrid" id="rvGrid" style="grid-template-columns:repeat(8,38px);grid-auto-rows:38px"></div><p class="tip" style="text-align:center" id="rvTip">你执黑⪵先行，点可落子格</p><div class="g-btns"><button onclick="rvReset()">重开</button></div>`;
+  const grid = document.getElementById("rvGrid"), tip = document.getElementById("rvTip");
+  const DIRS = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+  let bd, over;
+  function reset() { bd = Array(64).fill(0); bd[27]=bd[36]=2; bd[28]=bd[35]=1; over = false; draw(); }
+  function flips(i, c) {
+    if (bd[i]) return [];
+    const x = i%8, y = (i-x)/8, out = [];
+    DIRS.forEach(([dx,dy]) => {
+      let fx = x+dx, fy = y+dy; const line = [];
+      while (fx>=0&&fx<8&&fy>=0&&fy<8&&bd[fy*8+fx]===3-c) { line.push(fy*8+fx); fx+=dx; fy+=dy; }
+      if (line.length && fx>=0&&fx<8&&fy>=0&&fy<8 && bd[fy*8+fx]===c) out.push(...line);
+    });
+    return out;
+  }
+  const moves = c => bd.map((_,i)=>i).filter(i => flips(i,c).length);
+  function play(i, c) { const f = flips(i,c); bd[i] = c; f.forEach(j => bd[j] = c); }
+  function draw() {
+    grid.innerHTML = "";
+    const can = over ? [] : moves(1);
+    bd.forEach((v,i) => {
+      const b = document.createElement("button");
+      b.textContent = v===1 ? "⚫" : v===2 ? "⚪" : can.includes(i) ? "·" : "";
+      if (can.includes(i)) b.style.color = "var(--accent)";
+      b.onclick = () => {
+        if (over || !flips(i,1).length) return;
+        play(i,1); draw();
+        setTimeout(aiTurn, 350);
+      };
+      grid.appendChild(b);
+    });
+    const black = bd.filter(v=>v===1).length, white = bd.filter(v=>v===2).length;
+    gsScore(`⚫ ${black} : ${white} ⚪`);
+    if (!over && !moves(1).length && !moves(2).length) end(black, white);
+  }
+  function aiTurn() {
+    if (over) return;
+    const ms = moves(2);
+    if (ms.length) { play(ms.sort((a,b) => flips(b,2).length - flips(a,2).length)[0], 2); }
+    draw();
+    if (!over && !moves(1).length && moves(2).length) { tip.textContent = "你无子可下，电脑继续"; setTimeout(aiTurn, 400); }
+    else if (!over) tip.textContent = "轮到你了，点可落子格";
+  }
+  function end(black, white) {
+    if (over) return;
+    over = true; // 只结算一次
+    const win = black > white, p = win ? 15 : black === white ? 8 : 3; addPts(p);
+    openDlg("⚫ 对局结束", `黑 <b>${black}</b> : <b>${white}</b> 白，${win?"你赢啦！":black===white?"平局！":"电脑胜…"}获得 <b>${p}</b> 积分！点确定再来一局`, reset);
+  }
+  window.rvReset = reset;
+  reset();
+}
+
+/* ---- 扫雷 ---- */
+function initMine() {
+  document.getElementById("gsTitle").textContent = "💣 扫雷";
+  gsBody().innerHTML = `<div class="cellgrid" id="mnGrid" style="grid-template-columns:repeat(9,36px);grid-auto-rows:36px"></div><p class="tip" style="text-align:center">点击揭开 · 长按（或右键）插旗 · 共 10 雷</p><div class="g-btns"><button onclick="mnReset()">重开</button></div>`;
+  const grid = document.getElementById("mnGrid"), N = 9, M = 10;
+  let mines, open, flag, over, first;
+  function reset() { mines = new Set(); open = new Set(); flag = new Set(); over = false; first = true; gsScore("剩余雷：" + M); draw(); }
+  function plant(safe) { while (mines.size < M) { const i = Math.floor(Math.random()*N*N); if (i !== safe) mines.add(i); } }
+  const around = i => { const x = i%N, y = (i-x)/N, out = []; for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++) { const nx = x+dx, ny = y+dy; if ((dx||dy)&&nx>=0&&nx<N&&ny>=0&&ny<N) out.push(ny*N+nx); } return out; };
+  function reveal(i) {
+    if (open.has(i) || flag.has(i)) return;
+    open.add(i);
+    if (mines.has(i)) return end(false);
+    const n = around(i).filter(j => mines.has(j)).length;
+    if (!n) around(i).forEach(reveal);
+  }
+  function draw() {
+    grid.innerHTML = "";
+    for (let i=0;i<N*N;i++) {
+      const b = document.createElement("button");
+      if (open.has(i)) {
+        b.style.background = "rgba(255,255,255,.16)";
+        if (mines.has(i)) b.textContent = "💣";
+        else { const n = around(i).filter(j=>mines.has(j)).length; b.textContent = n || ""; }
+      } else if (flag.has(i)) b.textContent = "🚩";
+      let lp;
+      b.addEventListener("pointerdown", () => { lp = setTimeout(() => { lp = null; toggleFlag(i); }, 450); });
+      b.addEventListener("pointerup", () => { if (lp) { clearTimeout(lp); tap(i); } });
+      b.addEventListener("pointerleave", () => clearTimeout(lp));
+      b.addEventListener("contextmenu", e => { e.preventDefault(); });
+      grid.appendChild(b);
+    }
+  }
+  function tap(i) {
+    if (over || flag.has(i)) return;
+    if (first) { first = false; plant(i); }
+    reveal(i); draw();
+    if (!over && open.size === N*N - M) end(true);
+  }
+  function toggleFlag(i) {
+    if (over || open.has(i)) return;
+    flag.has(i) ? flag.delete(i) : flag.add(i);
+    gsScore("剩余雷：" + (M - flag.size)); draw();
+  }
+  function end(win) {
+    if (over) return;
+    over = true; // 只结算一次
+    mines.forEach(i => open.add(i)); draw();
+    const p = win ? 20 : 2; addPts(p);
+    openDlg(win ? "🎉 扫雷成功！" : "💥 踩雷了", `获得 <b>${p}</b> 积分！点确定再来一局`, reset);
+  }
+  window.mnReset = reset;
+  reset();
+}
+
+/* ---- 数独 ---- */
+function initSudoku() {
+  document.getElementById("gsTitle").textContent = "9️⃣ 数独";
+  gsBody().innerHTML = `<div class="cellgrid" id="sdGrid" style="grid-template-columns:repeat(9,34px);grid-auto-rows:34px;gap:1px"></div>
+    <div class="g-btns" id="sdPad"></div><p class="tip" style="text-align:center">先点空格选中，再点下方数字填入，填错会变红</p>`;
+  const grid = document.getElementById("sdGrid"), pad = document.getElementById("sdPad");
+  // 基底完成盘（平移法）+ 行列数字随机映射，保证合法且每局不同
+  let sol, puzzle, fixed, sel = -1, over;
+  function gen() {
+    const map = [1,2,3,4,5,6,7,8,9].sort(() => Math.random()-0.5);
+    sol = [];
+    for (let r=0;r<9;r++) for (let c=0;c<9;c++) sol.push(map[(r*3 + Math.floor(r/3) + c) % 9]);
+    puzzle = sol.map(v => Math.random() < 0.42 ? v : 0);
+    fixed = puzzle.map(v => !!v);
+  }
+  function reset() { gen(); sel = -1; over = false; gsScore("剩余：" + puzzle.filter(v=>!v).length); draw(); }
+  function draw() {
+    grid.innerHTML = "";
+    puzzle.forEach((v,i) => {
+      const b = document.createElement("button");
+      b.textContent = v || "";
+      const x = i%9, y = (i-x)/9;
+      if ((Math.floor(x/3)+Math.floor(y/3))%2) b.style.background = "rgba(255,255,255,.11)";
+      if (sol[i] !== undefined && v && v !== sol[i]) b.style.color = "#ff5f57";
+      else if (v && !fixed[i]) b.style.color = "var(--accent)";
+      if (i === sel) b.style.borderColor = "var(--accent)";
+      b.onclick = () => { if (!over && !fixed[i]) { sel = i; draw(); } };
+      grid.appendChild(b);
+    });
+  }
+  pad.innerHTML = "";
+  for (let n=1;n<=9;n++) {
+    const b = document.createElement("button");
+    b.textContent = n;
+    b.onclick = () => {
+      if (over || sel < 0 || fixed[sel]) return;
+      puzzle[sel] = n; draw();
+      const left = puzzle.filter((v,i) => v !== sol[i]).length;
+      gsScore("剩余：" + left);
+      if (!left) end();
+    };
+    pad.appendChild(b);
+  }
+  const eb = document.createElement("button"); eb.textContent = "⚡重开"; eb.onclick = () => reset(); pad.appendChild(eb);
+  function end() {
+    if (over) return;
+    over = true; addPts(25); // 只结算一次
+    openDlg("9️⃣ 数独完成！", "全盘正确，获得 <b>25</b> 积分！点确定再来一局", reset);
+  }
+  reset();
+}
+
+/* ---- 连连看 ---- */
+function initLink() {
+  document.getElementById("gsTitle").textContent = "🀄 连连看";
+  gsBody().innerHTML = `<div class="cellgrid" id="lkGrid" style="grid-template-columns:repeat(8,40px);grid-auto-rows:40px"></div><p class="tip" style="text-align:center">点两个相同图案消除，全部消完获胜</p><div class="g-btns"><button onclick="lkReset()">重开</button></div>`;
+  const grid = document.getElementById("lkGrid");
+  const EMO = ["🍎","🍌","🍇","🍉","🍒","🍑","🥝","🍍","🍓","🥭","🍐","🍊"];
+  let cells, first, left, over;
+  function reset() {
+    const pool = [];
+    for (let k=0;k<24;k++) pool.push(EMO[k%12]);
+    cells = [...pool, ...pool].sort(() => Math.random()-0.5);
+    first = null; left = 48; over = false; gsScore("剩余：48"); draw();
+  }
+  function draw() {
+    grid.innerHTML = "";
+    cells.forEach((v,i) => {
+      const b = document.createElement("button");
+      b.textContent = v || "";
+      b.style.fontSize = "20px";
+      if (first === i) b.style.borderColor = "var(--accent)";
+      b.onclick = () => {
+        if (over || !cells[i]) return;
+        if (first === null) { first = i; }
+        else if (first === i) { first = null; }
+        else if (cells[first] === cells[i]) {
+          cells[first] = cells[i] = null; first = null; left -= 2;
+          gsScore("剩余：" + left);
+          if (!left) end();
+        } else first = i;
+        draw();
+      };
+      grid.appendChild(b);
+    });
+  }
+  function end() {
+    if (over) return;
+    over = true; addPts(20); // 只结算一次
+    openDlg("🀄 全部消完！", "获得 <b>20</b> 积分！点确定再来一局", reset);
+  }
+  window.lkReset = reset;
+  reset();
+}
+
+/* ---- 宝石迷阵（三消） ---- */
+function initMatch3() {
+  document.getElementById("gsTitle").textContent = "💎 宝石迷阵";
+  gsBody().innerHTML = `<div class="cellgrid" id="m3Grid" style="grid-template-columns:repeat(8,40px);grid-auto-rows:40px"></div><p class="tip" style="text-align:center" id="m3Tip">共 30 步：点两个相邻宝石交换，凑三个同色消除</p><div class="g-btns"><button onclick="m3Reset()">重开</button></div>`;
+  const grid = document.getElementById("m3Grid"), N = 8;
+  const GEMS = ["🔴","🟡","🟢","🔵","🟣","🟠"];
+  let bd, sel, score, movesLeft, over;
+  const rnd = () => Math.floor(Math.random()*6);
+  function reset() { bd = Array.from({length:N*N}, rnd); sel = -1; score = 0; movesLeft = 30; over = false; settle(); gsScore("得分：0 · 步数：30"); draw(); }
+  function matches() {
+    const rm = new Set();
+    for (let y=0;y<N;y++) for (let x=0;x<N-2;x++) { const i = y*N+x; if (bd[i]!==null&&bd[i]===bd[i+1]&&bd[i]===bd[i+2]) { rm.add(i); rm.add(i+1); rm.add(i+2); } }
+    for (let x=0;x<N;x++) for (let y=0;y<N-2;y++) { const i = y*N+x; if (bd[i]!==null&&bd[i]===bd[i+N]&&bd[i]===bd[i+2*N]) { rm.add(i); rm.add(i+N); rm.add(i+2*N); } }
+    return rm;
+  }
+  function settle(scored) {
+    let rm = matches();
+    while (rm.size) {
+      if (scored) { score += rm.size * 10; }
+      rm.forEach(i => bd[i] = null);
+      for (let x=0;x<N;x++) {
+        const col = [];
+        for (let y=N-1;y>=0;y--) if (bd[y*N+x]!==null) col.push(bd[y*N+x]);
+        for (let y=N-1;y>=0;y--) bd[y*N+x] = col[N-1-y] !== undefined ? col[N-1-y] : rnd();
+      }
+      rm = matches();
+    }
+  }
+  function draw() {
+    grid.innerHTML = "";
+    bd.forEach((v,i) => {
+      const b = document.createElement("button");
+      b.textContent = GEMS[v]; b.style.fontSize = "20px";
+      if (i === sel) b.style.borderColor = "var(--accent)";
+      b.onclick = () => {
+        if (over) return;
+        if (sel < 0) { sel = i; draw(); return; }
+        const dx = Math.abs(sel%N - i%N), dy = Math.abs(Math.floor(sel/N) - Math.floor(i/N));
+        if (dx + dy !== 1) { sel = i; draw(); return; }
+        [bd[sel], bd[i]] = [bd[i], bd[sel]];
+        if (matches().size) { movesLeft--; settle(true); gsScore("得分："+score+" · 步数："+movesLeft); if (!movesLeft) end(); }
+        else [bd[sel], bd[i]] = [bd[i], bd[sel]]; // 换不出消除就换回来
+        sel = -1; draw();
+      };
+      grid.appendChild(b);
+    });
+  }
+  function end() {
+    if (over) return;
+    over = true; // 只结算一次，封顶 25
+    const p = Math.min(25, Math.floor(score/60)); addPts(p);
+    openDlg("💎 30 步用完", `得分 <b>${score}</b>，获得 <b>${p}</b> 积分！点确定再来一局`, reset);
+  }
+  window.m3Reset = reset;
+  reset();
+}
+
+/* ---- 打地鼠 ---- */
+function initMole() {
+  document.getElementById("gsTitle").textContent = "🔨 打地鼠";
+  gsBody().innerHTML = `<div class="cellgrid" id="mlGrid" style="grid-template-columns:repeat(3,90px);grid-auto-rows:90px;gap:8px"></div><p class="tip" style="text-align:center" id="mlTip">60 秒倒计时，地鼠冒头就点！</p><div class="g-btns"><button id="mlStart">开始</button></div>`;
+  const grid = document.getElementById("mlGrid");
+  let cur = -1, score, tLeft, tick = null, hop = null, running = false;
+  for (let i=0;i<9;i++) {
+    const b = document.createElement("button");
+    b.style.fontSize = "40px";
+    b.onclick = () => {
+      if (!running || i !== cur) return;
+      score++; cur = -1; draw(); gsScore("得分："+score+" · 剩余："+tLeft+"s");
+    };
+    grid.appendChild(b);
+  }
+  const draw = () => [...grid.children].forEach((b,i) => b.textContent = i === cur ? "🐹" : "");
+  function start() {
+    if (running) return;
+    running = true; score = 0; tLeft = 60; gsScore("得分：0 · 剩余：60s");
+    hop = setInterval(() => { cur = Math.floor(Math.random()*9); draw(); }, 650);
+    tick = setInterval(() => {
+      tLeft--;
+      gsScore("得分："+score+" · 剩余："+tLeft+"s");
+      if (tLeft <= 0) end();
+    }, 1000);
+  }
+  function end() {
+    if (!running) return;
+    running = false; clearInterval(tick); clearInterval(hop); cur = -1; draw(); // 只结算一次，封顶 20
+    const p = Math.min(20, Math.floor(score/3)); addPts(p);
+    openDlg("🔨 时间到！", `打中 <b>${score}</b> 只，获得 <b>${p}</b> 积分！点「开始」再来一局`, () => {});
+  }
+  document.getElementById("mlStart").onclick = start;
+  gameCleanup = () => { clearInterval(tick); clearInterval(hop); };
+  draw();
+}
+
+/* ---- 堆叠 Stack ---- */
+function initStack() {
+  document.getElementById("gsTitle").textContent = "🏗️ 堆叠 Stack";
+  gsBody().innerHTML = `<canvas id="stCv" width="360" height="440"></canvas><p class="tip" style="text-align:center">点击画布把移动的板子叠上去，对不齐的部分会被切掉</p>`;
+  const cv = document.getElementById("stCv"), ctx = cv.getContext("2d");
+  let stack, mov, dirn, score, over, raf;
+  function reset() { stack = [{ x: 105, w: 150 }]; mov = { x: 0, w: 150 }; dirn = 3; score = 0; over = false; gsScore("层数：0"); loop(); }
+  function loop() {
+    cancelAnimationFrame(raf);
+    if (!over) { mov.x += dirn; if (mov.x < 0 || mov.x + mov.w > 360) dirn = -dirn; }
+    ctx.fillStyle = "#12141f"; ctx.fillRect(0,0,360,440);
+    const base = 420, vis = stack.slice(-12);
+    vis.forEach((s,i) => { ctx.fillStyle = `hsl(${(stack.length-vis.length+i)*22} 70% 58%)`; ctx.fillRect(s.x, base - (i+1)*22, s.w, 20); });
+    if (!over) { ctx.fillStyle = `hsl(${stack.length*22} 70% 68%)`; ctx.fillRect(mov.x, base - (Math.min(stack.length,12)+1)*22, mov.w, 20); }
+    raf = requestAnimationFrame(loop);
+  }
+  function place() {
+    if (over) return;
+    const top = stack[stack.length-1];
+    const L = Math.max(mov.x, top.x), R = Math.min(mov.x+mov.w, top.x+top.w);
+    if (R - L <= 4) return end();
+    stack.push({ x: L, w: R-L });
+    score++; gsScore("层数："+score);
+    mov = { x: 0, w: R-L }; dirn = Math.min(8, 3 + score*0.25) * (Math.random()<0.5?-1:1);
+  }
+  function end() {
+    if (over) return;
+    over = true; // 只结算一次，封顶 20
+    const p = Math.min(20, score); addPts(p);
+    setTimeout(() => openDlg("🏗️ 塔倒了！", `叠了 <b>${score}</b> 层，获得 <b>${p}</b> 积分！点确定再来一局`, reset), 60);
+  }
+  cv.addEventListener("pointerdown", place);
+  gameCleanup = () => cancelAnimationFrame(raf);
+  reset();
+}
+
+/* ---- 反应测试 ---- */
+function initReact() {
+  document.getElementById("gsTitle").textContent = "⚡ 反应测试";
+  gsBody().innerHTML = `<div id="rtBox" style="height:260px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700;cursor:pointer;background:rgba(255,255,255,.06);user-select:none">点击开始</div><p class="tip" style="text-align:center">变红后耐心等，一变绿立刻点！共 5 轮取平均</p>`;
+  const box = document.getElementById("rtBox");
+  let state = "idle", t0, tmr = null, times = [], done = false;
+  function next() {
+    state = "wait"; box.style.background = "#c0392b"; box.textContent = "等待变绿…";
+    tmr = setTimeout(() => { state = "go"; t0 = performance.now(); box.style.background = "#27ae60"; box.textContent = "点！"; }, 800 + Math.random()*2200);
+  }
+  box.onclick = () => {
+    if (done) { times = []; done = false; gsScore(""); next(); return; }
+    if (state === "idle") return next();
+    if (state === "wait") { clearTimeout(tmr); box.style.background = "rgba(255,255,255,.06)"; box.textContent = "抢跑了！点击重试本轮"; state = "idle"; return; }
+    if (state === "go") {
+      const ms = Math.round(performance.now() - t0);
+      times.push(ms); gsScore("第 " + times.length + " 轮：" + ms + "ms");
+      if (times.length >= 5) {
+        done = true; state = "idle";
+        const avg = Math.round(times.reduce((a,b)=>a+b,0)/5);
+        const p = avg < 250 ? 10 : avg < 350 ? 6 : 3; addPts(p); // 一轮 5 次只结算一次
+        box.style.background = "rgba(255,255,255,.06)";
+        box.textContent = "平均 " + avg + "ms · +" + p + " 积分 · 点击再来";
+      } else { state = "idle"; box.style.background = "rgba(255,255,255,.06)"; box.textContent = ms + "ms！点击继续下一轮"; }
+    }
+  };
+  gameCleanup = () => clearTimeout(tmr);
+  gsScore("");
+}
+
+/* ---- 颜色记忆 Simon ---- */
+function initSimon() {
+  document.getElementById("gsTitle").textContent = "🎨 颜色记忆";
+  gsBody().innerHTML = `<div class="cellgrid" id="smGrid" style="grid-template-columns:repeat(2,110px);grid-auto-rows:110px;gap:10px"></div><p class="tip" style="text-align:center" id="smTip">点「开始》看亮灯顺序，然后照着点</p><div class="g-btns"><button id="smStart">开始</button></div>`;
+  const grid = document.getElementById("smGrid"), tip = document.getElementById("smTip");
+  const COLS = ["#e74c3c","#f1c40f","#2ecc71","#3498db"];
+  let seq = [], pos = 0, showing = false, playing = false, tmrs = [];
+  COLS.forEach((c,i) => {
+    const b = document.createElement("button");
+    b.style.background = c; b.style.opacity = ".45";
+    b.onclick = () => {
+      if (!playing || showing) return;
+      flash(i);
+      if (i !== seq[pos]) return end();
+      pos++;
+      if (pos === seq.length) { gsScore("关卡：" + seq.length); tmrs.push(setTimeout(nextRound, 700)); }
+    };
+    grid.appendChild(b);
+  });
+  function flash(i) {
+    const b = grid.children[i];
+    b.style.opacity = "1";
+    tmrs.push(setTimeout(() => b.style.opacity = ".45", 320));
+  }
+  function nextRound() {
+    seq.push(Math.floor(Math.random()*4)); pos = 0; showing = true; tip.textContent = "看好顺序…";
+    seq.forEach((v,k) => tmrs.push(setTimeout(() => { flash(v); if (k === seq.length-1) tmrs.push(setTimeout(() => { showing = false; tip.textContent = "到你了！照顺序点"; }, 420)); }, 600*(k+1))));
+  }
+  function end() {
+    if (!playing) return;
+    playing = false; // 只结算一次，封顶 20
+    const lv = seq.length - 1, p = Math.min(20, lv * 2); addPts(p);
+    openDlg("🎨 记错啦", `撞到第 <b>${seq.length}</b> 关，获得 <b>${p}</b> 积分！点「开始」再来一局`, () => {});
+  }
+  document.getElementById("smStart").onclick = () => {
+    if (playing && showing) return;
+    seq = []; playing = true; gsScore("关卡：0"); nextRound();
+  };
+  gameCleanup = () => tmrs.forEach(clearTimeout);
+}
+
+/* ---- 节奏点击 ---- */
+function initRhythm() {
+  document.getElementById("gsTitle").textContent = "🎹 节奏点击";
+  gsBody().innerHTML = `<canvas id="rhCv" width="360" height="420"></canvas>
+    <div class="g-btns"><button onclick="rhHit(0)">🔴</button><button onclick="rhHit(1)">🟡</button><button onclick="rhHit(2)">🟢</button><button onclick="rhHit(3)">🔵</button></div>
+    <p class="tip" style="text-align:center">音符落到白线时按对应色按钮（或键盘 DFJK），漏 10 个结束</p>`;
+  const cv = document.getElementById("rhCv"), ctx = cv.getContext("2d");
+  const COLS = ["#e74c3c","#f1c40f","#2ecc71","#3498db"];
+  let notes, score, miss, spd, spawnT, over, raf;
+  function reset() { notes = []; score = 0; miss = 0; spd = 2.6; spawnT = 0; over = false; gsScore("得分：0 · 漏：0/10"); loop(); }
+  function loop() {
+    cancelAnimationFrame(raf);
+    if (!over) {
+      spawnT--; spd += 0.0012;
+      if (spawnT <= 0) { notes.push({ lane: Math.floor(Math.random()*4), y: -12 }); spawnT = 42 + Math.random()*30; }
+      notes.forEach(n => n.y += spd);
+      const before = notes.length;
+      notes = notes.filter(n => n.y < 400);
+      miss += before - notes.length;
+      if (before !== notes.length) gsScore("得分："+score+" · 漏："+miss+"/10");
+      if (miss >= 10) return end();
+    }
+    ctx.fillStyle = "#12141f"; ctx.fillRect(0,0,360,420);
+    ctx.strokeStyle = "#fff"; ctx.beginPath(); ctx.moveTo(0,360); ctx.lineTo(360,360); ctx.stroke();
+    notes.forEach(n => { ctx.fillStyle = COLS[n.lane]; ctx.beginPath(); ctx.arc(45+n.lane*90, n.y, 16, 0, 7); ctx.fill(); });
+    raf = requestAnimationFrame(loop);
+  }
+  window.rhHit = lane => {
+    if (over) return;
+    const i = notes.findIndex(n => n.lane === lane && Math.abs(n.y - 360) < 34);
+    if (i >= 0) { notes.splice(i,1); score += 10; gsScore("得分："+score+" · 漏："+miss+"/10"); }
+  };
+  function end() {
+    if (over) return;
+    over = true; // 只结算一次，封顶 20
+    const p = Math.min(20, Math.floor(score/50)); addPts(p);
+    openDlg("🎹 曲终", `得分 <b>${score}</b>，获得 <b>${p}</b> 积分！点确定再来一局`, reset);
+  }
+  const onKey = e => {
+    const m = { d:0, f:1, j:2, k:3 };
+    if (m[e.key] !== undefined && document.getElementById("pageGame").classList.contains("active")) window.rhHit(m[e.key]);
+  };
+  document.addEventListener("keydown", onKey);
+  gameCleanup = () => { cancelAnimationFrame(raf); document.removeEventListener("keydown", onKey); };
+  reset();
+}
+
+/* ---- 躲避陨石 ---- */
+function initDodge() {
+  document.getElementById("gsTitle").textContent = "🚀 躲避陨石";
+  gsBody().innerHTML = `<canvas id="dgCv" width="360" height="440"></canvas><p class="tip" style="text-align:center">手指在画布上拖动飞船，活得越久分越高</p>`;
+  const cv = document.getElementById("dgCv"), ctx = cv.getContext("2d");
+  let sx, sy, rocks, t, over, raf;
+  function reset() { sx = 180; sy = 380; rocks = []; t = 0; over = false; gsScore("存活：0s"); loop(); }
+  function loop() {
+    cancelAnimationFrame(raf);
+    if (!over) {
+      t++;
+      if (t % Math.max(10, 26 - Math.floor(t/300)) === 0) rocks.push({ x: Math.random()*360, y: -16, v: 2.2 + Math.random()*2.4 + t/1800, r: 9 + Math.random()*11 });
+      rocks.forEach(r => r.y += r.v);
+      rocks = rocks.filter(r => r.y < 470);
+      if (t % 30 === 0) gsScore("存活：" + Math.floor(t/60) + "s");
+      if (rocks.some(r => (r.x-sx)**2 + (r.y-sy)**2 < (r.r+11)**2)) return end();
+    }
+    ctx.fillStyle = "#12141f"; ctx.fillRect(0,0,360,440);
+    ctx.font = "26px sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("🚀", sx, sy+9);
+    rocks.forEach(r => { ctx.font = r.r*2.2 + "px sans-serif"; ctx.fillText("☄️", r.x, r.y+r.r*0.8); });
+    raf = requestAnimationFrame(loop);
+  }
+  function end() {
+    if (over) return;
+    over = true; // 只结算一次，封顶 15
+    const sec = Math.floor(t/60), p = Math.min(15, Math.floor(sec/4)); addPts(p);
+    ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillRect(0,0,360,440);
+    ctx.fillStyle = "#fff"; ctx.font = "bold 20px sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("被击中！存活 " + sec + "s · +" + p + " 积分", 180, 204);
+    ctx.font = "14px sans-serif"; ctx.fillText("点击画布重新开始", 180, 236);
+  }
+  const mv = e => {
+    if (over) return;
+    const r = cv.getBoundingClientRect();
+    sx = Math.max(12, Math.min(348, (e.clientX-r.left)*(360/r.width)));
+    sy = Math.max(12, Math.min(428, (e.clientY-r.top)*(440/r.height)));
+  };
+  cv.addEventListener("pointermove", mv);
+  cv.addEventListener("pointerdown", e => { if (over) reset(); else mv(e); });
+  gameCleanup = () => cancelAnimationFrame(raf);
+  reset();
+}
+
+/* ---- 接水果 ---- */
+function initFruit() {
+  document.getElementById("gsTitle").textContent = "🍎 接水果";
+  gsBody().innerHTML = `<canvas id="frCv" width="360" height="440"></canvas><p class="tip" style="text-align:center">左右拖动篮子接住水果，掉 5 个结束</p>`;
+  const cv = document.getElementById("frCv"), ctx = cv.getContext("2d");
+  const FRUITS = ["🍎","🍌","🍇","🍉","🍒","🍑"];
+  let bx, drops, score, lost, t, over, raf;
+  function reset() { bx = 150; drops = []; score = 0; lost = 0; t = 0; over = false; gsScore("得分：0 · 掉落：0/5"); loop(); }
+  function loop() {
+    cancelAnimationFrame(raf);
+    if (!over) {
+      t++;
+      if (t % Math.max(24, 55 - Math.floor(score/3)) === 0) drops.push({ x: 20 + Math.random()*320, y: -14, v: 2 + Math.random()*2 + score/40, e: FRUITS[Math.floor(Math.random()*6)] });
+      drops.forEach(d => d.y += d.v);
+      drops = drops.filter(d => {
+        if (d.y > 396 && d.y < 425 && Math.abs(d.x - bx - 30) < 42) { score++; gsScore("得分："+score+" · 掉落："+lost+"/5"); return false; }
+        if (d.y > 450) { lost++; gsScore("得分："+score+" · 掉落："+lost+"/5"); return false; }
+        return true;
+      });
+      if (lost >= 5) return end();
+    }
+    ctx.fillStyle = "#12141f"; ctx.fillRect(0,0,360,440);
+    ctx.font = "26px sans-serif"; ctx.textAlign = "center";
+    drops.forEach(d => ctx.fillText(d.e, d.x, d.y));
+    ctx.font = "38px sans-serif"; ctx.fillText("🧺", bx+30, 432);
+    raf = requestAnimationFrame(loop);
+  }
+  function end() {
+    if (over) return;
+    over = true; // 只结算一次，封顶 15
+    const p = Math.min(15, Math.floor(score/5)); addPts(p);
+    openDlg("🍎 游戏结束", `接住 <b>${score}</b> 个，获得 <b>${p}</b> 积分！点确定再来一局`, reset);
+  }
+  const mv = e => { const r = cv.getBoundingClientRect(); bx = Math.max(0, Math.min(300, (e.clientX-r.left)*(360/r.width)-30)); };
+  cv.addEventListener("pointermove", mv); cv.addEventListener("pointerdown", mv);
+  gameCleanup = () => cancelAnimationFrame(raf);
+  reset();
+}
+
+/* ---- 射箭 ---- */
+function initArcher() {
+  document.getElementById("gsTitle").textContent = "🏹 射箭";
+  gsBody().innerHTML = `<canvas id="arCv" width="400" height="260"></canvas><p class="tip" style="text-align:center" id="arTip">按住画布蓄力，松手射箭 · 共 10 箭，靶心 10 环</p>`;
+  const cv = document.getElementById("arCv"), ctx = cv.getContext("2d");
+  let power, holding, arrows, score, over, target, raf;
+  function reset() { power = 0; holding = false; arrows = 10; score = 0; over = false; target = 60 + Math.random()*140; gsScore("总环：0 · 剩箭：10"); draw(); }
+  function draw(hitX) {
+    ctx.fillStyle = "#12141f"; ctx.fillRect(0,0,400,260);
+    // 靶子（距离随机）
+    const tx = 160 + target;
+    [["#fff",26],["#3498db",19],["#e74c3c",12],["#f1c40f",5]].forEach(([c,r]) => { ctx.fillStyle = c; ctx.beginPath(); ctx.arc(tx, 200, r, 0, 7); ctx.fill(); });
+    ctx.font = "26px sans-serif"; ctx.textAlign = "center"; ctx.fillText("🏹", 30, 208);
+    if (holding) { ctx.fillStyle = "#ffd54f"; ctx.fillRect(20, 240, power*3.4, 8); }
+    if (hitX !== undefined) { ctx.fillText("➣", hitX, 204); }
+  }
+  function charge() { if (!holding) return; power = Math.min(100, power+1.6); draw(); raf = requestAnimationFrame(charge); }
+  function shoot() {
+    if (!holding) return;
+    holding = false; cancelAnimationFrame(raf);
+    if (over) return;
+    const hitX = 30 + power*3.6, tx = 160 + target, d = Math.abs(hitX - tx);
+    const ring = d < 5 ? 10 : d < 12 ? 8 : d < 19 ? 6 : d < 26 ? 4 : 0;
+    score += ring; arrows--;
+    gsScore("总环："+score+" · 剩箭："+arrows);
+    document.getElementById("arTip").textContent = ring ? `命中 ${ring} 环！` : "脱靶了…再来！";
+    draw(hitX); power = 0;
+    if (!arrows) end(); else setTimeout(() => { target = 60 + Math.random()*140; draw(); }, 700);
+  }
+  function end() {
+    if (over) return;
+    over = true; // 只结算一次，封顶 20
+    const p = Math.min(20, Math.floor(score/5)); addPts(p);
+    openDlg("🏹 射完啦", `总环数 <b>${score}</b>，获得 <b>${p}</b> 积分！点确定再来一局`, reset);
+  }
+  cv.addEventListener("pointerdown", () => { if (over) return; holding = true; power = 0; charge(); });
+  cv.addEventListener("pointerup", shoot);
+  cv.addEventListener("pointerleave", shoot);
+  gameCleanup = () => cancelAnimationFrame(raf);
+  reset();
+}
+
+/* ---- 弹弹球（对战电脑） ---- */
+function initPong() {
+  document.getElementById("gsTitle").textContent = "🏓 弹弹球";
+  gsBody().innerHTML = `<canvas id="pgCv" width="360" height="440"></canvas><p class="tip" style="text-align:center">拖动下方挡板 · 先得 5 分获胜</p>`;
+  const cv = document.getElementById("pgCv"), ctx = cv.getContext("2d");
+  let px, ax, bx, by, vx, vy, my, ai, over, raf;
+  function reset() { px = 145; ax = 145; bx = 180; by = 220; vx = 2.6; vy = 3.4; my = 0; ai = 0; over = false; gsScore("你 0 : 0 电脑"); loop(); }
+  function serve(down) { bx = 180; by = 220; vx = (Math.random()<0.5?-1:1)*2.6; vy = down ? 3.4 : -3.4; }
+  function loop() {
+    cancelAnimationFrame(raf);
+    if (!over) {
+      bx += vx; by += vy;
+      if (bx < 7 || bx > 353) vx = -vx;
+      ax += Math.max(-3.1, Math.min(3.1, bx - 35 - ax)); ax = Math.max(0, Math.min(290, ax));
+      if (by < 26 && by > 8 && bx > ax-6 && bx < ax+76 && vy < 0) { vy = Math.abs(vy)+0.08; vx += (bx-ax-35)/25; }
+      if (by > 414 && by < 432 && bx > px-6 && bx < px+76 && vy > 0) { vy = -Math.abs(vy)-0.08; vx += (bx-px-35)/25; }
+      if (by < -10) { my++; score(); if (my >= 5) return end(true); serve(false); }
+      if (by > 450) { ai++; score(); if (ai >= 5) return end(false); serve(true); }
+    }
+    ctx.fillStyle = "#12141f"; ctx.fillRect(0,0,360,440);
+    ctx.strokeStyle = "rgba(255,255,255,.2)"; ctx.setLineDash([6,8]); ctx.beginPath(); ctx.moveTo(0,220); ctx.lineTo(360,220); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = "#ff8a65"; ctx.fillRect(ax, 12, 70, 10);
+    ctx.fillStyle = "#4f8cff"; ctx.fillRect(px, 418, 70, 10);
+    ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(bx, by, 7, 0, 7); ctx.fill();
+    raf = requestAnimationFrame(loop);
+  }
+  const score = () => gsScore("你 " + my + " : " + ai + " 电脑");
+  function end(win) {
+    if (over) return;
+    over = true; // 只结算一次
+    const p = win ? 15 : 3; addPts(p);
+    openDlg(win ? "🎉 你赢啦！" : "🏓 电脑胜", `比分 <b>${my} : ${ai}</b>，获得 <b>${p}</b> 积分！点确定再来一局`, reset);
+  }
+  const mv = e => { const r = cv.getBoundingClientRect(); px = Math.max(0, Math.min(290, (e.clientX-r.left)*(360/r.width)-35)); };
+  cv.addEventListener("pointermove", mv); cv.addEventListener("pointerdown", mv);
+  gameCleanup = () => cancelAnimationFrame(raf);
+  reset();
+}
+
+/* ---- 泡泡龙 ---- */
+function initBubble() {
+  document.getElementById("gsTitle").textContent = "🫧 泡泡龙";
+  gsBody().innerHTML = `<canvas id="bbCv" width="360" height="440"></canvas><p class="tip" style="text-align:center">点击画布瞄准方向发射，三个同色相连即消除 · 共 30 发</p>`;
+  const cv = document.getElementById("bbCv"), ctx = cv.getContext("2d");
+  const COLS = ["#e74c3c","#f1c40f","#2ecc71","#3498db","#b06cff"];
+  const R = 18, CW = 10;
+  let grid, cur, fly, shots, score, over, raf;
+  const pos = (r,c) => ({ x: c*36 + (r%2 ? 36 : 18), y: r*32 + 18 });
+  function reset() {
+    grid = [];
+    for (let r=0;r<5;r++) { grid[r] = []; for (let c=0;c<CW-(r%2);c++) grid[r][c] = Math.floor(Math.random()*5); }
+    cur = Math.floor(Math.random()*5); fly = null; shots = 30; score = 0; over = false;
+    gsScore("得分：0 · 剩余：30"); loop();
+  }
+  function neighbors(r,c) {
+    const odd = r%2, d = [[0,-1],[0,1],[-1,0],[1,0],[-1,odd?1:-1],[1,odd?1:-1]];
+    return d.map(([dr,dc]) => [r+dr, c+dc]).filter(([nr,nc]) => grid[nr] && grid[nr][nc] !== undefined && grid[nr][nc] !== null);
+  }
+  function cluster(r,c) {
+    const col = grid[r][c], seen = new Set([r+","+c]), q = [[r,c]];
+    while (q.length) {
+      const [cr,cc] = q.pop();
+      neighbors(cr,cc).forEach(([nr,nc]) => { if (grid[nr][nc] === col && !seen.has(nr+","+nc)) { seen.add(nr+","+nc); q.push([nr,nc]); } });
+    }
+    return [...seen].map(s => s.split(",").map(Number));
+  }
+  function loop() {
+    cancelAnimationFrame(raf);
+    if (fly && !over) {
+      fly.x += fly.vx; fly.y += fly.vy;
+      if (fly.x < R || fly.x > 360-R) fly.vx = -fly.vx;
+      let land = fly.y < R + 4;
+      if (!land) outer: for (let r=0;r<grid.length;r++) for (let c=0;c<grid[r].length;c++) {
+        if (grid[r][c] === null || grid[r][c] === undefined) continue;
+        const p = pos(r,c);
+        if ((p.x-fly.x)**2 + (p.y-fly.y)**2 < (R*1.8)**2) { land = true; break outer; }
+      }
+      if (land) {
+        const r = Math.max(0, Math.round((fly.y-18)/32)), odd = r%2;
+        let c = Math.max(0, Math.min(CW-1-odd, Math.round((fly.x-(odd?36:18))/36)));
+        if (!grid[r]) grid[r] = [];
+        grid[r][c] = fly.col; fly = null;
+        const cl = cluster(r,c);
+        if (cl.length >= 3) { cl.forEach(([cr,cc]) => grid[cr][cc] = null); score += cl.length*10; }
+        gsScore("得分："+score+" · 剩余："+shots);
+        if (!shots || grid.length > 11) return end();
+        if (grid.every(row => !row || row.every(v => v === null || v === undefined))) return end(true);
+      }
+    }
+    ctx.fillStyle = "#12141f"; ctx.fillRect(0,0,360,440);
+    grid.forEach((row,r) => row && row.forEach((v,c) => {
+      if (v === null || v === undefined) return;
+      const p = pos(r,c);
+      ctx.fillStyle = COLS[v]; ctx.beginPath(); ctx.arc(p.x, p.y, R-1, 0, 7); ctx.fill();
+    }));
+    if (fly) { ctx.fillStyle = COLS[fly.col]; ctx.beginPath(); ctx.arc(fly.x, fly.y, R-1, 0, 7); ctx.fill(); }
+    else if (!over) { ctx.fillStyle = COLS[cur]; ctx.beginPath(); ctx.arc(180, 414, R-1, 0, 7); ctx.fill(); }
+    raf = requestAnimationFrame(loop);
+  }
+  function end(win) {
+    if (over) return;
+    over = true; // 只结算一次，封顶 20
+    const p = win ? 20 : Math.min(20, Math.floor(score/60)); addPts(p);
+    openDlg(win ? "🎉 清屏啦！" : "🫧 游戏结束", `得分 <b>${score}</b>，获得 <b>${p}</b> 积分！点确定再来一局`, reset);
+  }
+  cv.addEventListener("pointerdown", e => {
+    if (over || fly || !shots) return;
+    const rc = cv.getBoundingClientRect();
+    const tx = (e.clientX-rc.left)*(360/rc.width), ty = (e.clientY-rc.top)*(440/rc.height);
+    const dx = tx-180, dy = ty-414, len = Math.hypot(dx,dy) || 1;
+    if (dy > -20) return; // 只能往上射
+    shots--;
+    fly = { x: 180, y: 414, vx: dx/len*7, vy: dy/len*7, col: cur };
+    cur = Math.floor(Math.random()*5);
+  });
+  gameCleanup = () => cancelAnimationFrame(raf);
+  reset();
+}
+
+/* ---- 纸牌接龙 ---- */
+function initSolitaire() {
+  document.getElementById("gsTitle").textContent = "🃏 纸牌接龙";
+  document.querySelector(".game-stage").style.maxWidth = "960px";
+  gsBody().innerHTML = `<div class="sol-table"><div class="sol-top"><div class="sol-stock" id="ssStock"></div><div class="sol-waste" id="ssWaste"></div><div class="sol-gap"></div><div class="sol-found"><div data-suit="H"></div><div data-suit="D"></div><div data-suit="C"></div><div data-suit="S"></div></div></div><div class="sol-piles" id="ssPiles"></div><p class="tip">拖动纸牌：先按花色归右上方（从 A 到 K），左下 7 列可红黑交替降序堆叠，翻开全部牌即胜</p></div>`;
+  const suits = ["H","D","C","S"], ranks = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+  const suitIcons = {H:"♥",D:"♦",C:"♣",S:"♠"};
+  const deck = [];
+  for (const s of suits) for (const r of ranks) deck.push({s,r});
+  let over = false, finished = false;
+  function shuffle() {
+    for (let i=deck.length-1;i>0;i--) {
+      const j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]];
+    }
+  }
+  shuffle();
+  const piles = [[],[deck[0]],[deck[1],deck[2]],[deck[3],deck[4],deck[5]],[deck[6],deck[7],deck[8],deck[9]],[deck[10],deck[11],deck[12],deck[13],deck[14]],[deck[15],deck[16],deck[17],deck[18],deck[19],deck[20]]];
+  piles[0]=deck.slice(21);
+  piles.forEach(p=>{if(p.length) p[p.length-1].face=true;});
+  let stock = piles[0];
+  let waste = [];
+  let foundation = {H:[],D:[],C:[],S:[]};
+  function cardEl(c,i) {
+    const d = document.createElement("div");
+    d.className = "sol-card" + (c.face?" face":"");
+    if (c.face) d.innerHTML = `<span class="top">${c.r}${suitIcons[c.s]}</span><span class="suit">${suitIcons[c.s]}</span><span class="bot">${c.r}${suitIcons[c.s]}</span>`;
+    d.dataset.suit=c.s; d.dataset.rank=c.r;
+    d.dataset.idx=i; return d;
+  }
+  function render() {
+    const st = $id("ssStock"); st.innerHTML="";
+    if (stock.length) {
+      const b = document.createElement("div"); b.className="sol-back";
+      b.onclick=()=>{if(over)return;waste.push(stock.pop());waste[waste.length-1].face=true;render();}; st.appendChild(b);
+    } else {
+      const b=document.createElement("div"); b.className="sol-reset"; b.textContent="↻";
+      b.onclick=()=>{if(over)return;stock=waste.reverse();waste=[];render();}; st.appendChild(b);
+    }
+    const w=$id("ssWaste"); w.innerHTML="";
+    if(waste.length) w.appendChild(cardEl(waste[waste.length-1],waste.length-1));
+    $id("ssPiles").innerHTML="";
+    piles.forEach((pile,pi)=>{
+      const col = document.createElement("div"); col.className="sol-pile";
+      pile.forEach((c,ci)=>{
+        const e=cardEl(c,ci);
+        e.style.top=(ci*26)+"px";
+        if(c.face) {
+          e.draggable=true;
+          e.ondragstart=ev=>{ev.dataTransfer.setData("text/plain",JSON.stringify({type:"pile",pi,ci}));};
+        }
+        col.appendChild(e);
+      });
+      col.ondragover=ev=>ev.preventDefault();
+      col.ondrop=ev=>{if(over)return;ev.preventDefault();
+        const data=JSON.parse(ev.dataTransfer.getData("text/plain"));
+        if(data.type=="pile") {
+          const src=piles[data.pi]; const c=src[data.ci];
+          if(src[data.ci-1]&&!src[data.ci-1].face) return;
+          if(pile.length) {
+            const top=pile[pile.length-1];
+            const cr=ranks.indexOf(c.r), tr=ranks.indexOf(top.r);
+            const isRed=s=>s==="H"||s==="D";
+            if(isRed(c.s)===isRed(top.s)) return;
+            if(cr!==tr-1) return;
+          }
+          pile.push(...src.splice(data.ci));
+          if(src.length&&src[src.length-1]) src[src.length-1].face=true;
+          checkWin();
+        }
+        render();
+      };
+      $id("ssPiles").appendChild(col);
+    });
+    document.querySelectorAll(".sol-found>div").forEach(fd=>{
+      fd.innerHTML="";
+      const s=fd.dataset.suit; const arr=foundation[s];
+      if(arr.length) {
+        const c=arr[arr.length-1]; fd.appendChild(cardEl(c,arr.length-1));
+        const e=fd.lastElementChild; e.draggable=true;
+        e.ondragstart=ev=>ev.dataTransfer.setData("text/plain",JSON.stringify({type:"found",suit:s}));
+      }
+      fd.ondragover=ev=>ev.preventDefault();
+      fd.ondrop=ev=>{if(over)return;ev.preventDefault();
+        const data=JSON.parse(ev.dataTransfer.getData("text/plain"));
+        if(data.type=="pile") {
+          const src=piles[data.pi]; const c=src[data.ci];
+          if(data.ci!==src.length-1) return;
+          const arr=foundation[s];
+          if(arr.length) {
+            if(c.r!="A"&&ranks.indexOf(c.r)!==ranks.indexOf(arr[arr.length-1].r)+1) return;
+          } else if(c.r!=="A") return;
+          arr.push(c); src.pop();
+          if(src.length&&src[src.length-1]) src[src.length-1].face=true;
+          checkWin();
+        }
+        render();
+      };
+    });
+  }
+  function checkWin() {
+    if(finished||over) return;
+    const allK = Object.values(foundation).every(a=>a.length&&a[a.length-1].r==="K");
+    if(allK) {
+      finished=true; over=true;
+      addPts(30);
+      openDlg("🎉 恭喜通关！","所有牌都按花色归位，获得 30 积分！",reset);
+    }
+  }
+  render();
+}
+
+/* ---- 五子棋 ---- */
+function initGomoku() {
+  document.getElementById("gsTitle").textContent = "⚪ 五子棋";
+  document.querySelector(".game-stage").style.maxWidth = "500px";
+  gsBody().innerHTML = `<canvas id="gmCv" width="440" height="440"></canvas><p class="tip">你执黑先手 · 点击棋盘落子 · 五子连珠即胜</p><div class="g-btns"><button id="gmRestart">重新开始</button></div>`;
+  const cv = $id("gmCv"), ctx = cv.getContext("2d");
+  const GRID = 15, SZ = 28, PAD = 8;
+  let board = [], cur = 1, over = false;
+  function draw() {
+    ctx.fillStyle = "#e8c898";
+    ctx.fillRect(0,0,440,440);
+    ctx.strokeStyle = "#664";
+    ctx.lineWidth = 1;
+    for(let i=0;i<GRID;i++) {
+      ctx.beginPath(); ctx.moveTo(PAD+i*SZ,PAD); ctx.lineTo(PAD+i*SZ,PAD+SZ*(GRID-1)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(PAD,PAD+i*SZ); ctx.lineTo(PAD+SZ*(GRID-1),PAD+i*SZ); ctx.stroke();
+    }
+    for(let y=0;y<GRID;y++) for(let x=0;x<GRID;x++) if(board[y][x]) {
+      ctx.beginPath(); ctx.arc(PAD+x*SZ,PAD+y*SZ,SZ*0.4,0,Math.PI*2);
+      ctx.fillStyle = board[y][x]===1?"#111":"#fff";
+      ctx.fill(); ctx.strokeStyle = board[y][x]===1?"#ccc":"#888";
+      ctx.lineWidth = 1; ctx.stroke();
+      if(x===7&&y===7&&board[y][x]===1) {
+        ctx.beginPath(); ctx.moveTo(PAD+x*SZ-5,PAD+y*SZ); ctx.lineTo(PAD+x*SZ+5,PAD+y*SZ);
+        ctx.moveTo(PAD+x*SZ,PAD+y*SZ-5); ctx.lineTo(PAD+x*SZ,PAD+y*SZ+5); ctx.stroke();
+      }
+    }
+  }
+  function checkWin(x,y,player) {
+    const dirs = [[1,0],[0,1],[1,1],[1,-1]];
+    for(const [dx,dy] of dirs) {
+      let c=1;
+      for(let i=1;i<5;i++) {const nx=x+dx*i,ny=y+dy*i; if(nx<0||nx>=GRID||ny<0||ny>=GRID||board[ny][nx]!==player) break; c++;}
+      for(let i=1;i<5;i++) {const nx=x-dx*i,ny=y-dy*i; if(nx<0||nx>=GRID||ny<0||ny>=GRID||board[ny][nx]!==player) break; c++;}
+      if(c>=5) return true;
+    }
+    return false;
+  }
+  function aiMove() {
+    if(over) return;
+    const empty=[];
+    for(let y=0;y<GRID;y++) for(let x=0;x<GRID;x++) if(!board[y][x]) empty.push({x,y});
+    if(!empty.length) {over=true; openDlg("🤝 平局","双方均无法获胜",reset); return;}
+    let best=empty[0]; let maxScore=-999;
+    for(const p of empty) {
+      let score=0;
+      board[p.y][p.x]=2;
+      if(checkWin(p.x,p.y,2)) score+=1000;
+      board[p.y][p.x]=1;
+      if(checkWin(p.x,p.y,1)) score+=800;
+      board[p.y][p.x]=0;
+      score+=Math.random();
+      if(score>maxScore) {maxScore=score;best=p;}
+    }
+    board[best.y][best.x]=2;
+    draw();
+    if(checkWin(best.x,best.y,2)) {over=true; openDlg("😢 白棋胜利","AI 获得了胜利！",reset); return;}
+  }
+  function reset() {
+    board = Array(GRID).fill(null).map(()=>Array(GRID).fill(0)); cur=1; over=false; draw();
+  }
+  cv.addEventListener("pointerdown", e=>{
+    if(over||cur!==1) return;
+    const rc=cv.getBoundingClientRect();
+    const x=Math.round(((e.clientX-rc.left)/rc.width*440-PAD)/SZ), y=Math.round(((e.clientY-rc.top)/rc.height*440-PAD)/SZ);
+    if(x<0||x>=GRID||y<0||y>=GRID||board[y][x]) return;
+    board[y][x]=1; draw();
+    if(checkWin(x,y,1)) {over=true; addPts(15); openDlg("🎉 黑棋胜利","恭喜你获胜！获得 15 积分",reset); return;}
+    cur=2; setTimeout(aiMove,300);
+  });
+  $id("gmRestart").onclick = reset;
+  gameCleanup = () => {};
+  reset();
+}
+
+/* ---- 斗地主（联机 MQTT） ---- */
+function initPoker() {
+  document.getElementById("gsTitle").textContent = "🃏 斗地主（联机）";
+  document.querySelector(".game-stage").style.maxWidth = "920px";
+  gsBody().innerHTML = `<div class="pk-setup" id="pkSetup">
+    <p>创建或加入房间，房间号相同即可对战（需 3 人）</p>
+    <label>房间名</label><input id="pkRoom" placeholder="如 poker-room1" maxlength="16">
+    <label>用户名</label><input id="pkUser" placeholder="你的昵称" maxlength="10">
+    <button id="pkJoin">进入房间</button>
+  </div>
+  <div class="pk-room" id="pkRoomView" style="display:none">
+    <div class="pk-info">房间: <span id="pkRoomName"></span> · 你: <span id="pkMyName"></span></div>
+    <div class="pk-players" id="pkPlayers"></div>
+    <div class="pk-cards" id="pkMyCards"></div>
+    <div class="pk-actions" id="pkActions"></div>
+    <div class="pk-msg" id="pkMsg"></div>
+  </div>`;
+  const broker = "wss://broker.emqx.io:8084/mqtt";
+  let client = null, myCards = [], roomName = null, myName = null;
+  function el(id) { return document.getElementById(id); }
+  function elText(id,txt) { el(id).textContent = txt; }
+  function elHtml(id,ht) { el(id).innerHTML = ht; }
+  function send(msg) {
+    if(client&&client.connected) client.publish("poker/"+roomName,JSON.stringify(msg));
+  }
+  function renderMyCards() {
+    elHtml("pkMyCards", myCards.map((c,i)=>`<div class="pk-card" onclick="window.pkSel(${i})">${c}</div>`).join(""));
+  }
+  function msg(txt) { elText("pkMsg",txt); }
+  function init() {
+    if(el("pkRoom").value && el("pkUser").value) {
+      roomName = el("pkRoom").value.trim();
+      myName = el("pkUser").value.trim();
+      el("pkSetup").style.display = "none";
+      el("pkRoomView").style.display = "block";
+      elText("pkRoomName", roomName);
+      elText("pkMyName", myName);
+      connect();
+    }
+  }
+  function connect() {
+    client = mqtt.connect(broker, {clientId:"pk"+Math.random().toString(36).slice(2),clean:true});
+    client.on("connect", () => {
+      client.subscribe("poker/"+roomName);
+      send({type:"join",name:myName});
+    });
+    client.on("message", (t,p) => {
+      const m=JSON.parse(p.toString());
+      if(m.type==="join") msg(m.name+" 加入了房间");
+      if(m.type==="deal") { myCards=m.cards; renderMyCards(); msg("发牌完成，等待出牌"); }
+      if(m.type==="play") msg(m.name+" 出了 "+m.cards.join(","));
+    });
+  }
+  el("pkJoin").onclick = init;
+  window.pkSel = (i) => { msg("选择了 "+myCards[i]); };
+  gameCleanup = () => { if(client) client.end(); };
+}
+
+/* ---- 塔防 ---- */
+function initTower() {
+  document.getElementById("gsTitle").textContent = "🗼 塔防";
+  document.querySelector(".game-stage").style.maxWidth = "600px";
+  gsBody().innerHTML = `<canvas id="twCv" width="480" height="360"></canvas><div class="tw-ui"><div class="tw-towers"><button data-type="basic">🛡️ 基础塔 10</button><button data-type="sniper">🎯 狙击塔 20</button><button data-type="rapid">🔥 连射塔 30</button></div><div class="tw-info">金币: <span id="twGold">50</span> · 波次: <span id="twWave">0</span> · 生命: <span id="twLives">10</span></div></div><p class="tip">点击塔选择，再点击空地放置 · 防止怪物到达右侧终点</p>`;
+  const cv = $id("twCv"), ctx = cv.getContext("2d");
+  const W = 480, H = 360, CELL = 30, COLS = W/CELL, ROWS = H/CELL;
+  let grid = Array(ROWS).fill(null).map(()=>Array(COLS).fill(0));
+  let towers = [], enemies = [], projectiles = [], gold = 50, wave = 0, lives = 10, over = false, spawnTimer = 0, waveDone = false;
+  let selectedTower = null;
+  const towerTypes = {
+    basic: {cost:10, range:80, damage:10, cooldown:40, color:"#4a90e2"},
+    sniper: {cost:20, range:150, damage:30, cooldown:80, color:"#e74c3c"},
+    rapid: {cost:30, range:70, damage:5, cooldown:15, color:"#f39c12"}
+  };
+  function draw() {
+    ctx.fillStyle="#2a2a2a";
+    ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle="#444";
+    ctx.lineWidth=1;
+    for(let y=0;y<ROWS;y++) for(let x=0;x<COLS;x++) {
+      ctx.strokeRect(x*CELL,y*CELL,CELL,CELL);
+    }
+    ctx.fillStyle="#1a1a1a";
+    for(let y=2;y<8;y++) ctx.fillRect(y*CELL,3*CELL,CELL,CELL);
+    towers.forEach(t=>{
+      ctx.fillStyle=towerTypes[t.type].color;
+      ctx.beginPath(); ctx.arc(t.x*CELL+CELL/2,t.y*CELL+CELL/2,CELL/2-4,0,Math.PI*2);
+      ctx.fill();
+      ctx.strokeStyle="#fff";
+      ctx.lineWidth=2;
+      ctx.stroke();
+    });
+    enemies.forEach(e=>{
+      ctx.fillStyle=e.boss?"#e74c3c":"#27ae60";
+      ctx.beginPath(); ctx.arc(e.x,e.y,6,0,Math.PI*2);
+      ctx.fill();
+      if(e.hp<e.maxHp) {
+        ctx.fillStyle="#f39c12";
+        ctx.fillRect(e.x-8,e.y-10,16,3);
+        ctx.fillStyle="#fff";
+        ctx.fillRect(e.x-8,e.y-10,16*(e.hp/e.maxHp),3);
+      }
+    });
+    projectiles.forEach(p=>{
+      ctx.fillStyle="#fff";
+      ctx.beginPath(); ctx.arc(p.x,p.y,3,0,Math.PI*2);
+      ctx.fill();
+    });
+    $id("twGold").textContent = gold;
+    $id("twWave").textContent = wave;
+    $id("twLives").textContent = lives;
+  }
+  function spawnEnemy() {
+    const boss = wave%5===0;
+    const hp = boss ? 50+wave*15 : 10+wave*5;
+    enemies.push({x:-10, y:5.5*CELL+CELL/2, hp, maxHp:hp, boss, speed:boss?0.3:0.6+wave*0.05});
+  }
+  function update() {
+    if(over) return;
+    if(!waveDone) {
+      spawnTimer++;
+      if(spawnTimer%60===0) spawnEnemy();
+      if(spawnTimer>=(10+wave*5)*60) waveDone = true;
+    }
+    enemies.forEach((e,ei)=>{
+      e.x += e.speed;
+      if(e.x>W) {
+        lives--;
+        enemies.splice(ei,1);
+        if(lives<=0) {
+          over=true;
+          openDlg("💀 游戏结束","怪物突破了防线，到达第 "+wave+" 波",reset);
+        }
+      }
+    });
+    towers.forEach(t=>{
+      t.cooldown--;
+      if(t.cooldown<=0) {
+        const type = towerTypes[t.type];
+        let target = null, minDist = Infinity;
+        enemies.forEach(e=>{
+          const d = Math.hypot(e.x-(t.x*CELL+CELL/2), e.y-(t.y*CELL+CELL/2));
+          if(d<type.range&&d<minDist) { minDist = d; target = e; }
+        });
+        if(target) {
+          projectiles.push({x:t.x*CELL+CELL/2, y:t.y*CELL+CELL/2, tx:target.x, ty:target.y, dmg:type.damage});
+          t.cooldown = type.cooldown;
+        }
+      }
+    });
+    projectiles.forEach((p,pi)=>{
+      const dx = p.tx-p.x, dy = p.ty-p.y;
+      const dist = Math.hypot(dx,dy);
+      if(dist<5) {
+        enemies.forEach((e,ei)=>{
+          if(Math.hypot(e.x-p.tx, e.y-p.ty)<10) {
+            e.hp -= p.dmg;
+            if(e.hp<=0) {
+              gold += e.boss ? 5 : 2;
+              enemies.splice(ei,1);
+            }
+          }
+        });
+        projectiles.splice(pi,1);
+      } else {
+        p.x += dx/dist*8;
+        p.y += dy/dist*8;
+      }
+    });
+    if(waveDone&&enemies.length===0) {
+      wave++;
+      waveDone = false;
+      spawnTimer = 0;
+      gold += 10;
+      if(wave>10) {
+        over=true;
+        addPts(25);
+        openDlg("🎉 恭喜通关","成功抵御 10 波怪物进攻！获得 25 积分",reset);
+      }
+    }
+  }
+  function loop() {
+    if(over) return;
+    update();
+    draw();
+    requestAnimationFrame(loop);
+  }
+  function reset() {
+    grid = Array(ROWS).fill(null).map(()=>Array(COLS).fill(0));
+    towers = []; enemies = []; projectiles = [];
+    gold = 50; wave = 0; lives = 10; over = false; spawnTimer = 0; waveDone = false;
+    loop();
+  }
+  cv.addEventListener("pointerdown", e=>{
+    if(over||!selectedTower) return;
+    const rc=cv.getBoundingClientRect();
+    const x=Math.floor((e.clientX-rc.left)/rc.width*W/CELL), y=Math.floor((e.clientY-rc.top)/rc.height*H/CELL);
+    if(x<0||x>=COLS||y<0||y>=ROWS) return;
+    if(grid[y][x]!==0) return;
+    if(y>=3&&y<=7) return;
+    const cost = towerTypes[selectedTower].cost;
+    if(gold<cost) return;
+    gold -= cost;
+    grid[y][x] = 1;
+    towers.push({x,y,type:selectedTower,cooldown:0});
+    draw();
+  });
+  document.querySelectorAll(".tw-towers button").forEach(btn=>{
+    btn.onclick = () => selectedTower = btn.dataset.type;
+  });
+  gameCleanup = () => cancelAnimationFrame(loop);
+  reset();
+}
+
+/* ---- UNO（联机 MQTT） ---- */
+function initUno() {
+  document.getElementById("gsTitle").textContent = "🎴 UNO（联机）";
+  document.querySelector(".game-stage").style.maxWidth = "800px";
+  gsBody().innerHTML = `<div class="uno-setup" id="unoSetup">
+    <p>创建或加入房间，房间号相同即可对战（2-4 人）</p>
+    <label>房间名</label><input id="unoRoom" placeholder="如 uno-room1" maxlength="16">
+    <label>用户名</label><input id="unoUser" placeholder="你的昵称" maxlength="10">
+    <button id="unoJoin">进入房间</button>
+  </div>
+  <div class="uno-room" id="unoRoomView" style="display:none">
+    <div class="uno-info">房间: <span id="unoRoomName"></span> · 你: <span id="unoMyName"></span></div>
+    <div class="uno-table">
+      <div class="uno-center"><div id="unoCenterCard"></div><div id="unoColorIndicator"></div></div>
+      <div class="uno-my-hand" id="unoMyHand"></div>
+    </div>
+    <div class="uno-actions" id="unoActions"></div>
+    <div class="uno-msg" id="unoMsg"></div>
+  </div>`;
+  const broker = "wss://broker.emqx.io:8084/mqtt";
+  let client = null, myCards = [], roomName = null, myName = null, currentColor = null;
+  function el(id) { return document.getElementById(id); }
+  function elText(id,txt) { el(id).textContent = txt; }
+  function elHtml(id,ht) { el(id).innerHTML = ht; }
+  function send(msg) {
+    if(client&&client.connected) client.publish("uno/"+roomName,JSON.stringify(msg));
+  }
+  function renderMyCards() {
+    elHtml("unoMyHand", myCards.map((c,i)=>`<div class="uno-card" data-color="${c.color}" data-val="${c.val}" onclick="window.unoPlay(${i})">${c.color} ${c.val}</div>`).join(""));
+  }
+  function msg(txt) { elText("unoMsg",txt); }
+  function init() {
+    if(el("unoRoom").value && el("unoUser").value) {
+      roomName = el("unoRoom").value.trim();
+      myName = el("unoUser").value.trim();
+      el("unoSetup").style.display = "none";
+      el("unoRoomView").style.display = "block";
+      elText("unoRoomName", roomName);
+      elText("unoMyName", myName);
+      connect();
+    }
+  }
+  function connect() {
+    client = mqtt.connect(broker, {clientId:"uno"+Math.random().toString(36).slice(2),clean:true});
+    client.on("connect", () => {
+      client.subscribe("uno/"+roomName);
+      send({type:"join",name:myName});
+    });
+    client.on("message", (t,p) => {
+      const m=JSON.parse(p.toString());
+      if(m.type==="join") msg(m.name+" 加入了房间");
+      if(m.type==="deal") { myCards=m.cards; renderMyCards(); msg("发牌完成，等待出牌"); }
+      if(m.type==="play") msg(m.name+" 出了 "+m.card.color+m.card.val);
+      if(m.type==="turn") msg("轮到 "+m.name+" 出牌");
+      if(m.type==="color") currentColor=m.color;
+    });
+  }
+  el("unoJoin").onclick = init;
+  window.unoPlay = (i) => {
+    const c=myCards[i];
+    msg("你出了 "+c.color+c.val);
+    send({type:"play",card:c});
+    myCards.splice(i,1);
+    renderMyCards();
+    if(myCards.length===1) msg("UNO！还剩一张牌！");
+    if(myCards.length===0) msg("🎉 你赢了！");
+  };
+  gameCleanup = () => { if(client) client.end(); };
+}
+
+/* ---- 你画我猜（联机 MQTT） ---- */
+function initDrawguess() {
+  document.getElementById("gsTitle").textContent = "🎨 你画我猜（联机）";
+  document.querySelector(".game-stage").style.maxWidth = "700px";
+  gsBody().innerHTML = `<div class="dg-setup" id="dgSetup">
+    <p>创建或加入房间，房间号相同即可对战（2-8 人）</p>
+    <label>房间名</label><input id="dgRoom" placeholder="如 draw-room1" maxlength="16">
+    <label>用户名</label><input id="dgUser" placeholder="你的昵称" maxlength="10">
+    <button id="dgJoin">进入房间</button>
+  </div>
+  <div class="dg-room" id="dgRoomView" style="display:none">
+    <div class="dg-info">房间: <span id="dgRoomName"></span> · 你: <span id="dgMyName"></span></div>
+    <div class="dg-canvas-wrapper"><canvas id="dgCv" width="500" height="400"></canvas></div>
+    <div class="dg-controls">
+      <button id="dgClear">清空</button>
+      <input type="color" id="dgColor" value="#000">
+      <input type="range" id="dgSize" min="1" max="20" value="3">
+    </div>
+    <div class="dg-guess">
+      <input id="dgGuessInput" placeholder="输入你的猜测" maxlength="30">
+      <button id="dgGuessSubmit">提交猜测</button>
+    </div>
+    <div class="dg-msg" id="dgMsg"></div>
+    <div class="dg-players" id="dgPlayers"></div>
+  </div>`;
+  const broker = "wss://broker.emqx.io:8084/mqtt";
+  let client = null, roomName = null, myName = null, isDrawing = false, drawing = false;
+  function el(id) { return document.getElementById(id); }
+  function elText(id,txt) { el(id).textContent = txt; }
+  function elHtml(id,ht) { el(id).innerHTML = ht; }
+  function send(msg) {
+    if(client&&client.connected) client.publish("drawguess/"+roomName,JSON.stringify(msg));
+  }
+  function msg(txt) { elText("dgMsg",txt); }
+  function init() {
+    if(el("dgRoom").value && el("dgUser").value) {
+      roomName = el("dgRoom").value.trim();
+      myName = el("dgUser").value.trim();
+      el("dgSetup").style.display = "none";
+      el("dgRoomView").style.display = "block";
+      elText("dgRoomName", roomName);
+      elText("dgMyName", myName);
+      connect();
+      initCanvas();
+    }
+  }
+  function initCanvas() {
+    const cv = el("dgCv"), ctx = cv.getContext("2d");
+    let lastX = 0, lastY = 0;
+    cv.addEventListener("pointerdown", e=>{
+      if(!drawing) return;
+      isDrawing = true;
+      const rc=cv.getBoundingClientRect();
+      lastX = (e.clientX-rc.left)/rc.width*500;
+      lastY = (e.clientY-rc.top)/rc.height*400;
+    });
+    cv.addEventListener("pointermove", e=>{
+      if(!isDrawing||!drawing) return;
+      const rc=cv.getBoundingClientRect();
+      const x = (e.clientX-rc.left)/rc.width*500, y = (e.clientY-rc.top)/rc.height*400;
+      ctx.strokeStyle = el("dgColor").value;
+      ctx.lineWidth = el("dgSize").value;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(lastX,lastY);
+      ctx.lineTo(x,y);
+      ctx.stroke();
+      send({type:"draw",x1:lastX,y1:lastY,x2:x,y2:y,color:ctx.strokeStyle,size:ctx.lineWidth});
+      lastX=x; lastY=y;
+    });
+    cv.addEventListener("pointerup", () => isDrawing = false);
+    el("dgClear").onclick = () => {
+      ctx.clearRect(0,0,500,400);
+      send({type:"clear"});
+    };
+  }
+  function connect() {
+    client = mqtt.connect(broker, {clientId:"dg"+Math.random().toString(36).slice(2),clean:true});
+    client.on("connect", () => {
+      client.subscribe("drawguess/"+roomName);
+      send({type:"join",name:myName});
+    });
+    client.on("message", (t,p) => {
+      const m=JSON.parse(p.toString());
+      if(m.type==="join") {
+        msg(m.name+" 加入了房间");
+        elHtml("dgPlayers", (elHtml("dgPlayers","")||"")+"<div>"+m.name+"</div>");
+      }
+      if(m.type==="start") {
+        drawing = m.drawer===myName;
+        msg("轮到 "+m.drawer+" 画画，其他玩家猜词");
+      }
+      if(m.type==="draw"&&!drawing) {
+        const cv=el("dgCv"), ctx=cv.getContext("2d");
+        ctx.strokeStyle=m.color; ctx.lineWidth=m.size; ctx.lineCap="round";
+        ctx.beginPath(); ctx.moveTo(m.x1,m.y1); ctx.lineTo(m.x2,m.y2); ctx.stroke();
+      }
+      if(m.type==="clear") {
+        const cv=el("dgCv"), ctx=cv.getContext("2d");
+        ctx.clearRect(0,0,500,400);
+      }
+      if(m.type==="guess") msg(m.name+" 猜: "+m.word);
+      if(m.type==="correct") msg("🎉 "+m.name+" 猜对了！");
+    });
+  }
+  el("dgJoin").onclick = init;
+  el("dgGuessSubmit").onclick = () => {
+    const word = el("dgGuessInput").value.trim();
+    if(word) {
+      send({type:"guess",word});
+      msg("你猜: "+word);
+      el("dgGuessInput").value = "";
+    }
+  };
+  gameCleanup = () => { if(client) client.end(); };
+}
+
+/* ---- 谁是卧底（联机 MQTT） ---- */
+function initSpy() {
+  document.getElementById("gsTitle").textContent = "🕵️ 谁是卧底（联机）";
+  document.querySelector(".game-stage").style.maxWidth = "700px";
+  gsBody().innerHTML = `<div class="spy-setup" id="spySetup">
+    <p>创建或加入房间，房间号相同即可对战（4-8 人）</p>
+    <label>房间名</label><input id="spyRoom" placeholder="如 spy-room1" maxlength="16">
+    <label>用户名</label><input id="spyUser" placeholder="你的昵称" maxlength="10">
+    <button id="spyJoin">进入房间</button>
+  </div>
+  <div class="spy-room" id="spyRoomView" style="display:none">
+    <div class="spy-info">房间: <span id="spyRoomName"></span> · 你: <span id="spyMyName"></span></div>
+    <div class="spy-word">你的词: <span id="spyWord">等待分配...</span></div>
+    <div class="spy-players" id="spyPlayers"></div>
+    <div class="spy-desc"><textarea id="spyDescInput" placeholder="描述你的词（不能直接说出词本身）" maxlength="100"></textarea><button id="spyDescSubmit">提交描述</button></div>
+    <div class="spy-msg" id="spyMsg"></div>
+    <div class="spy-actions" id="spyActions"></div>
+  </div>`;
+  const broker = "wss://broker.emqx.io:8084/mqtt";
+  let client = null, roomName = null, myName = null, myWord = null, gamePhase = "waiting";
+  const wordPairs = [
+    ["苹果","香蕉"],["猫","狗"],["太阳","月亮"],["书","笔"],["汽车","自行车"],["手机","电脑"],["咖啡","茶"],["足球","篮球"]
+  ];
+  function el(id) { return document.getElementById(id); }
+  function elText(id,txt) { el(id).textContent = txt; }
+  function elHtml(id,ht) { el(id).innerHTML = ht; }
+  function send(msg) {
+    if(client&&client.connected) client.publish("spy/"+roomName,JSON.stringify(msg));
+  }
+  function msg(txt) { elText("spyMsg",txt); }
+  function init() {
+    if(el("spyRoom").value && el("spyUser").value) {
+      roomName = el("spyRoom").value.trim();
+      myName = el("spyUser").value.trim();
+      el("spySetup").style.display = "none";
+      el("spyRoomView").style.display = "block";
+      elText("spyRoomName", roomName);
+      elText("spyMyName", myName);
+      connect();
+    }
+  }
+  function connect() {
+    client = mqtt.connect(broker, {clientId:"spy"+Math.random().toString(36).slice(2),clean:true});
+    client.on("connect", () => {
+      client.subscribe("spy/"+roomName);
+      send({type:"join",name:myName});
+    });
+    client.on("message", (t,p) => {
+      const m=JSON.parse(p.toString());
+      if(m.type==="join") {
+        msg(m.name+" 加入了房间");
+        elHtml("spyPlayers", (el("spyPlayers").innerHTML||"")+"<div>"+m.name+"</div>");
+      }
+      if(m.type==="assign") {
+        myWord = m.word;
+        elText("spyWord", myWord);
+        gamePhase = "playing";
+        msg("游戏开始，请描述你的词");
+      }
+      if(m.type==="desc") msg(m.name+" 描述: "+m.desc);
+      if(m.type==="vote") {
+        elHtml("spyActions", m.players.map(p=>`<button onclick="window.spyVote('${p}')">投票 ${p}</button>`).join(""));
+        msg("请投票找出卧底");
+      }
+      if(m.type==="result") {
+        msg(m.result);
+        if(m.winner===myName) msg("🎉 你赢了！");
+      }
+    });
+  }
+  el("spyJoin").onclick = init;
+  el("spyDescSubmit").onclick = () => {
+    const desc = el("spyDescInput").value.trim();
+    if(desc) {
+      send({type:"desc",desc});
+      msg("你描述: "+desc);
+      el("spyDescInput").value = "";
+    }
+  };
+  window.spyVote = (name) => {
+    send({type:"vote",target:name});
+    msg("你投票给 "+name);
+  };
+  gameCleanup = () => { if(client) client.end(); };
+}
+
+/* ---- 飞行棋（联机 MQTT） ---- */
+function initAerplane() {
+  document.getElementById("gsTitle").textContent = "✈️ 飞行棋（联机）";
+  document.querySelector(".game-stage").style.maxWidth = "700px";
+  gsBody().innerHTML = `<div class="ap-setup" id="apSetup">
+    <p>创建或加入房间，房间号相同即可对战（4 人）</p>
+    <label>房间名</label><input id="apRoom" placeholder="如 ap-room1" maxlength="16">
+    <label>用户名</label><input id="apUser" placeholder="你的昵称" maxlength="10">
+    <button id="apJoin">进入房间</button>
+  </div>
+  <div class="ap-room" id="apRoomView" style="display:none">
+    <div class="ap-info">房间: <span id="apRoomName"></span> · 你: <span id="apMyName"></span></div>
+    <canvas id="apCv" width="480" height="480"></canvas>
+    <div class="ap-actions"><button id="apRoll">掷骰子</button><span id="apDice"></span></div>
+    <div class="ap-msg" id="apMsg"></div>
+  </div>`;
+  const broker = "wss://broker.emqx.io:8084/mqtt";
+  let client = null, roomName = null, myName = null, myColor = null, gamePhase = "waiting";
+  const colors = ["red","blue","green","yellow"];
+  function el(id) { return document.getElementById(id); }
+  function elText(id,txt) { el(id).textContent = txt; }
+  function elHtml(id,ht) { el(id).innerHTML = ht; }
+  function send(msg) {
+    if(client&&client.connected) client.publish("aerplane/"+roomName,JSON.stringify(msg));
+  }
+  function msg(txt) { elText("apMsg",txt); }
+  function init() {
+    if(el("apRoom").value && el("apUser").value) {
+      roomName = el("apRoom").value.trim();
+      myName = el("apUser").value.trim();
+      el("apSetup").style.display = "none";
+      el("apRoomView").style.display = "block";
+      elText("apRoomName", roomName);
+      elText("apMyName", myName);
+      connect();
+      initBoard();
+    }
+  }
+  function initBoard() {
+    const cv = el("apCv"), ctx = cv.getContext("2d");
+    function draw() {
+      ctx.fillStyle="#fff";
+      ctx.fillRect(0,0,480,480);
+      ctx.strokeStyle="#ccc";
+      ctx.lineWidth=2;
+      ctx.strokeRect(40,40,400,400);
+      colors.forEach((c,i)=>{
+        ctx.fillStyle=c;
+        const x = i%2===0?50:350;
+        const y = i<2?50:350;
+        ctx.fillRect(x,y,80,80);
+        ctx.fillStyle="#fff";
+        ctx.font="14px Arial";
+        ctx.fillText(c.toUpperCase(),x+30,y+45);
+      });
+    }
+    draw();
+  }
+  function connect() {
+    client = mqtt.connect(broker, {clientId:"ap"+Math.random().toString(36).slice(2),clean:true});
+    client.on("connect", () => {
+      client.subscribe("aerplane/"+roomName);
+      send({type:"join",name:myName});
+    });
+    client.on("message", (t,p) => {
+      const m=JSON.parse(p.toString());
+      if(m.type==="join") msg(m.name+" 加入了房间");
+      if(m.type==="assign") {
+        myColor = m.color;
+        msg("你的颜色: "+myColor);
+        gamePhase = "playing";
+      }
+      if(m.type==="turn") {
+        if(m.player===myName) {
+          msg("轮到你掷骰子");
+          el("apRoll").disabled = false;
+        } else {
+          msg("轮到 "+m.player+" 掷骰子");
+          el("apRoll").disabled = true;
+        }
+      }
+      if(m.type==="roll") {
+        elText("apDice", m.dice);
+        msg(m.player+" 掷出了 "+m.dice);
+      }
+      if(m.type==="move") msg(m.player+" 移动了棋子");
+      if(m.type==="win") {
+        msg("🎉 "+m.player+" 获得了胜利！");
+        gamePhase = "finished";
+      }
+    });
+  }
+  el("apJoin").onclick = init;
+  el("apRoll").onclick = () => {
+    const dice = Math.floor(Math.random()*6)+1;
+    send({type:"roll",dice});
+    elText("apDice", dice);
+    msg("你掷出了 "+dice);
+    if(dice===6) msg("🎉 掷出 6，可以起飞！");
+  };
+  gameCleanup = () => { if(client) client.end(); };
+}
+
+/* ---- 国际象棋（简化版） ---- */
+function initChess() {
+  document.getElementById("gsTitle").textContent = "♟️ 国际象棋";
+  document.querySelector(".game-stage").style.maxWidth = "500px";
+  gsBody().innerHTML = `<canvas id="chCv" width="440" height="440"></canvas><p class="tip">你执白先手 · 点击棋子再点击目标位置 · AI 执黑后手</p><div class="g-btns"><button id="chRestart">重新开始</button></div>`;
+  const cv = $id("chCv"), ctx = cv.getContext("2d");
+  const SZ = 55, PAD = 10;
+  const PIECES = {r:"♜",n:"♞",b:"♝",q:"♛",k:"♚",p:"♟"};
+  let board = [], selected = null, turn = "white", over = false;
+  function initBoard() {
+    board = [
+      [{t:"r",c:"black"},{t:"n",c:"black"},{t:"b",c:"black"},{t:"q",c:"black"},{t:"k",c:"black"},{t:"b",c:"black"},{t:"n",c:"black"},{t:"r",c:"black"}],
+      Array(8).fill(null).map(()=>({t:"p",c:"black"})),
+      Array(8).fill(null),
+      Array(8).fill(null),
+      Array(8).fill(null),
+      Array(8).fill(null),
+      Array(8).fill(null).map(()=>({t:"p",c:"white"})),
+      [{t:"r",c:"white"},{t:"n",c:"white"},{t:"b",c:"white"},{t:"q",c:"white"},{t:"k",c:"white"},{t:"b",c:"white"},{t:"n",c:"white"},{t:"r",c:"white"}]
+    ];
+  }
+  function draw() {
+    for(let y=0;y<8;y++) for(let x=0;x<8;x++) {
+      ctx.fillStyle=(x+y)%2===0?"#f0d9b5":"#b58863";
+      ctx.fillRect(x*SZ+PAD,y*SZ+PAD,SZ,SZ);
+    }
+    if(selected) {
+      ctx.fillStyle="rgba(255,255,0,0.4)";
+      ctx.fillRect(selected.x*SZ+PAD,selected.y*SZ+PAD,SZ,SZ);
+    }
+    for(let y=0;y<8;y++) for(let x=0;x<8;x++) {
+      const p=board[y][x];
+      if(p) {
+        ctx.fillStyle=p.c==="white"?"#fff":"#000";
+        ctx.font="40px Arial";
+        ctx.textAlign="center";
+        ctx.textBaseline="middle";
+        ctx.fillText(PIECES[p.t],x*SZ+PAD+SZ/2,y*SZ+PAD+SZ/2);
+      }
+    }
+  }
+  function validMoves(x,y) {
+    const p=board[y][x];
+    if(!p) return [];
+    const moves=[];
+    const add=(dx,dy)=>{const nx=x+dx,ny=y+dy;if(nx>=0&&nx<8&&ny>=0&&ny<8&&(!board[ny][nx]||board[ny][nx].c!==p.c)) moves.push({x:nx,y:ny});};
+    const addLine=(dx,dy)=>{let nx=x+dx,ny=y+dy;while(nx>=0&&nx<8&&ny>=0&&ny<8){if(!board[ny][nx]) moves.push({x:nx,y:ny}); else {if(board[ny][nx].c!==p.c) moves.push({x:nx,y:ny}); break;} nx+=dx;ny+=dy;}};
+    if(p.t==="p") {
+      const dir=p.c==="white"?-1:1;
+      if(!board[y+dir]?.[x]) moves.push({x,y:y+dir});
+      if((y===1||y===6)&&!board[y+dir*2]?.[x]&&!board[y+dir]?.[x]) moves.push({x,y:y+dir*2});
+      if(board[y+dir]?.[x-1]?.c!==p.c) moves.push({x:x-1,y:y+dir});
+      if(board[y+dir]?.[x+1]?.c!==p.c) moves.push({x:x+1,y:y+dir});
+    }
+    if(p.t==="r") {addLine(1,0);addLine(-1,0);addLine(0,1);addLine(0,-1);}
+    if(p.t==="n") {[[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]].forEach(([dx,dy])=>add(dx,dy));}
+    if(p.t==="b") {addLine(1,1);addLine(1,-1);addLine(-1,1);addLine(-1,-1);}
+    if(p.t==="q") {addLine(1,0);addLine(-1,0);addLine(0,1);addLine(0,-1);addLine(1,1);addLine(1,-1);addLine(-1,1);addLine(-1,-1);}
+    if(p.t==="k") {[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dx,dy])=>add(dx,dy));}
+    return moves;
+  }
+  function aiMove() {
+    if(over) return;
+    const moves=[];
+    for(let y=0;y<8;y++) for(let x=0;x<8;x++) {
+      const p=board[y][x];
+      if(p&&p.c==="black") {
+        const valid=validMoves(x,y);
+        valid.forEach(m=>moves.push({from:{x,y},to:m}));
+      }
+    }
+    if(!moves.length) {over=true; openDlg("🎉 白棋胜利","AI 无子可走，恭喜获胜！",reset); return;}
+    const move=moves[Math.floor(Math.random()*moves.length)];
+    board[move.to.y][move.to.x]=board[move.from.y][move.from.x];
+    board[move.from.y][move.from.x]=null;
+    draw();
+    if(checkKing("white")) {over=true; openDlg("😢 黑棋胜利","你的国王被将死了！",reset); return;}
+    turn="white";
+  }
+  function checkKing(color) {
+    let kx,ky;
+    for(let y=0;y<8;y++) for(let x=0;x<8;x++) {
+      const p=board[y][x];
+      if(p&&p.c===color&&p.t==="k") {kx=x; ky=y; break;}
+    }
+    for(let y=0;y<8;y++) for(let x=0;x<8;x++) {
+      const p=board[y][x];
+      if(p&&p.c!==color) {
+        const moves=validMoves(x,y);
+        if(moves.some(m=>m.x===kx&&m.y===ky)) return true;
+      }
+    }
+    return false;
+  }
+  function reset() {
+    initBoard(); selected=null; turn="white"; over=false; draw();
+  }
+  cv.addEventListener("pointerdown", e=>{
+    if(over||turn!=="white") return;
+    const rc=cv.getBoundingClientRect();
+    const x=Math.floor((e.clientX-rc.left)/rc.width/SZ), y=Math.floor((e.clientY-rc.top)/rc.height/SZ);
+    if(x<0||x>=8||y<0||y>=8) return;
+    if(selected) {
+      const moves=validMoves(selected.x,selected.y);
+      if(moves.some(m=>m.x===x&&m.y===y)) {
+        const captured=board[y][x];
+        board[y][x]=board[selected.y][selected.x];
+        board[selected.y][selected.x]=null;
+        selected=null;
+        draw();
+        if(captured&&captured.t==="k") {
+          over=true;
+          addPts(20);
+          openDlg("🎉 白棋胜利","你吃掉了对方的国王！获得 20 积分",reset);
+          return;
+        }
+        if(checkKing("black")) {
+          over=true;
+          addPts(20);
+          openDlg("🎉 白棋胜利","你将死了对方的国王！获得 20 积分",reset);
+          return;
+        }
+        turn="black";
+        setTimeout(aiMove,300);
+      } else {
+        selected=null;
+        draw();
+      }
+    } else {
+      const p=board[y][x];
+      if(p&&p.c==="white") {selected={x,y}; draw();}
+    }
+  });
+  $id("chRestart").onclick = reset;
+  gameCleanup = () => {};
+  reset();
+}
+
+/* ---- 中国象棋（简化版） ---- */
+function initXiangqi() {
+  document.getElementById("gsTitle").textContent = "🏯 中国象棋";
+  document.querySelector(".game-stage").style.maxWidth = "500px";
+  gsBody().innerHTML = `<canvas id="xqCv" width="440" height="440"></canvas><p class="tip">红方先手 · 点击棋子再点击目标位置 · AI 执黑后手</p><div class="g-btns"><button id="xqRestart">重新开始</button></div>`;
+  const cv = $id("xqCv"), ctx = cv.getContext("2d");
+  const SZ = 50, PAD = 20;
+  const PIECES = {r:"車",n:"馬",b:"相",q:"仕",k:"帥",p:"兵"};
+  let board = [], selected = null, turn = "red", over = false;
+  function initBoard() {
+    board = [
+      [{t:"r",c:"black"},{t:"n",c:"black"},{t:"b",c:"black"},{t:"q",c:"black"},{t:"k",c:"black"},{t:"b",c:"black"},{t:"n",c:"black"},{t:"r",c:"black"}],
+      [{t:"p",c:"black"},{t:"p",c:"black"},{t:"p",c:"black"},{t:"p",c:"black"},{t:"p",c:"black"}],
+      Array(9).fill(null),
+      Array(9).fill(null),
+      Array(9).fill(null),
+      Array(9).fill(null),
+      [{t:"p",c:"red"},{t:"p",c:"red"},{t:"p",c:"red"},{t:"p",c:"red"},{t:"p",c:"red"}],
+      [{t:"r",c:"red"},{t:"n",c:"red"},{t:"b",c:"red"},{t:"q",c:"red"},{t:"k",c:"red"},{t:"b",c:"red"},{t:"n",c:"red"},{t:"r",c:"red"}]
+    ];
+  }
+  function draw() {
+    ctx.fillStyle = "#f0d9b5";
+    ctx.fillRect(0,0,440,440);
+    ctx.strokeStyle = "#8b4513";
+    ctx.lineWidth = 1;
+    for(let i=0;i<10;i++) {
+      ctx.beginPath(); ctx.moveTo(PAD,PAD+i*SZ); ctx.lineTo(PAD+8*SZ,PAD+i*SZ); ctx.stroke();
+    }
+    for(let i=0;i<9;i++) {
+      ctx.beginPath(); ctx.moveTo(PAD+i*SZ,PAD); ctx.lineTo(PAD+i*SZ,PAD+9*SZ); ctx.stroke();
+    }
+    ctx.beginPath(); ctx.moveTo(PAD+3*SZ,PAD); ctx.lineTo(PAD+5*SZ,PAD); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(PAD+3*SZ,PAD+2*SZ); ctx.lineTo(PAD+5*SZ,PAD+2*SZ); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(PAD+3*SZ,PAD+7*SZ); ctx.lineTo(PAD+5*SZ,PAD+7*SZ); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(PAD+3*SZ,PAD+9*SZ); ctx.lineTo(PAD+5*SZ,PAD+9*SZ); ctx.stroke();
+    for(let y=0;y<10;y++) for(let x=0;x<9;x++) if(board[y][x]) {
+      ctx.fillStyle = board[y][x].c==="red"?"#d32f2f":"#212121";
+      ctx.font = "30px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(PIECES[board[y][x].t], PAD+x*SZ, PAD+y*SZ);
+    }
+    if(selected) {
+      ctx.strokeStyle = "#4CAF50";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(PAD+selected.x*SZ-25, PAD+selected.y*SZ-25, 50, 50);
+    }
+  }
+  function isValidMove(fromX, fromY, toX, toY) {
+    const piece = board[fromY][fromX];
+    if(!piece) return false;
+    if(board[toY][toX] && board[toY][toX].c === piece.c) return false;
+    
+    const dx = toX - fromX, dy = toY - fromY;
+    switch(piece.t) {
+      case "p":
+        if(piece.c === "red") {
+          if(fromY <= 4) {
+            if(dy === -1 && dx === 0) return true;
+          } else {
+            if((dy === -1 && dx === 0) || (dy === 0 && Math.abs(dx) === 1)) return true;
+          }
+        } else {
+          if(fromY >= 5) {
+            if(dy === 1 && dx === 0) return true;
+          } else {
+            if((dy === 1 && dx === 0) || (dy === 0 && Math.abs(dx) === 1)) return true;
+          }
+        }
+        break;
+      case "r":
+        if(dx === 0 || dy === 0) {
+          const stepX = dx === 0 ? 0 : dx > 0 ? 1 : -1;
+          const stepY = dy === 0 ? 0 : dy > 0 ? 1 : -1;
+          let x = fromX + stepX, y = fromY + stepY;
+          while(x !== toX || y !== toY) {
+            if(board[y][x]) return false;
+            x += stepX; y += stepY;
+          }
+          return true;
+        }
+        break;
+      case "n":
+        if((Math.abs(dx) === 2 && Math.abs(dy) === 1) || (Math.abs(dx) === 1 && Math.abs(dy) === 2)) return true;
+        break;
+      case "b":
+        if(Math.abs(dx) === Math.abs(dy)) {
+          const stepX = dx > 0 ? 1 : -1;
+          const stepY = dy > 0 ? 1 : -1;
+          let x = fromX + stepX, y = fromY + stepY;
+          while(x !== toX && y !== toY) {
+            if(board[y][x]) return false;
+            x += stepX; y += stepY;
+          }
+          return true;
+        }
+        break;
+      case "q":
+        if(dx === 0 || dy === 0 || Math.abs(dx) === Math.abs(dy)) {
+          const stepX = dx === 0 ? 0 : dx > 0 ? 1 : -1;
+          const stepY = dy === 0 ? 0 : dy > 0 ? 1 : -1;
+          let x = fromX + stepX, y = fromY + stepY;
+          while(x !== toX || y !== toY) {
+            if(board[y][x]) return false;
+            x += stepX; y += stepY;
+          }
+          return true;
+        }
+        break;
+      case "k":
+        if(Math.abs(dx) <= 1 && Math.abs(dy) <= 1) return true;
+        break;
+    }
+    return false;
+  }
+  function aiMove() {
+    if(over) return;
+    const moves = [];
+    for(let y=0;y<10;y++) for(let x=0;x<9;x++) {
+      const piece = board[y][x];
+      if(piece && piece.c === "black") {
+        for(let ty=0;ty<10;ty++) for(let tx=0;tx<9;tx++) {
+          if(isValidMove(x,y,tx,ty)) {
+            moves.push({fromX:x,fromY:y,toX:tx,toY:ty});
+          }
+        }
+      }
+    }
+    if(moves.length === 0) { over=true; openDlg("🎉 红方胜利","黑方无子可动，红方获胜！"); return; }
+    const move = moves[Math.floor(Math.random()*moves.length)];
+    board[move.toY][move.toX] = board[move.fromY][move.fromX];
+    board[move.fromY][move.fromX] = null;
+    draw();
+    turn = "red";
+    
+    // 检查黑方将帅是否被吃
+    let blackKing = null;
+    for(let y=0;y<10;y++) for(let x=0;x<9;x++) {
+      if(board[y][x] && board[y][x].t === "k" && board[y][x].c === "black") {
+        blackKing = {x,y};
+        break;
+      }
+    }
+    if(!blackKing) { over=true; addPts(20); openDlg("🎉 红方胜利","吃掉黑方将帅，获得 20 积分！"); }
+  }
+  function reset() {
+    initBoard(); selected = null; turn = "red"; over = false; draw();
+  }
+  cv.addEventListener("pointerdown", e=>{
+    if(over) return;
+    const rc=cv.getBoundingClientRect();
+    const x=Math.round((e.clientX-rc.left)/rc.width*440/PAD/2), y=Math.round((e.clientY-rc.top)/rc.height*440/PAD/2);
+    if(x<0||x>=9||y<0||y>=10) return;
+    
+    if(selected) {
+      if(isValidMove(selected.x,selected.y,x,y)) {
+        board[y][x] = board[selected.y][selected.x];
+        board[selected.y][selected.x] = null;
+        draw();
+        selected = null;
+        turn = "black";
+        setTimeout(aiMove,500);
+        
+        // 检查红方将帅是否被吃
+        let redKing = null;
+        for(let y=0;y<10;y++) for(let x=0;x<9;x++) {
+          if(board[y][x] && board[y][x].t === "k" && board[y][x].c === "red") {
+            redKing = {x,y};
+            break;
+          }
+        }
+        if(!redKing) { over=true; addPts(20); openDlg("🎉 黑方胜利","AI 吃掉红方将帅，获得 20 积分！"); }
+      } else {
+        selected = null;
+        draw();
+      }
+    } else {
+      const piece = board[y][x];
+      if(piece && piece.c === "red") {
+        selected = {x,y};
+        draw();
+      }
+    }
+  });
+  $id("xqRestart").onclick = reset;
+  gameCleanup = () => {};
+  reset();
+}
+
+/* ---- 围棋（简化版） ---- */
+function initGo() {
+  document.getElementById("gsTitle").textContent = "⚫ 围棋";
+  document.querySelector(".game-stage").style.maxWidth = "500px";
+  gsBody().innerHTML = `<canvas id="goCv" width="440" height="440"></canvas><p class="tip">黑方先手 · 点击棋盘落子 · 围地吃子</p><div class="g-btns"><button id="goRestart">重新开始</button></div>`;
+  const cv = $id("goCv"), ctx = cv.getContext("2d");
+  const GRID = 19, SZ = 22, PAD = 20;
+  let board = [], lastMove = null, captured = {black:0, white:0}, over = false;
+  function initBoard() {
+    board = Array(GRID).fill(null).map(()=>Array(GRID).fill(0));
+  }
+  function draw() {
+    ctx.fillStyle = "#deb887";
+    ctx.fillRect(0,0,440,440);
+    ctx.strokeStyle = "#8b4513";
+    ctx.lineWidth = 1;
+    for(let i=0;i<GRID;i++) {
+      ctx.beginPath(); ctx.moveTo(PAD+i*SZ,PAD); ctx.lineTo(PAD+i*SZ,PAD+SZ*(GRID-1)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(PAD,PAD+i*SZ); ctx.lineTo(PAD+SZ*(GRID-1),PAD+i*SZ); ctx.stroke();
+    }
+    // 画星位
+    const stars = [[3,3],[3,9],[3,15],[9,3],[9,9],[9,15],[15,3],[15,9],[15,15]];
+    stars.forEach(([x,y])=>{
+      ctx.fillStyle = "#8b4513";
+      ctx.beginPath(); ctx.arc(PAD+x*SZ,PAD+y*SZ,3,0,Math.PI*2); ctx.fill();
+    });
+    for(let y=0;y<GRID;y++) for(let x=0;x<GRID;x++) if(board[y][x]) {
+      ctx.beginPath(); ctx.arc(PAD+x*SZ,PAD+y*SZ,SZ*0.4,0,Math.PI*2);
+      ctx.fillStyle = board[y][x]===1?"#000":"#fff";
+      ctx.fill(); ctx.strokeStyle = board[y][x]===1?"#000":"#000";
+      ctx.lineWidth = 1; ctx.stroke();
+    }
+    if(lastMove) {
+      ctx.strokeStyle = "#ff0000";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(PAD+lastMove.x*SZ-10, PAD+lastMove.y*SZ-10, 20, 20);
+    }
+  }
+  function checkCapture(x,y,player) {
+    const visited = Array(GRID).fill(null).map(()=>Array(GRID).fill(false));
+    const group = [];
+    const dfs = (cx,cy) => {
+      if(cx<0||cx>=GRID||cy<0||cy>=GRID||visited[cy][cx]||board[cy][cx]!==player) return;
+      visited[cy][cx] = true;
+      group.push({x:cx,y:cy});
+      dfs(cx+1,cy); dfs(cx-1,cy); dfs(cx,cy+1); dfs(cx,cy-1);
+    };
+    dfs(x,y);
+    let hasLiberty = false;
+    for(const p of group) {
+      for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+        const nx=p.x+dx, ny=p.y+dy;
+        if(nx<0||nx>=GRID||ny<0||ny>=GRID||board[ny][nx]===0) {
+          hasLiberty = true;
+          break;
+        }
+      }
+      if(hasLiberty) break;
+    }
+    if(!hasLiberty) {
+      group.forEach(p=>{ board[p.y][p.x]=0; });
+      captured[player===1?"black":"white"] += group.length;
+    }
+    return !hasLiberty;
+  }
+  function aiMove() {
+    if(over) return;
+    const empty = [];
+    for(let y=0;y<GRID;y++) for(let x=0;x<GRID;x++) if(board[y][x]===0) empty.push({x,y});
+    if(empty.length===0) { over=true; openDlg("🤝 平局","棋盘已满，平局！"); return; }
+    
+    // 简单 AI：随机下子，但避免自杀
+    let validMoves = [];
+    for(const p of empty) {
+      board[p.y][p.x] = 2; // 假设 AI 下白子
+      const wouldBeCaptured = checkCapture(p.x,p.y,2);
+      board[p.y][p.x] = 0;
+      if(!wouldBeCaptured) validMoves.push(p);
+    }
+    if(validMoves.length===0) { over=true; openDlg("🎉 黑方胜利","AI 无处可下，黑方获胜！"); return; }
+    
+    const move = validMoves[Math.floor(Math.random()*validMoves.length)];
+    board[move.y][move.x] = 2;
+    lastMove = move;
+    
+    // 检查是否吃掉黑子
+    checkCapture(move.x,move.y,1);
+    draw();
+  }
+  function reset() {
+    initBoard(); lastMove = null; captured = {black:0, white:0}; over = false; draw();
+  }
+  cv.addEventListener("pointerdown", e=>{
+    if(over) return;
+    const rc=cv.getBoundingClientRect();
+    const x=Math.round((e.clientX-rc.left)/rc.width*440/PAD/2), y=Math.round((e.clientY-rc.top)/rc.height*440/PAD/2);
+    if(x<0||x>=GRID||y<0||y>=GRID) return;
+    if(board[y][x]!==0) return;
+    
+    board[y][x] = 1; // 黑子
+    lastMove = {x,y};
+    
+    // 检查是否吃掉白子
+    checkCapture(x,y,2);
+    draw();
+    
+    // AI 回应
+    setTimeout(aiMove,300);
+  });
+  $id("goRestart").onclick = reset;
+  gameCleanup = () => {};
+  reset();
+}
+
+/* ===================== AI 助手（DeepSeek 风格，可配任意 OpenAI 兼容 API） ===================== */
+let AI_CFG = { url: "https://api.deepseek.com/chat/completions", key: "", model: "deepseek-chat", sys: "" };
+try { Object.assign(AI_CFG, JSON.parse(localStorage.getItem("aiCfg")) || {}); } catch (_) {}
+let AI_UI = { name: "AI 助手", avatar: "🤖", ubub: "", abub: "", fs: 14.5, bg: "" };
+try { Object.assign(AI_UI, JSON.parse(localStorage.getItem("aiUi")) || {}); } catch (_) {}
+let AI_CONVS = [];
+try { AI_CONVS = JSON.parse(localStorage.getItem("aiConvs")) || []; } catch (_) {}
+let aiCur = AI_CONVS.length ? AI_CONVS[0].id : 0;
+let aiBusy = false, aiAbort = null, aiFileList = [];
+
+function aiSave() { try { localStorage.setItem("aiConvs", JSON.stringify(AI_CONVS.slice(0, 50))); } catch (_) {} }
+function aiConv() { return AI_CONVS.find(c => c.id === aiCur); }
+function aiEsc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+/* markdown-lite：代码块 / 行内码 / 粗体 / 换行（代码块先抽走再回填，防止 <br> 污染） */
+function aiMd(s) {
+  const blocks = [];
+  let h = aiEsc(s).replace(/```\w*\n?([\s\S]*?)```/g, (m, c) => { blocks.push("<pre><code>" + c + "</code></pre>"); return "\u0000" + (blocks.length - 1) + "\u0000"; });
+  h = h.replace(/`([^`\n]+)`/g, "<code>$1</code>").replace(/\*\*([^*\n]+)\*\*/g, "<b>$1</b>").replace(/\n/g, "<br>");
+  return h.replace(/\u0000(\d+)\u0000/g, (m, i) => blocks[i]);
+}
+
+function aiApplyUi() {
+  const p = $id("pageAI");
+  p.style.setProperty("--aiu-bub", AI_UI.ubub || "var(--accent)");
+  p.style.setProperty("--aia-bub", AI_UI.abub || "rgba(255,255,255,.07)");
+  p.style.setProperty("--ai-fs", (AI_UI.fs || 14.5) + "px");
+  $id("aiMain").style.backgroundImage = AI_UI.bg ? "url(" + AI_UI.bg + ")" : "";
+  $id("aiName").textContent = AI_UI.avatar + " " + AI_UI.name;
+  $id("aiMdl").textContent = AI_CFG.key ? AI_CFG.model : "未配置 API";
+}
+
+function aiRenderConvs() {
+  $id("aiConvs").innerHTML = AI_CONVS.map(c =>
+    '<div class="ai-conv' + (c.id === aiCur ? " cur" : "") + '" onclick="aiSwitch(' + c.id + ')"><span>' + aiEsc(c.title || "新对话") + '</span><i onclick="event.stopPropagation();aiDelConv(' + c.id + ')">✕</i></div>').join("");
+}
+function aiMsgHtml(role, text, imgs) {
+  const u = role === "user";
+  const im = (imgs || []).map(src => '<img src="' + src + '">').join("");
+  return '<div class="ai-msg ' + (u ? "user" : "bot") + '"><div class="av">' + (u ? "🧑" : AI_UI.avatar) + '</div><div class="bub">' + (u ? aiEsc(text) : aiMd(text)) + im + "</div></div>";
+}
+function aiRenderMsgs() {
+  const box = $id("aiMsgs"), c = aiConv();
+  if (!c || !c.msgs.length) {
+    box.innerHTML = '<div class="ai-hello"><div class="big">' + AI_UI.avatar + "</div><h2>我是 " + aiEsc(AI_UI.name) + "</h2>可以问我任何问题，支持 📎 文件、🎤 语音输入<br>首次使用请先点左侧「⚙️ API 设置」填写密钥</div>";
+    return;
+  }
+  box.innerHTML = c.msgs.map(m => aiMsgHtml(m.role, m.label || m.content, m.imgs)).join("");
+  box.scrollTop = box.scrollHeight;
+}
+
+function aiNewConv() {
+  const c = { id: Date.now(), title: "", msgs: [] };
+  AI_CONVS.unshift(c); aiCur = c.id;
+  aiSave(); aiRenderConvs(); aiRenderMsgs();
+  $id("aiSide").classList.remove("open");
+}
+function aiSwitch(id) { aiCur = id; aiRenderConvs(); aiRenderMsgs(); $id("aiSide").classList.remove("open"); }
+function aiDelConv(id) {
+  AI_CONVS = AI_CONVS.filter(c => c.id !== id);
+  if (aiCur === id) aiCur = AI_CONVS.length ? AI_CONVS[0].id : 0;
+  aiSave(); aiRenderConvs(); aiRenderMsgs();
+}
+
+/* 设置弹窗（点遮罩关闭） */
+function aiModal(html) {
+  const m = document.createElement("div");
+  m.className = "ai-modal";
+  m.innerHTML = '<div class="aic">' + html + "</div>";
+  m.addEventListener("click", e => { if (e.target === m) m.remove(); });
+  document.body.appendChild(m);
+  return m;
+}
+function aiCfgDlg() {
+  const m = aiModal('<h3>⚙️ API 设置</h3>' +
+    '<label>API 地址（DeepSeek / OpenAI 兼容接口）</label><input type="text" id="acUrl" value="' + aiEsc(AI_CFG.url) + '">' +
+    '<label>API Key（只保存在本机浏览器，不会上传）</label><input type="password" id="acKey" value="' + aiEsc(AI_CFG.key) + '" placeholder="sk-...">' +
+    '<label>模型名</label><input type="text" id="acMdl" value="' + aiEsc(AI_CFG.model) + '" placeholder="deepseek-chat / gpt-4o-mini …">' +
+    '<label>系统提示词（可选，设定 AI 人设）</label><textarea id="acSys" rows="3">' + aiEsc(AI_CFG.sys || "") + "</textarea>" +
+    '<div class="btns"><button class="ghost" onclick="this.closest(\'.ai-modal\').remove()">取消</button><button id="acOk">保存</button></div>');
+  m.querySelector("#acOk").onclick = () => {
+    AI_CFG.url = m.querySelector("#acUrl").value.trim() || "https://api.deepseek.com/chat/completions";
+    AI_CFG.key = m.querySelector("#acKey").value.trim();
+    AI_CFG.model = m.querySelector("#acMdl").value.trim() || "deepseek-chat";
+    AI_CFG.sys = m.querySelector("#acSys").value.trim();
+    try { localStorage.setItem("aiCfg", JSON.stringify(AI_CFG)); } catch (_) {}
+    aiApplyUi(); m.remove();
+  };
+}
+function aiUiDlg() {
+  const m = aiModal('<h3>🎨 界面自定义</h3>' +
+    '<label>AI 名称</label><input type="text" id="auName" value="' + aiEsc(AI_UI.name) + '">' +
+    '<label>AI 头像（一个 emoji）</label><input type="text" id="auAv" value="' + aiEsc(AI_UI.avatar) + '" maxlength="4">' +
+    '<label>我的气泡颜色（如 #4f8cff，留空跟随主题色）</label><input type="text" id="auU" value="' + aiEsc(AI_UI.ubub || "") + '">' +
+    '<label>AI 气泡颜色（留空默认）</label><input type="text" id="auA" value="' + aiEsc(AI_UI.abub || "") + '">' +
+    '<label>字号（px，默认 14.5）</label><input type="text" id="auFs" value="' + (AI_UI.fs || 14.5) + '">' +
+    '<label>聊天背景图 URL（留空无背景）</label><input type="text" id="auBg" value="' + aiEsc(AI_UI.bg || "") + '">' +
+    '<div class="btns"><button class="ghost" id="auRst">恢复默认</button><button id="auOk">保存</button></div>');
+  m.querySelector("#auRst").onclick = () => {
+    AI_UI = { name: "AI 助手", avatar: "🤖", ubub: "", abub: "", fs: 14.5, bg: "" };
+    try { localStorage.setItem("aiUi", JSON.stringify(AI_UI)); } catch (_) {}
+    aiApplyUi(); aiRenderMsgs(); m.remove();
+  };
+  m.querySelector("#auOk").onclick = () => {
+    AI_UI.name = m.querySelector("#auName").value.trim() || "AI 助手";
+    AI_UI.avatar = m.querySelector("#auAv").value.trim() || "🤖";
+    AI_UI.ubub = m.querySelector("#auU").value.trim();
+    AI_UI.abub = m.querySelector("#auA").value.trim();
+    AI_UI.fs = parseFloat(m.querySelector("#auFs").value) || 14.5;
+    AI_UI.bg = m.querySelector("#auBg").value.trim();
+    try { localStorage.setItem("aiUi", JSON.stringify(AI_UI)); } catch (_) {}
+    aiApplyUi(); aiRenderMsgs(); m.remove();
+  };
+}
+
+/* 文件上传：文本类读内容拼进消息，图片转 base64（vision 模型可识图） */
+const AI_TEXT_EXT = /\.(txt|md|js|ts|py|html?|css|json|csv|xml|java|c|cpp|h|log|ini|bat|sh)$/i;
+function aiRenderFiles() {
+  $id("aiFiles").innerHTML = aiFileList.map((f, i) =>
+    '<div class="chip">' + (f.img ? "🖼️" : "📄") + " " + aiEsc(f.name) + '<i onclick="aiFileList.splice(' + i + ',1);aiRenderFiles()">✕</i></div>').join("");
+}
+$id("aiFileInp").addEventListener("change", e => {
+  for (const f of e.target.files) {
+    if (/^image\//.test(f.type)) {
+      const r = new FileReader();
+      r.onload = () => { aiFileList.push({ name: f.name, img: r.result }); aiRenderFiles(); };
+      r.readAsDataURL(f);
+    } else if (AI_TEXT_EXT.test(f.name) || /^text\//.test(f.type)) {
+      const r = new FileReader();
+      r.onload = () => { aiFileList.push({ name: f.name, text: String(r.result).slice(0, 30000) }); aiRenderFiles(); };
+      r.readAsText(f);
+    } else {
+      openDlg("提示", "「" + aiEsc(f.name) + "」暂不支持：只能上传文本类文件（txt / 代码 / json 等）和图片");
+    }
+  }
+  e.target.value = "";
+});
+
+/* 语音输入（webkitSpeechRecognition，中文） */
+let aiRec = null;
+function aiMicToggle() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { openDlg("提示", "当前浏览器不支持语音识别，建议用 Chrome / Edge（需 https 或本地打开）"); return; }
+  if (aiRec) { aiRec.stop(); return; }
+  aiRec = new SR();
+  aiRec.lang = "zh-CN"; aiRec.interimResults = true; aiRec.continuous = true;
+  const ta = $id("aiText"), base = ta.value;
+  aiRec.onresult = ev => {
+    let s = "";
+    for (const r of ev.results) s += r[0].transcript;
+    ta.value = base + s; aiGrow();
+  };
+  aiRec.onend = () => { aiRec = null; $id("aiMic").classList.remove("rec"); };
+  aiRec.onerror = () => {};
+  aiRec.start();
+  $id("aiMic").classList.add("rec");
+}
+
+/* 输入框：自动长高 + Enter 发送 / Shift+Enter 换行 */
+function aiGrow() { const t = $id("aiText"); t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 130) + "px"; }
+$id("aiText").addEventListener("input", aiGrow);
+$id("aiText").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); aiSend(); }
+});
+
+/* 发送：OpenAI 兼容 stream:true，SSE 逐块追加到气泡；生成中再点 = 停止 */
+async function aiSend() {
+  if (aiBusy) { if (aiAbort) aiAbort.abort(); return; }
+  const ta = $id("aiText"), text = ta.value.trim();
+  if (!text && !aiFileList.length) return;
+  if (!AI_CFG.key) { aiCfgDlg(); return; }
+  if (aiRec) aiRec.stop();
+  if (!aiConv()) aiNewConv();
+  const c = aiConv();
+  const imgs = aiFileList.filter(f => f.img).map(f => f.img);
+  const fTexts = aiFileList.filter(f => f.text);
+  let full = text;
+  if (fTexts.length) full += "\n\n" + fTexts.map(f => "【文件 " + f.name + "】\n" + f.text).join("\n\n");
+  const label = text + (aiFileList.length ? (text ? "\n" : "") + "📎 " + aiFileList.map(f => f.name).join("、") : "");
+  c.msgs.push({ role: "user", content: full, label, imgs });
+  if (!c.title) c.title = (text || aiFileList[0].name).slice(0, 20);
+  aiFileList = []; aiRenderFiles(); ta.value = ""; aiGrow();
+  aiSave(); aiRenderConvs(); aiRenderMsgs();
+
+  // 拼 OpenAI 兼容 messages（带图的用 image_url 多段式）
+  const msgs = [];
+  if (AI_CFG.sys) msgs.push({ role: "system", content: AI_CFG.sys });
+  for (const m of c.msgs) {
+    if (m.role === "user" && m.imgs && m.imgs.length) {
+      msgs.push({ role: "user", content: [{ type: "text", text: m.content }].concat(m.imgs.map(u => ({ type: "image_url", image_url: { url: u } }))) });
+    } else msgs.push({ role: m.role, content: m.content });
+  }
+
+  const bot = { role: "assistant", content: "" };
+  c.msgs.push(bot);
+  aiBusy = true; $id("aiSend").textContent = "■";
+  const box = $id("aiMsgs");
+  box.insertAdjacentHTML("beforeend", aiMsgHtml("assistant", "⏳ 思考中…"));
+  const bub = box.lastElementChild.querySelector(".bub");
+  box.scrollTop = box.scrollHeight;
+  try {
+    aiAbort = new AbortController();
+    const res = await fetch(AI_CFG.url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + AI_CFG.key },
+      body: JSON.stringify({ model: AI_CFG.model, messages: msgs, stream: true }),
+      signal: aiAbort.signal
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status + " " + (await res.text()).slice(0, 300));
+    const rd = res.body.getReader(), dec = new TextDecoder();
+    let buf = "";
+    while (true) {
+      const { done, value } = await rd.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const lines = buf.split("\n"); buf = lines.pop();
+      for (const ln of lines) {
+        const s = ln.trim();
+        if (!s.startsWith("data:")) continue;
+        const d = s.slice(5).trim();
+        if (d === "[DONE]") continue;
+        try {
+          const dl = JSON.parse(d).choices[0].delta;
+          if (dl && dl.content) {
+            bot.content += dl.content;
+            bub.innerHTML = aiMd(bot.content);
+            box.scrollTop = box.scrollHeight;
+          }
+        } catch (_) {}
+      }
+    }
+    if (!bot.content) bot.content = "（没有收到回复内容）";
+  } catch (err) {
+    bot.content += (bot.content ? "\n\n" : "") + (err.name === "AbortError" ? "（已停止生成）" : "⚠️ 请求失败：" + err.message + "\n请检查 API 地址 / Key / 模型名是否正确，以及账户余额");
+    bub.innerHTML = aiMd(bot.content);
+  }
+  aiBusy = false; aiAbort = null; $id("aiSend").textContent = "➤";
+  aiSave(); aiRenderMsgs();
+}
+
+function initAI() { aiApplyUi(); aiRenderConvs(); aiRenderMsgs(); }
 
 /* ---- 坦克大战（原版 V1.1.2 已内置，无需外部文件，可直接上传 GitHub） ---- */
 function initTank() {
@@ -2728,6 +5641,7 @@ function setTheme(a, b) {
   const root = document.documentElement.style;
   if (a) { root.setProperty("--accent", a); saveOpt("accent", a); document.getElementById("setAccent").value = a; }
   if (b) { root.setProperty("--accent2", b); saveOpt("accent2", b); document.getElementById("setAccent2").value = b; }
+  themeToCustom(); // 自己改色 → 主题切到「自定义」
 }
 function renderThemeChips() {
   document.getElementById("themeChips").innerHTML = THEMES.map(([a,b]) =>
@@ -2829,7 +5743,10 @@ renderWgts();
 renderTb();
 renderCal();
 applyAllOpts();
+ptsUI();
+applyGameTheme(GTHEME); // 恢复上次的主题（改名 / 配色 / 壁纸）
 initMusic();
+initAI();
 goPage(OPT.start || "pageHome");
 
 /* ---- 坦克大战 V1.1.2 原版整页代码（已内嵌，勿手动编辑下方这一行） ---- */
